@@ -1,0 +1,347 @@
+/* =========================================
+   TDT QUICK CHAT WIDGET
+   Bubble launcher + hide/show chat panel.
+   Bot-first, with handoff to a live human
+   agent (messages are sent to the backend
+   so a staff member can reply — see the
+   TODO notes in chatwidget.js).
+========================================= */
+
+.tdt-chat-launcher {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--tdt-orange, #e67026);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    z-index: 9998;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tdt-chat-launcher:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+.tdt-chat-launcher .tdt-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: #717074;
+    color: #fff;
+    font-family: var(--font-montserrat, sans-serif);
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
+.tdt-chat-launcher .tdt-badge:empty { display: none; }
+
+/* Swap icon when panel is open */
+.tdt-chat-launcher .fa-comment-dots { display: inline-block; }
+.tdt-chat-launcher .fa-xmark { display: none; }
+.tdt-chat-launcher.is-open .fa-comment-dots { display: none; }
+.tdt-chat-launcher.is-open .fa-xmark { display: inline-block; }
+
+.tdt-chat-panel {
+    position: fixed;
+    right: 24px;
+    bottom: 96px;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    height: 460px;
+    max-height: calc(100vh - 140px);
+    background-color: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9999;
+
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.tdt-chat-panel.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* --- Header --- */
+.tdt-chat-header {
+    background-color: var(--tdt-orange, #e67026);
+    color: #fff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.tdt-chat-header .tdt-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.tdt-chat-header .tdt-header-text {
+    flex: 1;
+    line-height: 1.25;
+}
+
+.tdt-chat-header .tdt-header-title {
+    font-family: var(--font-bebas, sans-serif);
+    font-size: 17px;
+    letter-spacing: 0.03em;
+    display: block;
+}
+
+.tdt-chat-header .tdt-header-status {
+    font-family: var(--font-montserrat, sans-serif);
+    font-size: 11px;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tdt-chat-header .tdt-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #7ee08a;
+    display: inline-block;
+}
+
+.tdt-chat-header .tdt-status-dot.tdt-status-human {
+    background-color: #ffd76a;
+}
+
+.tdt-chat-header .tdt-close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0.85;
+    padding: 4px;
+    line-height: 1;
+}
+
+.tdt-chat-header .tdt-close-btn:hover { opacity: 1; }
+
+/* --- Messages --- */
+.tdt-chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #fbfbfb;
+}
+
+.tdt-msg-row {
+    display: flex;
+}
+
+.tdt-msg-row.tdt-from-user { justify-content: flex-end; }
+.tdt-msg-row.tdt-from-bot,
+.tdt-msg-row.tdt-from-agent,
+.tdt-msg-row.tdt-from-system { justify-content: flex-start; }
+
+.tdt-bubble {
+    max-width: 80%;
+    padding: 10px 13px;
+    border-radius: 12px;
+    font-family: var(--font-montserrat, sans-serif);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.tdt-from-bot .tdt-bubble,
+.tdt-from-agent .tdt-bubble {
+    background-color: #efefef;
+    color: #4a4949;
+    border-bottom-left-radius: 3px;
+}
+
+.tdt-from-agent .tdt-bubble {
+    background-color: #fff1e7;
+}
+
+.tdt-from-user .tdt-bubble {
+    background-color: var(--tdt-orange, #e67026);
+    color: #fff;
+    border-bottom-right-radius: 3px;
+}
+
+.tdt-from-system .tdt-bubble {
+    background-color: transparent;
+    color: #9a9a9a;
+    font-size: 11px;
+    font-style: italic;
+    padding: 0 6px;
+}
+
+.tdt-sender-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tdt-orange, #e67026);
+    margin-bottom: 3px;
+}
+
+/* --- Quick reply chips --- */
+.tdt-quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 12px 16px;
+    flex-shrink: 0;
+}
+
+.tdt-chip {
+    font-family: var(--font-montserrat, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tdt-orange, #e67026);
+    background-color: #fff;
+    border: 1.5px solid var(--tdt-orange, #e67026);
+    border-radius: 20px;
+    padding: 7px 13px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tdt-chip:hover {
+    background-color: var(--tdt-orange, #e67026);
+    color: #fff;
+}
+
+.tdt-chip:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- Typing indicator --- */
+.tdt-typing .tdt-bubble {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 14px;
+}
+
+.tdt-typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #b7b6b6;
+    animation: tdtTypingBounce 1.2s infinite ease-in-out;
+}
+
+.tdt-typing span:nth-child(2) { animation-delay: 0.15s; }
+.tdt-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes tdtTypingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* --- Input row --- */
+.tdt-chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid rgba(113, 112, 116, 0.15);
+    flex-shrink: 0;
+    background-color: #fff;
+}
+
+.tdt-chat-input-row textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid rgba(113, 112, 116, 0.25);
+    border-radius: 20px;
+    padding: 9px 14px;
+    font-family: var(--font-montserrat, sans-serif);
+    font-size: 13px;
+    max-height: 70px;
+    line-height: 1.4;
+}
+
+.tdt-chat-input-row textarea:focus {
+    outline: none;
+    border-color: var(--tdt-orange, #e67026);
+}
+
+.tdt-chat-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--tdt-orange, #e67026);
+    color: #fff;
+    border: none;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.tdt-chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- Mobile --- */
+@media (max-width: 480px) {
+    .tdt-chat-panel {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        bottom: 88px;
+        height: calc(100vh - 160px);
+    }
+
+    .tdt-chat-launcher {
+        right: 16px;
+        bottom: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tdt-chat-panel,
+    .tdt-chat-launcher {
+        transition: none;
+    }
+}

@@ -1,0 +1,301 @@
+/* =========================================================
+   products.css
+   Page-specific styles — the reset/variables/header/footer
+   come from base.css / header.css / footer.css, but the
+   Products page banner (background photo, grid overlay,
+   breadcrumb, highlight color) needs its own rules here
+   since subpages.css doesn't cover this exact banner look.
+   ========================================================= */
+
+/* --- PRODUCTS PAGE: BANNER --- */
+.page-banner {
+    position: relative;
+    background-color: var(--tdt-gray-dark);
+    background-image:
+        linear-gradient(rgba(17, 16, 16, 0.62), rgba(17, 16, 16, 0.75)),
+        var(--banner-img, url('images/TDT\ Power\ Steel\ Products\ v2.jpg'));
+    background-size: cover;
+    background-position: center;
+    padding: 130px 0 60px 0;
+    overflow: hidden;
+}
+
+/* Category pages (columns-beams, hardware, plates-sheets, steel-bars,
+   tubes-pipes, wiremesh) use this on top of .page-banner so their
+   overlay opacity can be tuned independently from products.html's. */
+.page-banner.subcat-page-banner {
+    background-image:
+        linear-gradient(rgba(17, 16, 16, 0.55), rgba(17, 16, 16, 0.68)),
+        var(--banner-img, url('images/TDT\ Power\ Steel\ Products\ v2.jpg'));
+}
+
+.page-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(230, 112, 38, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230, 112, 38, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+/* Products' banner is left-aligned, unlike the centered banner style
+   shared by other subpages (blog/about/tracking) via subpages.css */
+.page-banner .container {
+    text-align: left;
+}
+
+.breadcrumb {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 18px 0;
+    width: 100%;
+}
+
+.breadcrumb a {
+    color: var(--tdt-gray-light);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.breadcrumb a:hover {
+    color: var(--tdt-orange);
+}
+
+.breadcrumb span.sep {
+    color: var(--tdt-gray);
+}
+
+.breadcrumb span.current {
+    color: var(--tdt-orange);
+}
+
+.page-banner-title {
+    position: relative;
+    font-family: var(--font-bebas);
+    font-size: 56px;
+    line-height: 1.05;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    max-width: 700px;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
+}
+
+.page-banner-title .highlight {
+    color: var(--tdt-orange);
+}
+
+.page-banner-desc {
+    position: relative;
+    color: var(--tdt-gray-light);
+    font-size: 14px;
+    max-width: 600px;
+    line-height: 1.7;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* --- PRODUCTS: CATEGORY GRID --- */
+.category-section {
+    padding: 90px 0;
+    background-color: #ffffff;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+@media (min-width: 768px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.category-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 4px 14px rgba(17, 16, 16, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.category-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(17, 16, 16, 0.12);
+}
+
+.category-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: linear-gradient(
+        to bottom,
+        #ffffff 0%,
+        #ffffff 25%,
+        var(--tdt-orange) 25%,
+        var(--tdt-orange) 28%,
+        #ffffff 28%,
+        #ffffff 33%,
+        var(--tdt-orange) 33%,
+        var(--tdt-orange) 53%,
+        #ffffff 53%,
+        #ffffff 58%,
+        var(--tdt-orange) 58%,
+        var(--tdt-orange) 61%,
+        #ffffff 61%,
+        #ffffff 100%
+    );
+}
+
+.category-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.5s ease;
+    display: block;
+}
+
+.category-card:hover .category-img-wrap img {
+    transform: scale(1.08);
+}
+
+.fallback-placeholder {
+    position: absolute;
+    inset: 0;
+    background-color: var(--tdt-gray-dark);
+    background-image:
+        linear-gradient(rgba(230, 112, 38, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230, 112, 38, 0.05) 1px, transparent 1px);
+    background-size: 15px 15px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-family: var(--font-bebas);
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    border: 2px solid rgba(230, 112, 38, 0.2);
+}
+
+.category-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    border-top: 3px solid var(--tdt-orange);
+}
+
+.category-name {
+    font-family: var(--font-bebas);
+    font-size: 20px;
+    letter-spacing: 0.03em;
+    color: var(--tdt-gray);
+    text-transform: uppercase;
+}
+
+.category-arrow {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: rgba(230, 112, 38, 0.08);
+    color: var(--tdt-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+
+.category-card:hover .category-arrow {
+    background-color: var(--tdt-orange);
+    color: #ffffff;
+    transform: translateX(4px);
+}
+
+/* =========================================
+   SCROLL-REVEAL ANIMATION
+   Elements start faded/offset, then ease into
+   place once they enter the viewport (see the
+   IntersectionObserver script at the bottom
+   of this page, which adds .revealed).
+   Same mechanism as about.css / about.html.
+========================================= */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered cascade for the products grid (products.html) */
+.category-grid .category-card.reveal:nth-child(1) { transition-delay: 0s; }
+.category-grid .category-card.reveal:nth-child(2) { transition-delay: 0.1s; }
+.category-grid .category-card.reveal:nth-child(3) { transition-delay: 0.2s; }
+.category-grid .category-card.reveal:nth-child(4) { transition-delay: 0.3s; }
+.category-grid .category-card.reveal:nth-child(5) { transition-delay: 0.4s; }
+.category-grid .category-card.reveal:nth-child(6) { transition-delay: 0.5s; }
+
+/* Respect users who've asked for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* --- BACK TO PRODUCTS LINK (subcategory pages) --- */
+.back-to-products {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--tdt-gray);
+    font-family: var(--font-montserrat);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    margin-bottom: 30px;
+    transition: color 0.2s, gap 0.2s;
+}
+
+.back-to-products:hover {
+    color: var(--tdt-orange);
+    gap: 12px;
+}
+
+.back-to-products .arrow {
+    font-size: 16px;
+    line-height: 1;
+}

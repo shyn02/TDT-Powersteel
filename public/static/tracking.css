@@ -1,0 +1,484 @@
+/* --- TRACKING HERO --- */
+.tracking-hero {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--tdt-gray-dark);
+    padding: 70px 0 90px 0;
+    border-bottom: 3px solid var(--tdt-orange);
+    text-align: center;
+}
+
+/* Background photo layer — set via inline style in tracking.html so the
+   image path is easy to find and swap without digging through CSS. */
+.tracking-hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Grey overlay + grid pattern on top of the photo, so text stays readable */
+.tracking-hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(58, 56, 58, 0.8), rgba(58, 56, 58, 0.8)),
+        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: cover, 24px 24px, 24px 24px;
+}
+
+.tracking-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.tracking-hero-title {
+    font-family: var(--font-bebas);
+    font-size: 52px;
+    color: var(--tdt-orange);
+    letter-spacing: 0.03em;
+    margin-bottom: 12px;
+}
+
+.tracking-hero-desc {
+    color: #ffffff;
+    font-size: 14.5px;
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* --- SEARCH BAR (floats over the hero/content boundary) --- */
+.tracking-search-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    max-width: 640px;
+    margin: -45px auto 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+@media (min-width: 576px) {
+    .tracking-search-bar {
+        flex-direction: row;
+    }
+}
+
+.tracking-search-bar input {
+    flex: 2 1 0%;
+    padding: 14px 16px;
+    border: 1px solid rgba(113, 112, 116, 0.2);
+    border-radius: 5px;
+    font-family: var(--font-montserrat);
+    font-size: 14px;
+    color: var(--tdt-gray);
+    outline: none;
+}
+
+.tracking-search-bar input:focus {
+    border-color: var(--tdt-orange);
+}
+
+.tracking-search-bar button {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+    padding: 14px 22px;
+}
+
+/* --- TABS --- */
+.tracking-dashboard-section {
+    padding-top: 50px;
+}
+
+.tracking-tabs {
+    display: flex;
+    gap: 30px;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.15);
+    margin-bottom: 25px;
+    overflow-x: auto;
+}
+
+.tracking-tab {
+    background: none;
+    border: none;
+    padding: 10px 2px 14px 2px;
+    font-family: var(--font-montserrat);
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--tdt-gray);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.tracking-tab:hover {
+    color: var(--tdt-gray);
+}
+
+.tracking-tab.active {
+    color: var(--tdt-orange);
+    border-bottom-color: var(--tdt-orange);
+}
+
+/* --- DEMO / LOOKUP NOTES --- */
+.tracking-demo-note {
+    background-color: #fff3eb;
+    border: 1px solid rgba(230, 112, 38, 0.25);
+    border-radius: 5px;
+    padding: 12px 16px;
+    margin-bottom: 25px;
+}
+
+.tracking-demo-note p {
+    font-size: 12.5px;
+    color: var(--tdt-gray);
+    line-height: 1.6;
+}
+
+.tracking-demo-note a {
+    color: var(--tdt-orange);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.tracking-demo-note a:hover {
+    text-decoration: underline;
+}
+
+.tracking-lookup-note {
+    background-color: var(--tdt-bg-light);
+    border-left: 3px solid var(--tdt-orange);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 25px;
+}
+
+.tracking-lookup-note p {
+    font-size: 13px;
+    color: var(--tdt-gray);
+    line-height: 1.7;
+}
+
+.tracking-lookup-note a {
+    color: var(--tdt-orange);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.tracking-tab-panel {
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* --- DASHBOARD LAYOUT --- */
+.tracking-dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    align-items: start;
+}
+
+@media (min-width: 900px) {
+    .tracking-dashboard {
+        grid-template-columns: 0.85fr 1.15fr;
+    }
+}
+
+/* --- ORDER CARD (left) --- */
+.order-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.15);
+    border-radius: 8px;
+    padding: 26px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.1);
+    margin-bottom: 20px;
+}
+
+.order-card-label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tdt-gray);
+    margin-bottom: 6px;
+}
+
+.order-card-header h3 {
+    font-family: var(--font-bebas);
+    font-size: 24px;
+    color: var(--tdt-gray);
+    letter-spacing: 0.01em;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.status-badge.in-transit {
+    background-color: #fff3eb;
+    color: var(--tdt-orange);
+}
+
+.order-card-block {
+    margin-bottom: 18px;
+}
+
+.order-card-block p {
+    font-size: 13.5px;
+    color: var(--tdt-gray);
+    line-height: 1.6;
+}
+
+.order-items-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.order-items-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--tdt-gray);
+}
+
+.item-qty {
+    color: var(--tdt-gray);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.eta-date {
+    color: var(--tdt-orange) !important;
+    font-weight: 700;
+}
+
+.order-actions {
+    border-top: 1px solid rgba(113, 112, 116, 0.1);
+    padding-top: 6px;
+    margin-top: 22px;
+}
+
+.order-action-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 4px;
+    text-decoration: none;
+    color: var(--tdt-gray);
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.08);
+    transition: color 0.2s;
+}
+
+.order-action-link:last-child {
+    border-bottom: none;
+}
+
+.order-action-link:hover {
+    color: var(--tdt-orange);
+}
+
+.order-action-link i {
+    width: 18px;
+    color: var(--tdt-orange);
+    margin-right: 8px;
+}
+
+.order-action-link .chevron {
+    color: var(--tdt-gray-light);
+    font-size: 16px;
+}
+
+/* --- MILESTONE CARD (right) --- */
+.milestone-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.15);
+    border-radius: 8px;
+    padding: 26px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.milestone-heading {
+    font-family: var(--font-montserrat);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--tdt-gray);
+    margin-bottom: 24px;
+}
+
+.milestone-heading i {
+    color: var(--tdt-orange);
+    margin-right: 8px;
+}
+
+.milestone-timeline {
+    position: relative;
+    padding-left: 24px;
+    border-left: 2px solid rgba(113, 112, 116, 0.15);
+}
+
+.milestone-item {
+    position: relative;
+    padding-bottom: 28px;
+}
+
+.milestone-item:last-child {
+    padding-bottom: 0;
+}
+
+.milestone-dot {
+    position: absolute;
+    left: -30px;
+    top: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 2px solid var(--tdt-gray-light);
+}
+
+.milestone-item.done .milestone-dot {
+    background-color: var(--tdt-gray-light);
+    border-color: var(--tdt-gray-light);
+}
+
+.milestone-item.current .milestone-dot {
+    background-color: var(--tdt-orange);
+    border-color: var(--tdt-orange);
+    box-shadow: 0 0 0 4px rgba(230, 112, 38, 0.15);
+}
+
+.milestone-stage-label {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tdt-orange);
+    margin-bottom: 4px;
+}
+
+.milestone-content h4 {
+    font-family: var(--font-montserrat);
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--tdt-gray);
+    margin-bottom: 3px;
+}
+
+.milestone-date {
+    display: block;
+    font-size: 11.5px;
+    color: var(--tdt-gray);
+    margin-bottom: 6px;
+}
+
+.milestone-content p {
+    font-size: 12.5px;
+    color: var(--tdt-gray);
+    line-height: 1.6;
+}
+
+.milestone-item.current .milestone-note {
+    background-color: var(--tdt-bg-light);
+    border-left: 2px solid var(--tdt-orange);
+    border-radius: 3px;
+    padding: 10px 12px;
+    color: var(--tdt-gray);
+}
+
+/* --- MAP PREVIEW --- */
+.tracking-map-preview {
+    margin-top: 26px;
+    border-radius: 6px;
+    border: 1px solid rgba(113, 112, 116, 0.15);
+    background-color: var(--tdt-bg-light);
+    background-image:
+        linear-gradient(rgba(113, 112, 116, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(113, 112, 116, 0.08) 1px, transparent 1px);
+    background-size: 18px 18px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.map-pin {
+    font-size: 26px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.tracking-map-preview h4 {
+    font-family: var(--font-bebas);
+    font-size: 18px;
+    color: var(--tdt-gray);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+}
+
+.map-sublabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--tdt-gray);
+}
+
+/* --- EMPTY STATE (Past Orders / Pending Invoices tabs) --- */
+.tracking-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: var(--tdt-bg-light);
+    border: 1px dashed rgba(113, 112, 116, 0.2);
+    border-radius: 8px;
+}
+
+.tracking-empty-state span {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.tracking-empty-state p {
+    font-size: 13.5px;
+    color: var(--tdt-gray);
+}

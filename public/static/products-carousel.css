@@ -1,0 +1,341 @@
+/* --- PRODUCTS SECTION --- */
+.products-section {
+    padding: 100px 0;
+    background-color: #ffffff;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+@media (min-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.product-card {
+    background-color: var(--tdt-bg-light);
+    border: 1px solid rgba(113, 112, 116, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(17, 16, 16, 0.05);
+}
+
+/* --- RESET LINK STYLING NOW THAT .product-card IS AN <a> --- */
+a.product-card,
+a.product-card:link,
+a.product-card:visited,
+a.product-card:hover,
+a.product-card:active,
+a.product-card:focus {
+    text-decoration: none;
+    color: inherit;
+}
+
+a.product-card .product-info h3,
+a.product-card .product-info h3 span {
+    text-decoration: none;
+    color: var(--tdt-orange);
+}
+
+a.product-card .product-desc {
+    text-decoration: none;
+    color: var(--tdt-gray);
+}
+
+a.product-card .product-spec {
+    text-decoration: none;
+    color: var(--tdt-gray);
+}
+
+.product-img-container {
+    background: linear-gradient(
+        to bottom,
+        #ffffff 0%,
+        #ffffff 25%,
+        var(--tdt-orange) 25%,
+        var(--tdt-orange) 28%,  /* Unang manipis na guhit (pinaakyat) */
+        #ffffff 28%,
+        #ffffff 33%,            /* Puting puwang */
+        var(--tdt-orange) 33%,
+        var(--tdt-orange) 53%,  /* Makapal na guhit (pinaakyat) */
+        #ffffff 53%,
+        #ffffff 58%,            /* Puting puwang */
+        var(--tdt-orange) 58%,
+        var(--tdt-orange) 61%,  /* Pangalawang manipis na guhit (pinaakyat) */
+        #ffffff 61%,
+        #ffffff 100%
+    );
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 3px solid var(--tdt-orange);
+}
+
+.product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.5s ease;
+}
+
+.product-img-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(17, 16, 16, 0.4));
+    pointer-events: none;
+}
+
+.product-card:hover .product-img {
+    transform: scale(1.08);
+}
+
+.fallback-placeholder {
+    position: absolute;
+    inset: 0;
+    background-color: var(--tdt-gray-dark);
+    background-image: 
+        linear-gradient(rgba(230, 112, 38, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230, 112, 38, 0.05) 1px, transparent 1px);
+    background-size: 15px 15px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-family: var(--font-bebas);
+    font-size: 32px;
+    letter-spacing: 0.1em;
+    border: 2px solid rgba(230, 112, 38, 0.2);
+}
+
+.product-info {
+    padding: 24px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product-info h3 {
+    font-family: var(--font-bebas);
+    font-size: 24px;
+    color: var(--tdt-orange);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+}
+
+.product-desc {
+    font-size: 13px;
+    color: var(--tdt-gray);
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+.product-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    border-top: 1px solid rgba(113, 112, 116, 0.1);
+    padding-top: 16px;
+    margin-top: auto;
+}
+
+.product-spec {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--tdt-gray);
+    text-transform: uppercase;
+}
+
+.product-footer .btn-quote-trigger {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* --- PRODUCTS CAROUSEL (added) --- */
+.products-carousel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.carousel-arrow {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 1.5px solid var(--tdt-orange);
+    color: var(--tdt-orange);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.carousel-arrow:hover {
+    background-color: var(--tdt-orange);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.products-carousel-viewport {
+    overflow: hidden;
+    width: 100%;
+    min-width: 0;
+}
+
+.products-carousel-viewport .products-grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 24px !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    touch-action: pan-x pan-y;
+    padding: 4px 4px 18px 4px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.products-carousel-viewport .products-grid::-webkit-scrollbar {
+    display: none;
+}
+
+.products-carousel-viewport .products-grid .product-card {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    width: 82%;
+}
+
+@media (min-width: 640px) {
+    .products-carousel-viewport .products-grid .product-card {
+        width: 46%;
+    }
+}
+
+@media (min-width: 992px) {
+    .products-carousel-viewport .products-grid .product-card {
+        width: 31%;
+    }
+}
+
+/* On phones, the two 44px arrow buttons + gaps were eating ~108px off
+   the carousel width, leaving the product card squeezed down to a
+   sliver. Touch swipe (scroll-snap is already enabled above) is the
+   natural way to browse on mobile, so drop the arrows here and let
+   the card use nearly the full width. */
+@media (max-width: 639px) {
+    .carousel-arrow {
+        display: none;
+    }
+
+    .products-carousel {
+        gap: 0;
+    }
+
+    .products-carousel-viewport .products-grid {
+        padding-left: 5%;
+        padding-right: 5%;
+        scroll-padding-left: 5%;
+        scroll-snap-type: x proximity;
+    }
+
+    .products-carousel-viewport .products-grid .product-card {
+        width: 100%;
+    }
+}
+
+/* --- CAROUSEL DOTS (mobile scroll indicator) ---
+   Arrows are hidden below 640px in favor of native swipe, but that left
+   no visual cue that the section scrolls sideways. Dots fill that gap:
+   hidden by default (desktop/tablet already show the arrows), shown
+   only in the same max-width: 639px range the arrows disappear in. */
+.carousel-dots {
+    display: none;
+}
+
+@media (max-width: 639px) {
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+    }
+
+    .carousel-dots .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: rgba(113, 112, 116, 0.25);
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: background-color 0.25s ease, transform 0.25s ease, width 0.25s ease;
+    }
+
+    .carousel-dots .dot.active {
+        background-color: var(--tdt-orange);
+        width: 20px;
+        border-radius: 4px;
+    }
+}
+/* --- VIEW ALL BUTTON SECTION --- */
+.view-all-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px; /* Adjust this to increase/decrease space below the carousel */
+    width: 100%;
+}
+
+.view-all-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background-color: #ffffff;
+    border: 1.5px solid var(--tdt-orange);
+    color: var(--tdt-gray); /* Using your gray variable for the text */
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    border-radius: 2px; /* Optional: adds a very slight rounding to match standard buttons */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Optional hover state for better user experience */
+.view-all-btn:hover {
+    background-color: var(--tdt-orange);
+    color: #ffffff;
+}

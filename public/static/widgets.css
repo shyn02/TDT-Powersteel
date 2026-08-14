@@ -1,0 +1,544 @@
+/* --- GET A QUOTE MODAL --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(17, 16, 16, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+body.quote-modal-open #mainHeader {
+    visibility: hidden;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-card {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px 32px;
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    border-top: 5px solid var(--tdt-orange);
+    transform: translateY(-30px);
+    transition: transform 0.3s ease;
+}
+
+/* Custom scrollbar so it matches the site's orange branding
+   instead of the default gray browser scrollbar */
+.modal-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-card::-webkit-scrollbar-thumb {
+    background-color: var(--tdt-orange);
+    border-radius: 4px;
+}
+
+.modal-overlay.active .modal-card {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.modal-header h2 {
+    font-family: var(--font-bebas);
+    font-size: 28px;
+    color: var(--tdt-dark);
+    letter-spacing: 0.02em;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: var(--tdt-gray);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: var(--tdt-orange);
+}
+
+#quoteForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-card .btn-orange {
+    padding: 12px 30px;
+    margin-top: 4px;
+}
+
+#quoteForm input[readonly] {
+    background-color: var(--tdt-bg-light);
+    color: var(--tdt-gray);
+    cursor: not-allowed;
+    border-color: rgba(113, 112, 116, 0.15);
+}
+/* --- TOAST NOTIFICATION SYSTEM --- */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.custom-toast {
+    background-color: #ffffff; /* White background */
+    color: #1a1a1a; /* Dark text */
+    padding: 20px 24px;
+    border-radius: 4px; /* Slightly sharper corners */
+    border-left: 5px solid #e67026; /* Thick orange left border */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Soft shadow */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    min-width: 0;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    gap: 16px; /* Space between icon, text, and close button */
+    position: relative;
+    
+    /* Smooth slide-in animation */
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    opacity: 0;
+}
+
+.custom-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Red left border + red icon for error messages */
+.custom-toast.error {
+    border-left-color: #d9362f;
+}
+
+.custom-toast.error .toast-icon {
+    color: #d9362f;
+}
+
+/* Purple checkmark styling */
+.toast-icon {
+    color: #634fc2; /* Purple color matching the image */
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* Bold message layout */
+.toast-message {
+    font-weight: 700; /* Bold text matching the design */
+    line-height: 1.4;
+    flex-grow: 1;
+    padding-right: 20px; /* Space before the close button */
+}
+
+/* Gray close "x" button styling */
+.toast-close-btn {
+    background: none;
+    border: none;
+    color: #b0b0b0; /* Light gray */
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s ease;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.toast-close-btn:hover {
+    color: #666666; /* Darker gray on hover */
+}
+/* --- TOAST NOTIFICATIONS & LOADER --- */
+.toast-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 2000;
+}
+
+.toast {
+    background-color: #ffffff;
+    color: var(--tdt-dark);
+    box-shadow: 0 10px 30px rgba(17, 16, 16, 0.12);
+    border-radius: 4px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+    max-width: 450px;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-left: 4px solid var(--tdt-orange);
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast-icon {
+    font-size: 18px;
+    color: var(--tdt-orange);
+}
+
+.toast-message {
+    font-size: 12px;
+    font-weight: 700;
+    flex-grow: 1;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--tdt-gray-light);
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px;
+}
+
+.toast-close:hover {
+    color: var(--tdt-dark);
+}
+
+/* Loading Spinner on Buttons */
+.btn-orange .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 0.8s linear infinite;
+}
+
+.btn-orange.loading .btn-text {
+    visibility: hidden;
+}
+
+.btn-orange.loading .spinner {
+    display: inline-block;
+    position: absolute;
+    left: calc(50% - 9px);
+    top: calc(50% - 9px);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.toast-close:hover {
+    color: var(--tdt-orange);
+}
+
+        /* --- SCREEN SCREEN LOADER FOR FORMS --- */
+        .submit-loader {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .submit-loader.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(230, 112, 38, 0.2);
+            border-top: 3px solid var(--tdt-orange);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+/* --- FLOATING BACK TO TOP BUTTON --- */
+#backToTopBtn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background-color: var(--tdt-dark);
+    color: #ffffff;
+    border: 2px solid var(--tdt-orange);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s, background-color 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Container at border adjustment ayon sa brand rules */
+.social-links-container {
+    margin-top: 30px;
+    border-top: 1px solid #7d7d80; /* Sub palette gray */
+    padding-top: 20px;
+}
+
+.social-links-container h4 {
+    font-family: 'Raleway', sans-serif;
+    color: #ffffff;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+}
+
+/* Base style ng pabilog na icons */
+.social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #242423; /* Dark brand color background */
+    border: 1px solid #717074; /* Border using Main Gray */
+    color: #fafafa !important; /* Off-white icon color */
+    font-size: 18px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* Hover style: Magpapalit sa Brand Orange (#e67026) na may magandang glow */
+.social-btn:hover {
+    background-color: #e67026; /* Official Brand Orange */
+    border-color: #e67026;
+    color: #121010 !important; /* Gagawing madilim ang icon pag naka-hover para kitang-kita */
+    transform: translateY(-4px);
+    box-shadow: 0 4px 15px rgba(230, 112, 38, 0.4); /* Brand Orange Glow */
+}
+
+/* Custom Social Network Brand Colors on Hover */
+.social-btn.facebook:hover {
+    background-color: #1877f2; /* Official FB Blue */
+    box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4);
+}
+
+.social-btn.instagram:hover {
+    background-color: #e1306c; /* Official IG Pink/Red */
+    box-shadow: 0 4px 12px rgba(225, 48, 108, 0.4);
+}
+
+.social-btn.youtube:hover {
+    background-color: #ff0000; /* Official YT Red */
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+}
+
+/* Container at layout alignment sa loob ng footer */
+.footer-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 20px; /* Distansya sa pagitan ng social links at static text links */
+}
+
+/* Social Icons Alignment */
+.social-icons {
+    display: flex;
+    gap: 10px; /* Space sa pagitan ng bawat social icon */
+    margin-right: 10px; /* Distansya papunta sa "Privacy Policy" */
+}
+
+/* UPDATED: Mas malaki at mas kitang-kitang social buttons */
+.social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;         /* Laki ng bilog (Dati: 35px) */
+    height: 35px;        /* Laki ng bilog (Dati: 35px) */
+    border-radius: 50%;
+    background-color: #2c2c2c; 
+    color: #ffffff !important; 
+    font-size: 22px;     /* Laki ng mismong logo sa loob (Dati: 16px) */
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* Hover effects (Ganun pa rin pero mas maganda ang galaw dahil mas malaki) */
+.social-btn:hover {
+    transform: translateY(-4px); /* Mas aangat nang bahagya */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.social-btn.facebook:hover {
+    background-color: #1877f2;
+}
+
+.social-btn.instagram:hover {
+    background-color: #e1306c;
+}
+
+.social-btn.youtube:hover {
+    background-color: #ff0000;
+}
+
+/* Styling para sa bagong PNG logo image */
+.logo-img {
+    height: 30px; /* Saktong taas para sa desktop navigation header */
+    width: auto;  /* Awtomatikong ia-adjust ang lapad para hindi ma-stretch ang logo */
+    display: block;
+    object-fit: contain;
+}
+
+/* Siguraduhing pantay pa rin ang subtitle sa ilalim ng logo */
+.logo-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.accent-line {
+    width: 60px;
+    height: 4px;
+    background-color: #e67026; /* Official Brand Orange */
+    margin: 10px auto 0 auto;
+}
+
+.section-subtitle {
+    font-family: 'Raleway', sans-serif;
+    color: #e67026; /* Gawaing Orange ang subtitle */
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+/* --- GRAY SOCIAL WIDGETS --- */
+.social-btn {
+    background-color: #717074 !important;
+    border-color: #717074 !important;
+}
+
+.social-btn:hover,
+.social-btn.facebook:hover,
+.social-btn.instagram:hover,
+.social-btn.youtube:hover {
+    background-color: #5a595d !important; 
+    border-color: #5a595d !important;
+    box-shadow: 0 4px 12px rgba(113, 112, 116, 0.4) !important;
+}
+
+/* --- GRAY BACK-TO-TOP ARROW --- */
+#backToTopBtn {
+    background-color: #717074 !important;
+    border: 2px solid #5a595d !important; 
+}
+
+#backToTopBtn:hover {
+    background-color: #5a595d !important;
+}
+
+/* --- MOBILE-SAFE FLOATING WIDGETS (toasts, modal, back-to-top) --- */
+@media (max-width: 480px) {
+    .toast-container {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        width: auto;
+    }
+
+    .custom-toast,
+    .toast {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .modal-card {
+        width: 100%;
+        padding: 24px 20px;
+    }
+
+}
+
+/* --- BACK-TO-TOP: keep clear of the chat widget bubble on mobile ---
+   The chat launcher bubble lives bottom-right on mobile, so instead of
+   stacking the back-to-top button above it (fragile across screen
+   sizes), it's moved to the bottom-left corner instead. The footer's
+   social icons are centered on mobile (see .footer-flex), so the left
+   corner stays clear too. --- */
+@media (max-width: 767px) {
+    #backToTopBtn {
+        left: 16px;
+        right: auto;
+        bottom: 16px;
+    }
+}
+
+/* --- ENSURE SOCIAL ICONS ARE VISIBLE --- */
+.social-btn {
+    color: #ffffff !important;
+}
+
+/* Targets the icons specifically if they are using <i> or <svg> tags */
+.social-btn i, 
+.social-btn svg {
+    color: #ffffff !important; 
+}

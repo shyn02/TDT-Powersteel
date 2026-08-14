@@ -1,0 +1,495 @@
+/* ==========================================================================
+   ADMIN CUSTOM STYLES — TDT Powersteel
+   Modern/branded design pass sa ibabaw ng Unfold admin theme.
+   Ginagamit ang parehong orange/gray palette ng public site.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --tdt-orange: #E67026;
+    --tdt-orange-hover: #C55618;
+    --tdt-dark: #111010;
+    --tdt-gray-dark: #2F2D30;
+    --tdt-gray: #717074;
+    --tdt-gray-light: #A6A6A8;
+    --tdt-bg-light: #F9FAFB;
+}
+
+/* --- BASE TYPOGRAPHY --- */
+body,
+#content,
+.sidebar {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* --- INPUT BORDERS (existing fix, kept) --- */
+#content input[type="text"],
+#content input[type="email"],
+#content input[type="password"],
+#content input[type="url"],
+#content input[type="number"],
+#content input[type="tel"],
+#content input[type="date"],
+#content input[type="datetime-local"],
+#content input[type="time"],
+#content input[type="search"],
+#content textarea,
+#content select,
+.module input,
+.module select,
+.module textarea,
+input.vTextField,
+textarea.vLargeTextField {
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#content input:focus,
+#content select:focus,
+#content textarea:focus {
+    border-color: var(--tdt-orange) !important;
+    box-shadow: 0 0 0 3px rgba(230, 112, 38, 0.15) !important;
+}
+
+/* --- SIDEBAR --- */
+aside, .sidebar, nav {
+    border-right: 1px solid rgba(113, 112, 116, 0.12) !important;
+}
+
+aside h3, aside .caption, .sidebar-heading {
+    color: var(--tdt-gray) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+}
+
+aside a, .sidebar a {
+    border-radius: 8px !important;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+aside a:hover, .sidebar a:hover {
+    background-color: rgba(230, 112, 38, 0.08) !important;
+    color: var(--tdt-orange) !important;
+}
+
+aside a[aria-current="page"],
+aside a.active,
+.sidebar a.active {
+    background-color: rgba(230, 112, 38, 0.12) !important;
+    color: var(--tdt-orange) !important;
+    font-weight: 700 !important;
+    border-left: 3px solid var(--tdt-orange) !important;
+}
+
+/* --- DASHBOARD / APP LIST CARDS --- */
+#content-main table,
+.app-list,
+.module {
+    border-radius: 10px !important;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05) !important;
+    border: 1px solid rgba(113, 112, 116, 0.1) !important;
+}
+
+.module caption,
+.module h2,
+.app-list h2 {
+    background-color: var(--tdt-bg-light) !important;
+    color: var(--tdt-gray-dark) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.02em !important;
+    padding: 14px 18px !important;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.1) !important;
+}
+
+/* --- TABLES (Products, Categories, Quote Requests, Users) --- */
+#result_list, table.results {
+    border-radius: 10px !important;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05) !important;
+}
+
+#result_list thead th, table.results thead th {
+    background-color: var(--tdt-gray-dark) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    padding: 12px 16px !important;
+}
+
+#result_list tbody tr, table.results tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+#result_list tbody tr:hover, table.results tbody tr:hover {
+    background-color: rgba(230, 112, 38, 0.06) !important;
+}
+
+/* Whole row is clickable now (see admin_row_click.js) — show a
+   pointer cursor anywhere in the row, not just on the name/image
+   column, so it's obvious you can click anywhere. */
+#result_list tbody tr.tdt-row-clickable,
+table.results tbody tr.tdt-row-clickable {
+    cursor: pointer !important;
+}
+
+/* Keep checkboxes and the actions column showing their normal
+   cursor since clicking there does its own thing, not navigation. */
+#result_list tbody tr.tdt-row-clickable td.action-checkbox,
+#result_list tbody tr.tdt-row-clickable .field-actions_holder,
+table.results tbody tr.tdt-row-clickable td.action-checkbox,
+table.results tbody tr.tdt-row-clickable .field-actions_holder {
+    cursor: default !important;
+}
+
+#result_list td, table.results td {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.08) !important;
+}
+
+/* --- BUTTONS --- */
+.button, input[type="submit"], .submit-row input,
+a.button, button {
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.button:hover, input[type="submit"]:hover, .submit-row input:hover,
+a.button:hover, button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(230, 112, 38, 0.25) !important;
+}
+
+.default, input[type="submit"].default, .button.default {
+    background-color: var(--tdt-orange) !important;
+    border-color: var(--tdt-orange) !important;
+}
+
+.default:hover, input[type="submit"].default:hover, .button.default:hover {
+    background-color: var(--tdt-orange-hover) !important;
+}
+
+/* --- STATUS / BADGES --- */
+.status-icon, .badge {
+    border-radius: 999px !important;
+}
+
+/* --- RECENT ACTIONS PANEL --- */
+#recent-actions-module, .recent-actions {
+    border-radius: 10px !important;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05) !important;
+    border: 1px solid rgba(113, 112, 116, 0.1) !important;
+    overflow: hidden;
+}
+
+#recent-actions-module li, .recent-actions li {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.08) !important;
+    transition: background-color 0.15s ease;
+}
+
+#recent-actions-module li:hover, .recent-actions li:hover {
+    background-color: rgba(230, 112, 38, 0.05) !important;
+}
+
+/* --- LOGIN PAGE (admin_login.html) --- */
+body.login {
+    background-color: var(--tdt-gray-dark) !important;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px) !important;
+    background-size: 24px 24px !important;
+}
+
+body.login #container, body.login .login-card {
+    border-radius: 12px !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3) !important;
+    border-top: 4px solid var(--tdt-orange) !important;
+}
+
+body.login input[type="submit"] {
+    background-color: var(--tdt-orange) !important;
+    border: none !important;
+}
+
+body.login input[type="submit"]:hover {
+    background-color: var(--tdt-orange-hover) !important;
+}
+
+/* --- HEADINGS THROUGHOUT ADMIN --- */
+h1, h2, h3 {
+    font-family: 'Montserrat', sans-serif !important;
+    color: var(--tdt-gray-dark) !important;
+}
+
+/* --- BREADCRUMBS --- */
+.breadcrumbs, nav[aria-label="breadcrumb"] {
+    color: var(--tdt-gray) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+.breadcrumbs a, nav[aria-label="breadcrumb"] a {
+    color: var(--tdt-gray) !important;
+    text-decoration: none !important;
+}
+
+.breadcrumbs a:hover, nav[aria-label="breadcrumb"] a:hover {
+    color: var(--tdt-orange) !important;
+}
+
+/* --- DASHBOARD STAT CARDS (admin/index.html override) --- */
+.tdt-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.tdt-stat-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.12);
+    border-top: 3px solid var(--tdt-orange);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tdt-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(17, 16, 16, 0.1);
+}
+
+.tdt-stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    line-height: 1;
+    color: var(--tdt-orange);
+    margin-bottom: 6px;
+}
+
+.tdt-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--tdt-gray);
+}
+
+.tdt-stat-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tdt-gray-dark);
+    margin-bottom: 4px;
+}
+
+/* Color variants for KPI cards, matched to kpi_cards' "color" key */
+.tdt-stat-card-amber   { border-top-color: #f59e0b; }
+.tdt-stat-card-amber   .tdt-stat-number { color: #f59e0b; }
+.tdt-stat-card-sky     { border-top-color: #0ea5e9; }
+.tdt-stat-card-sky     .tdt-stat-number { color: #0ea5e9; }
+.tdt-stat-card-emerald { border-top-color: #10b981; }
+.tdt-stat-card-emerald .tdt-stat-number { color: #10b981; }
+.tdt-stat-card-rose    { border-top-color: #f43f5e; }
+.tdt-stat-card-rose    .tdt-stat-number { color: #f43f5e; }
+.tdt-stat-card-violet  { border-top-color: #8b5cf6; }
+.tdt-stat-card-violet  .tdt-stat-number { color: #8b5cf6; }
+
+/* --- DASHBOARD: status breakdown + recent activity row --- */
+.tdt-dashboard-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+@media (max-width: 900px) {
+    .tdt-dashboard-row { grid-template-columns: 1fr; }
+}
+
+.tdt-dashboard-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05);
+    padding: 18px 20px;
+}
+
+.tdt-dashboard-card-header {
+    font-weight: 800;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tdt-gray-dark);
+    margin-bottom: 14px;
+}
+
+.tdt-bar-row { margin-bottom: 14px; }
+.tdt-bar-row:last-child { margin-bottom: 0; }
+
+.tdt-bar-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tdt-gray);
+    margin-bottom: 5px;
+}
+
+.tdt-bar-track {
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.tdt-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+}
+
+.tdt-bar-new       { background-color: #f59e0b; }
+.tdt-bar-contacted { background-color: #0ea5e9; }
+.tdt-bar-closed    { background-color: #10b981; }
+
+.tdt-recent-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tdt-recent-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.08);
+}
+
+.tdt-recent-item:last-child { border-bottom: none; }
+
+.tdt-recent-item a {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tdt-gray-dark);
+    text-decoration: none;
+}
+
+.tdt-recent-item a:hover { color: var(--tdt-orange); }
+
+.tdt-recent-meta {
+    font-size: 11px;
+    color: var(--tdt-gray);
+}
+
+/* --- ALIGN STATUS FILTER PILLS (All/New/Contacted/Closed) WITH SEARCH BOX --- */
+/* Unfold typically stacks the search bar and the status-tab row in two
+   separate divs, one under the other. Force their shared parent into a
+   single flex row so both sit side-by-side on desktop. */
+#changelist-search,
+#changelist-search + div,
+.changelist-search-wrapper {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Generic fallback: if the search input and the pill/tab group are
+   direct siblings inside a common flex container, this keeps them
+   from wrapping onto separate lines unless the screen is too narrow. */
+form#changelist-search {
+    flex: 1 1 320px;
+    margin-bottom: 0 !important;
+}
+
+@media (max-width: 700px) {
+    #changelist-search,
+    #changelist-search + div,
+    .changelist-search-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.tdt-recent-empty {
+    font-size: 12px;
+    color: var(--tdt-gray-light);
+    padding: 8px 0;
+}
+
+.tdt-dashboard-section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--tdt-gray-dark);
+    margin: 0 0 14px 0;
+}
+
+/* I-hide ang Recent Actions sidebar container sa Django Unfold index dashboard */
+div[class*="lg:w-80"],
+div[class*="lg:w-1/3"]:has(h2:contains("Recent")),
+#content-related,
+.dashboard-sidebar,
+aside.recent-actions {
+    display: none !important;
+}
+
+/* Gawing 100% full width ang main dashboard container */
+#content-main,
+.dashboard-content,
+div[class*="lg:w-2/3"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+}
+
+/* =========================================
+   SIDEBAR NOTIFICATION BADGES
+   -----------------------------------------
+   Unfold's sidebar badge (Quote Requests / Referrals / Live Chat,
+   from settings.py -> "badge" key sa UNFOLD["SIDEBAR"]["navigation"])
+   ay walang sariling custom class -- basta Tailwind utility classes
+   lang (bg-primary-100, dark:bg-primary-500/20, min-w-[18px], atbp),
+   kaya tina-target natin dito gamit ang attribute selector sa
+   halip na isang class name. Walang background/pill -- plain
+   orange number na lang (brand color). Lumalabas lang ito kapag
+   may unseen/unread pa -- nawawala rin agad kapag naka-seen na
+   lahat, at automatic na natatago ng ":empty" kapag walang laman.
+========================================= */
+#nav-sidebar span[class*="min-w-[18px]"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border: none !important;
+    color: rgb(249 115 22) !important;      /* TDT brand orange (primary-500) */
+    border-radius: 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    line-height: normal !important;
+    padding: 0 !important;
+    margin-left: 6px !important;
+    font-weight: 800 !important;
+    font-size: 12px !important;
+    display: inline-block !important;
+}
+
+#nav-sidebar span[class*="min-w-[18px]"]:empty {
+    display: none !important;
+    margin-left: 0 !important;
+}
+
+.dark #nav-sidebar span[class*="min-w-[18px]"] {
+    color: rgb(251 146 60) !important;      /* TDT brand orange (primary-400, mas maliwanag sa dark mode) */
+}

@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ChatSession extends Model
+{
+    public $timestamps = false;
+
+    protected $fillable = [
+        'session_token', 'client_name', 'page', 'is_active', 'created_at',
+        'last_message_at', 'assigned_to', 'status', 'is_priority',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_priority' => 'boolean',
+        'created_at' => 'datetime',
+        'last_message_at' => 'datetime',
+    ];
+
+    public function assignedRep()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(ChatMessage::class, 'session_id');
+    }
+
+    public function getUnreadCountAttribute(): int
+    {
+        return $this->messages()->where('sender', 'client')->where('is_read', false)->count();
+    }
+}

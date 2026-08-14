@@ -1,0 +1,83 @@
+/* =========================================
+   TDT ADMIN — STATUS QUICK-FILTER PILLS
+   Shown in the same row as the "Type to
+   search" box on changelist pages that have
+   a status field (see admin_status_filters.js).
+========================================= */
+
+.tdt-search-pills-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.tdt-search-pills-row form {
+    flex: 1 1 260px;
+    min-width: 200px;
+}
+
+.tdt-status-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0; /* now in the same row as the search box */
+    flex: 0 0 auto;
+}
+
+.tdt-status-pill {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+    background-color: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 5px 12px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tdt-status-pill:hover {
+    border-color: #e67026;
+    color: #e67026;
+}
+
+.tdt-status-pill-active {
+    background-color: #e67026;
+    border-color: #e67026;
+    color: #fff;
+}
+
+/* ---- "Download Excel" button, injected next to "Filters" ---- */
+.tdt-excel-download {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background-color: #e67026;
+    border: 1px solid #e67026;
+    border-radius: 6px;
+    padding: 8px 12px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-left: 8px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.tdt-excel-download:hover {
+    background-color: #cc5f1c;
+    border-color: #cc5f1c;
+    color: #fff;
+}
+
+.tdt-excel-download .material-symbols-outlined {
+    font-size: 18px;
+}

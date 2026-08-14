@@ -1,0 +1,329 @@
+/* ==========================================================================
+   REFERRAL PROGRAM PAGE
+   ========================================================================== */
+
+/* --- Page Hero Banner --- */
+.referral-hero {
+    position: relative;
+    min-height: 320px;
+    display: flex;
+    align-items: flex-end;
+    background-color: #1a1a1a;
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+.referral-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(15,15,15,0.92) 10%, rgba(15,15,15,0.55) 55%, rgba(15,15,15,0.25) 100%);
+    z-index: 1;
+}
+
+.referral-hero-inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 70px 0 44px;
+}
+
+.referral-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+}
+
+.referral-breadcrumb a {
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.referral-breadcrumb a:hover {
+    color: #ff6a1a;
+}
+
+.referral-breadcrumb span.sep {
+    opacity: 0.5;
+}
+
+.referral-breadcrumb span.current {
+    color: #ff6a1a;
+}
+
+.referral-hero-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    line-height: 1.15;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+    max-width: 640px;
+}
+
+.referral-hero-title span {
+    color: #ff6a1a;
+}
+
+.referral-hero-desc {
+    max-width: 560px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* --- How It Works / Steps --- */
+.referral-steps-section {
+    background: #f3f4f6;
+    padding: 56px 0;
+    border-bottom: 1px solid #e6e7e9;
+}
+
+.referral-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+.referral-step-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.referral-step-number {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ff6a1a;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.referral-step-copy h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #4a4a4a;
+    margin: 6px 0 8px;
+}
+
+.referral-step-copy p {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #666;
+    margin: 0;
+}
+
+/* --- Form Section --- */
+.referral-form-section {
+    background: #eef0f2;
+    padding: 60px 0 90px;
+}
+
+.referral-form-card {
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    padding: 44px 48px 48px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.referral-fieldset {
+    margin-bottom: 30px;
+}
+
+.referral-fieldset:last-of-type {
+    margin-bottom: 34px;
+}
+
+.referral-fieldset-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #4a4a4a;
+    padding-bottom: 12px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #ececec;
+}
+
+.referral-fieldset-title i {
+    color: #ff6a1a;
+    font-size: 13px;
+}
+
+.referral-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 24px;
+}
+
+.referral-form-grid.single {
+    grid-template-columns: 1fr;
+}
+
+.referral-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #8a8f98;
+    margin-bottom: 8px;
+}
+
+.referral-field input,
+.referral-field select,
+.referral-field textarea {
+    width: 100%;
+    background: #f6f7f9;
+    border: 1px solid #e7e9ec;
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: #4a4a4a;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.referral-field input::placeholder,
+.referral-field textarea::placeholder {
+    color: #b3b7bd;
+}
+
+.referral-field input:focus,
+.referral-field select:focus,
+.referral-field textarea:focus {
+    outline: none;
+    border-color: #ff6a1a;
+    background: #ffffff;
+}
+
+.referral-field select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%238a8f98' stroke-width='1.6' fill='none' fill-rule='evenodd'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.referral-field textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+.referral-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #ff6a1a;
+    color: #fff;
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 15px 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.referral-submit-btn:hover {
+    background: #e65c0f;
+    transform: translateY(-1px);
+}
+
+.referral-submit-btn i {
+    font-size: 13px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+    .referral-hero-title {
+        font-size: 32px;
+    }
+
+    .referral-steps-grid {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+
+    .referral-form-card {
+        padding: 32px 24px 36px;
+    }
+
+    .referral-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* ==========================================================================
+   UPDATED COLOR & BACKGROUND OVERRIDES (GRAY + ORANGE + WHITE THEME)
+   ========================================================================== */
+
+/* 1. Page Hero Banner Background Image & Overlay */
+.referral-hero {
+    /* Palitan ang path sa sarili mong image URL */
+    background-image: url('images/referral_handshaking.jpg') !important; 
+    background-size: cover !important;
+    background-position: center !important;
+    /* Soft dark gray background fallback sa halip na pitch black */
+    background-color: #222222 !important; 
+}
+
+/* Dark Overlay sa Hero Banner para malinaw pa rin basahin ang white title */
+.referral-hero::before {
+    background: linear-gradient(90deg, rgba(26,26,26,0.85) 10%, rgba(26,26,26,0.60) 55%, rgba(26,26,26,0.30) 100%) !important;
+}
+
+/* 2. Step Section Headings and Paragraphs Gray Overrides */
+.referral-step-copy h3 {
+    color: #717471 !important; /* Soft Dark Gray Title */
+}
+
+.referral-step-copy p {
+    color: #717471 !important; /* Soft Gray Text */
+}
+
+/* 3. Form Section Fieldset Titles & Labels Gray Overrides */
+.referral-fieldset-title {
+    color: #717471 !important; /* Charcoal Gray Fieldset Headers */
+}
+
+.referral-field label {
+    color: #717471 !important; /* Medium Gray Field Labels */
+}
+
+.referral-field input,
+.referral-field select,
+.referral-field textarea {
+    color: #717471 !important; /* Dark Gray Input Text */
+}

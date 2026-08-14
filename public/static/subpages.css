@@ -1,0 +1,114 @@
+/* =========================================================
+   ABOUT US PAGE — extends style.css, reuses the same
+   variables, fonts, and components (.container, .btn-orange,
+   .section-subtitle, .accent-line, .about-grid, etc.)
+   ========================================================= */
+
+/* --- PAGE BANNER --- */
+.page-banner {
+    background-color: var(--tdt-dark);
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+    padding: 70px 0 60px 0;
+    border-bottom: 3px solid var(--tdt-orange);
+    text-align: center;
+}
+
+.page-banner .section-subtitle {
+    color: var(--tdt-orange);
+}
+
+.page-banner-title {
+    font-family: var(--font-bebas);
+    font-size: 56px;
+    color: #ffffff;
+    letter-spacing: 0.03em;
+    margin: 8px 0 14px 0;
+}
+
+@media (max-width: 576px) {
+    .page-banner-title {
+        font-size: 36px;
+    }
+}
+
+.breadcrumb {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--tdt-gray-light);
+}
+
+.breadcrumb a {
+    color: var(--tdt-gray-light);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.breadcrumb a:hover {
+    color: var(--tdt-orange);
+}
+
+.breadcrumb span.current {
+    color: var(--tdt-orange);
+}
+/* --- GENERIC PAGE SECTION SPACING --- */
+.page-section {
+    padding: 80px 0;
+}
+
+.page-section.alt-bg {
+    background-color: var(--tdt-bg-light);
+}
+.about-cta-banner {
+    background-color: var(--tdt-orange);
+    padding: 55px 0;
+    text-align: center;
+}
+
+.about-cta-banner h2 {
+    font-family: var(--font-bebas);
+    font-size: 38px;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+}
+
+.about-cta-banner p {
+    color: #fff3eb;
+    font-size: 14.5px;
+    margin-bottom: 26px;
+}
+
+.about-cta-banner .btn-cta-white {
+    background-color: #ffffff;
+    color: var(--tdt-orange);
+    border: none;
+    padding: 14px 34px;
+    border-radius: 4px;
+    font-family: var(--font-montserrat);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.about-cta-banner .btn-cta-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+/* Shared panel description text, used by Contact + Track Order panels */
+.panel-desc {
+    font-size: 14px;
+    color: var(--tdt-gray);
+    margin-bottom: 30px;
+}
