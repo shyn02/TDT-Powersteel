@@ -1,0 +1,739 @@
+/* =========================================
+   NEW ABOUT US REDESIGN
+========================================= */
+
+.text-orange {
+    color: var(--tdt-orange, #e67026);
+}
+
+/* --- 1. HERO SECTION --- */
+.about-hero {
+    position: relative;
+    overflow: hidden;
+    background-color: #ffffff; /* Solid white base (shows before/behind photos) */
+    padding: 100px 0;
+    color: #000000;
+    border-bottom: 5px solid var(--tdt-orange);
+}
+
+/* Rotating background photos, crossfading one into the next, on a loop */
+.about-hero-slideshow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    animation: heroSlideFade 17s infinite;
+}
+
+.hero-slide:nth-child(1) { animation-delay: 0s; }
+.hero-slide:nth-child(2) { animation-delay: 2.86s; }
+.hero-slide:nth-child(3) { animation-delay: 5.71s; }
+.hero-slide:nth-child(4) { animation-delay: 8.57s; }
+.hero-slide:nth-child(5) { animation-delay: 11.43s; }
+.hero-slide:nth-child(6) { animation-delay: 14.29s; }
+.hero-slide:nth-child(7) { animation-delay: 17.14s; }
+
+@keyframes heroSlideFade {
+    0%      { opacity: 0; }   /* start of this image's turn */
+    5%      { opacity: 1; }   /* ~1s fade-in complete */
+    14.3%   { opacity: 1; }   /* holds visible, then next slide begins fading in right here */
+    19.3%   { opacity: 0; }   /* ~1s fade-out, overlapping with the next slide's fade-in — no gap */
+    100%    { opacity: 0; }   /* stays hidden until its next turn comes around (7 slides x ~2.86s = 20s cycle) */
+}
+
+/* Grid pattern + white wash sits on top of the photos so the existing
+   look (and text contrast) is preserved — photos show through softly. */
+.about-hero-slideshow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.725);
+}
+
+.about-hero-flex {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+}
+
+@media(min-width: 992px) {
+    .about-hero-flex {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.hero-left, .hero-right {
+    flex: 1;
+}
+
+.hero-left .subtitle {
+    font-family: var(--font-montserrat);
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 15px;
+    color: #717074;
+}
+
+.hero-left h1 {
+    font-family: var(--font-bebas);
+    font-size: 58px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    letter-spacing: 0.02em;
+    color: #717074; /* Make heading #717074 */
+}
+
+.hero-left p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #5b5959;
+    max-width: 90%;
+}
+.hero-right .quote-box {
+    background-color: var(--tdt-orange, #e67026);
+    padding: 50px 40px;
+    position: relative;
+}
+
+.hero-right .quote-mark {
+    font-size: 70px;
+    font-family: Georgia, serif;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 0;
+    position: absolute;
+    top: 45px;
+    left: 40px;
+}
+
+.hero-right p {
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.8;
+    position: relative;
+    z-index: 2;
+}
+
+/* On phones, the 58px heading wraps across many lines and the hero
+   section balloons to 1000px+ tall, pushing every section below it
+   far down the page (so the scroll-reveal animations never trigger
+   until you scroll a huge distance). Scale things down to match. */
+@media (max-width: 767px) {
+    .about-hero {
+        padding: 60px 0;
+    }
+
+    .hero-left h1 {
+        font-size: 34px;
+    }
+
+    .hero-left p {
+        max-width: 100%;
+    }
+
+    .hero-right .quote-box {
+        padding: 30px 25px;
+    }
+
+    .hero-right .quote-mark {
+        font-size: 50px;
+        top: 20px;
+        left: 20px;
+    }
+
+    .hero-right p {
+        font-size: 14px;
+    }
+}
+
+/* --- 2. STATS BAR SECTION --- */
+.about-stats-light {
+    background-color: #fbfbfb;
+    padding: 50px 0;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.15);
+}
+
+.stats-flex {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+    text-align: center;
+}
+
+.stat-box {
+    flex: 1;
+    min-width: 140px;
+}
+
+.stat-box i {
+    font-size: 26px;
+    margin-bottom: 16px;
+}
+
+.stat-box h3 {
+    font-family: var(--font-bebas);
+    font-size: 36px;
+    color: #717074; /* Changed to #717074 */
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+}
+
+.stat-box p {
+    font-family: var(--font-montserrat);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--tdt-gray);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* --- 3. OVERVIEW SECTION (Pointing Guy) --- */
+.about-overview {   
+    background-color: #e6e6e6; /* fallback while the image loads */
+    background-image: url('/static/images/about-overview-bg.png');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    padding: 70px 0 0 0; /* No bottom padding so the image touches the floor */
+    overflow: hidden;
+    position: relative;
+}
+
+.overview-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+}
+
+@media(min-width: 1367px) {
+    .overview-flex {
+        flex-direction: row;
+        align-items: flex-end;
+        gap: 100px;
+    }
+
+    /* Bottom-aligned so the photo and message card sit on the same
+       "ground line." The bottom padding below gives his feet room to
+       land on the stripe instead of getting clipped by the section edge. */
+    .about-overview {
+        padding-bottom: 70px;
+    }
+}
+.overview-content {
+        margin-top: 80px;  /* Dagdag space sa itaas para bumaba siya sa desktop */
+        margin-bottom: 40px;
+    }
+.overview-visual {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+}
+.overview-logo {
+    position: absolute;
+    max-width: 460px; /* Change this value (e.g., 300px, 500px) to resize the logo */
+    top: 25%; 
+    left: -25%;
+    transform: translateY(-50%);
+    opacity: 0.9;
+    z-index: 3;
+}
+
+.overview-person {
+    max-width: 105%;
+    height: auto;
+    display: block;
+    margin: 0 auto -5px auto; /* Ensures image sits flush on the bottom edge, centered */
+    z-index: 2;
+    position: relative;
+    left: 0;
+}
+
+.person-caption {
+    position: absolute;
+    top: 17%;
+    left: -80px;
+    right: auto;
+    z-index: 4;
+    text-align: left;
+    background-color: rgba(255, 255, 255, 0.92);
+    padding: 14px 20px;
+    border-left: 4px solid var(--tdt-orange, #e67026);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-width: 240px;
+}
+
+.person-caption h4 {
+    font-family: var(--font-bebas);
+    font-size: 20px;
+    letter-spacing: 0.03em;
+    color: #717074;
+    margin: 0 0 4px 0;
+    line-height: 1.15;
+}
+
+.person-caption p {
+    font-family: var(--font-montserrat);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--tdt-orange, #e67026);
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.3;
+}
+
+@media (max-width: 1366px) {
+    .person-caption {
+        position: static;
+        margin: -25px auto 0 auto;
+        width: 60%;
+        max-width: 450px;
+        text-align: center;
+        border-left: none;
+        border-top: 4px solid var(--tdt-orange, #e67026);
+    }
+
+    /* The desktop logo positioning (left: -25%) drags the logo off-screen
+       since it's a percentage of a much narrower container on phones and
+       small tablets. Reset it to a normal centered logo above the photo. */
+    .overview-logo {
+        position: absolute;
+        max-width: 150px;
+        top: 150px;
+        left: 0;
+        transform: none;
+        margin: 0;
+        z-index: 3;
+    }
+
+    /* The desktop rightward photo offset only has room to breathe on wide
+       screens; below 992px there's no second column to shift into, so
+       reset it flush. */
+    .overview-person {
+        left: 0;
+    }
+
+    .overview-visual {
+        align-items: center;
+        height: auto;
+    }
+
+    .overview-content h2 {
+        font-size: 32px;
+    }
+}
+
+/* Large landscape tablets/smart displays (Nest Hub, Nest Hub Max, iPad
+   landscape, etc.) have plenty of width but not much height, so the
+   stacked mobile layout above let the CEO photo eat the whole screen.
+   Give this range the side-by-side desktop layout instead - the offsets
+   are scaled down from the desktop values (which assume a much wider
+   1200px container) so the caption card and watermark logo stay on
+   screen instead of clipping off the left edge. */
+@media (min-width: 992px) and (orientation: landscape) {
+    .overview-flex {
+        flex-direction: row;
+        align-items: flex-end;
+        gap: 50px;
+    }
+
+    .overview-visual {
+        align-items: center;
+        justify-content: flex-end;
+        height: 100%;
+    }
+
+    .overview-person {
+        max-width: 100%;
+        left: 0;
+    }
+
+    .overview-logo {
+        max-width: 200px;
+        top: 20%;
+        left: -5%;
+        transform: translateY(-50%);
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Same stacked photo-then-caption treatment as Nest Hub/desktop
+       now, instead of the older floating overlap-card style. */
+    .person-caption {
+        position: static;
+        margin: -25px auto 0 auto;
+        width: 72%;
+        max-width: 280px;
+        text-align: center;
+        border-left: none;
+        border-top: 4px solid var(--tdt-orange, #e67026);
+    }
+
+    .overview-content h2 {
+        font-size: 38px;
+    }
+}
+
+/* Nest Hub Max (1280x800) specifically: it has enough height to avoid the
+   short-screen "Nest Hub" rules below, but the flex-end bottom alignment
+   from the block above still leaves the CEO photo looking lower than the
+   message card. Vertically center the photo column with the card instead
+   so the two sit level with each other. Scoped to max-width:1366px so
+   this doesn't touch the real desktop row layout at 1367px+. */
+@media (min-width: 992px) and (max-width: 1366px) and (min-height: 701px) and (orientation: landscape) {
+    .overview-flex {
+        align-items: center;
+    }
+
+    .overview-visual {
+        height: auto;
+        justify-content: center;
+    }
+}
+
+/* Nest Hub (1024x600) is a different animal from Nest Hub Max (1280x800):
+   same "landscape" bucket above, but far less vertical room. The
+   full-height photo that works at Nest Hub Max forces this one into a
+   scroll before the heading is even visible. Reuse the compact
+   photo-over-caption module from the phone/portrait layout instead, just
+   shrunk down and kept as a fixed-width left column so text still sits
+   beside it rather than below it. Nest Hub Max (max-height: 700px
+   excludes its 800px height) is untouched by this block. */
+@media (min-width: 992px) and (max-height: 700px) and (orientation: landscape) {
+    .overview-flex {
+        align-items: center;
+    }
+
+    .overview-visual {
+        flex: 0 0 300px;
+        align-items: center;
+        justify-content: flex-start;
+        height: auto;
+    }
+
+    .overview-person {
+        max-width: 100%;
+        left: 0;
+    }
+
+    .overview-logo {
+        position: absolute;
+        max-width: 120px;
+        top: 110px;
+        left: 0;
+        transform: none;
+        margin: 0;
+        z-index: 3;
+    }
+
+    .person-caption {
+        position: static;
+        margin: -25px auto 0 auto;
+        width: 90%;
+        max-width: 260px;
+        text-align: center;
+        border-left: none;
+        border-top: 4px solid var(--tdt-orange, #e67026);
+    }
+
+    .overview-content {
+        margin-top: 0;
+    }
+
+    .overview-content h2 {
+        font-size: 30px;
+    }
+
+    .overview-content p {
+        font-size: 13.5px;
+        line-height: 1.65;
+        margin-bottom: 16px;
+    }
+}
+
+.overview-content {
+    flex: 1;
+    margin-bottom: 70px;
+    background-color: #ffffff;
+    padding: 45px 45px;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px rgba(17, 16, 16, 0.12);
+    position: relative;
+    z-index: 4;
+}
+
+/* The 70px margin-bottom above is meant for the stacked mobile layout.
+   In the desktop row layout that invisible margin pushes the VISIBLE
+   card up above the true flex-end line, so the photo's actual bottom
+   edge (feet) ends up well below the card's bottom edge even though
+   they're technically "aligned." Zeroing it here makes the two visible
+   bottoms actually meet. Placed after the rule above so it wins. */
+@media (min-width: 1367px) {
+    .overview-content {
+        margin-bottom: 0;
+    }
+
+    /* Swap the floating overlap-card caption for the same
+       photo-then-caption-below style used on mobile/Nest Hub, just
+       kept inside the narrower desktop column instead of full width.
+       Tight margin-top so it sits right under his feet instead of
+       floating with a gap. The source PNG has transparent padding on
+       both sides (his visible body is ~72% of the image's own width),
+       so matching his actual silhouette means going narrower than
+       100% of the column, not equal to it. */
+    .person-caption {
+        position: static;
+        margin: -25px auto 0 auto;
+        width: 72%;
+        max-width: 100%;
+        text-align: center;
+        border-left: none;
+        border-top: 4px solid var(--tdt-orange, #e67026);
+    }
+
+    .overview-visual {
+        align-items: center;
+    }
+}
+
+.overview-content .subtitle {
+    font-family: var(--font-montserrat);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.overview-content h2 {
+    font-family: var(--font-bebas);
+    font-size: 52px;
+    color: #717074; /* Changed to #717074 */
+    line-height: 1.05;
+    margin-bottom: 25px;
+    letter-spacing: 0.02em;
+}
+
+.overview-content p {
+    font-size: 14.5px;
+    line-height: 1.8;
+    color: #717074; /* Changed to #717074 */
+    margin-bottom: 20px;
+}
+
+/* --- 4. VISION, MISSION, COMMITMENT CARDS --- */
+.vmc-section {
+    padding: 70px 0;
+    background-color: #ffffff;
+}
+
+.vmc-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+@media(min-width: 768px) {
+    .vmc-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.vmc-card {
+    background-color: #ffffff;
+    padding: 40px 35px;
+    border: 1px solid rgba(113, 112, 116, 0.15);
+    border-top: 4px solid transparent;
+    transition: transform 0.3s, border-top-color 0.3s, box-shadow 0.3s;
+}
+
+.vmc-card:hover {
+    border-top-color: var(--tdt-orange, #e67026);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.vmc-card i {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.vmc-card h3 {
+    font-family: var(--font-bebas);
+    font-size: 26px;
+    color: #717074; /* Changed to #717074 */
+    margin-bottom: 12px;
+    letter-spacing: 0.03em;
+}
+
+.vmc-card p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--tdt-gray);
+}
+/* =========================================
+   5. BUILT ON TRUST SECTION (NEWLY ADDED)
+========================================= */
+
+.built-on-trust {
+    padding: 90px 0;
+    background-color: #ffffff;
+}
+
+.built-on-trust-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    align-items: center;
+}
+
+@media (min-width: 992px) {
+    .built-on-trust-flex {
+        flex-direction: row;
+    }
+}
+
+.built-content {
+    flex: 1;
+    max-width: 550px;
+}
+
+.built-video-panel {
+    flex: 1;
+    width: 100%;
+}
+
+.built-video-panel video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9; /* forces a landscape shape at any screen width */
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+    border-left: 4px solid var(--tdt-orange, #e67026);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.built-content .subtitle {
+    font-family: var(--font-montserrat, sans-serif);
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 15px;
+    color: var(--tdt-orange, #e67026);
+}
+
+.built-content h2 {
+    font-family: var(--font-bebas, sans-serif);
+    font-size: 60px;
+    line-height: 1.05;
+    color: #717074;
+    margin-bottom: 20px;
+    letter-spacing: 0.02em;
+}
+
+@media (max-width: 767px) {
+    .built-content h2 {
+        font-size: 36px;
+    }
+}
+
+.built-content h2 span {
+    color: var(--tdt-orange, #e67026);
+}
+
+.built-content p {
+    font-family: var(--font-montserrat, sans-serif);
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: #717074;
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+/* Adjust VMC section slightly so it stacks cleanly above the new section */
+.vmc-section {
+    padding-bottom: 70px;
+}
+
+/* =========================================
+   SCROLL-REVEAL ANIMATION
+   Elements start faded/offset, then ease into
+   place once they enter the viewport (see the
+   IntersectionObserver script at the bottom
+   of about.html, which adds .revealed).
+========================================= */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered cascade for grouped items */
+.stats-flex .stat-box.reveal:nth-child(1) { transition-delay: 0s; }
+.stats-flex .stat-box.reveal:nth-child(2) { transition-delay: 0.1s; }
+.stats-flex .stat-box.reveal:nth-child(3) { transition-delay: 0.2s; }
+.stats-flex .stat-box.reveal:nth-child(4) { transition-delay: 0.3s; }
+.stats-flex .stat-box.reveal:nth-child(5) { transition-delay: 0.4s; }
+
+
+.vmc-grid .vmc-card.reveal:nth-child(1) { transition-delay: 0s; }
+.vmc-grid .vmc-card.reveal:nth-child(2) { transition-delay: 0.15s; }
+.vmc-grid .vmc-card.reveal:nth-child(3) { transition-delay: 0.3s; }
+
+.about-hero-flex .hero-right.reveal { transition-delay: 0.15s; }
+.overview-flex .overview-content.reveal { transition-delay: 0.15s; }
+.built-on-trust-flex .built-video-panel.reveal { transition-delay: 0.15s; }
+
+/* Respect users who've asked for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* =========================================
+   MOBILE PHONES ONLY (HINDI MAAPEKTUHAN ANG LAPTOP/DESKTOP)
+========================================= */
+@media screen and (max-width: 767px) and (pointer: coarse) {
+    .overview-person {
+        max-width: 95% !important;
+        width: 95% !important;
+        height: auto !important;
+        margin: 0 auto -5px auto !important; 
+        display: block !important;
+    }
+    
+    /* Updated to match the -25px "closer" spacing used everywhere else.
+       This block uses !important (touch phones need it to beat the
+       1366px breakpoint's own rule), so it has to be kept in sync by
+       hand whenever the -25px value changes elsewhere. */
+    .person-caption {
+        margin-top: -25px !important; 
+    }
+}

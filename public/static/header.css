@@ -1,0 +1,304 @@
+/* --- TOP UTILITY BAR --- */
+.top-bar {
+    background-color: #ffffff;
+    color: var(--tdt-gray-dark);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 8px 0;
+    border-bottom: 3px solid var(--tdt-orange);
+}
+
+.top-bar-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.top-right {
+    display: flex;
+    gap: 20px;
+}
+
+/* --- MAIN HEADER/NAVBAR --- */
+.main-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.15);
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    left: 0; /* Ensures it starts at the very left edge */
+    width: 100%; /* Forces it to span the whole screen instantly */
+    z-index: 9999; /* BOOSTED Z-INDEX: Prevents it from hiding behind the Home section */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    transition: padding 0.3s ease, background-color 0.3s ease;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Hides the header while the "Request a Quote" modal is open, on every
+   page site-wide (this file is loaded everywhere, unlike widgets.css /
+   subcategory.css which only some pages use). Toggled by script.js. */
+body.quote-modal-open #mainHeader {
+    visibility: hidden;
+}
+
+.logo-group {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0; 
+    margin-right: 40px; 
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.logo {
+    font-family: var(--font-bebas);
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    max-width: 100%;
+}
+
+/* Logo image: kept crisp on desktop, capped on mobile so it can never
+   grow wider than the header and push the hamburger off-screen */
+.site-logo {
+    height: 50px;
+    width: auto;
+    max-width: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+.logo-tdt {
+    color: var(--tdt-dark);
+}
+
+.logo-steel {
+    color: var(--tdt-orange);
+}
+
+.logo-subtitle {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: var(--tdt-gray);
+    margin-top: 2px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.nav-overlay {
+    display: none;
+}
+
+.nav-links a {
+    color: var(--tdt-gray);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    transition: color 0.3s, border-bottom 0.2s ease-in-out;
+    padding: 5px 0;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--tdt-orange) !important;
+    border-bottom: 2px solid var(--tdt-orange);
+}
+
+.btn-quote-header {
+    background-color: var(--tdt-orange);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 24px;
+    font-family: var(--font-montserrat);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-quote-header:hover {
+    background-color: var(--tdt-orange-hover);
+}
+
+/* --- MOBILE HAMBURGER STYLING --- */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    padding: 10px 9px;
+    background: #ffffff;
+    border: 1.5px solid rgba(113, 112, 116, 0.25);
+    border-radius: 6px;
+    cursor: pointer;
+    z-index: 110;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.menu-toggle:hover {
+    border-color: var(--tdt-orange);
+}
+
+.menu-toggle .bar {
+    height: 2px;
+    width: 100%;
+    background-color: var(--tdt-dark);
+    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Raised from 991px to 1199px: at ~1024px (iPad Pro / Nest Hub width) the
+   desktop nav no longer has room for all 6 links + logo, so link labels
+   were wrapping onto two lines ("ABOUT US" -> "ABOUT" / "US"). Tablets in
+   the 992-1199px range now get the same clean hamburger nav as phones
+   instead of a squeezed, wrapping desktop nav. */
+@media (max-width: 1199px) {
+    /* Address / phone / hours bar takes up prime real estate on a small
+       screen for info that's rarely the reason someone's on mobile —
+       drop it and let the header start right at the logo. */
+    .top-bar {
+        display: none;
+    }
+
+    .nav-container {
+        flex-wrap: nowrap;
+        padding: 0 16px;
+    }
+
+    .logo-group {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-right: 15px;
+    }
+
+    .site-logo {
+        height: auto;
+        max-height: 30px;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .menu-toggle {
+        display: flex;
+        flex-shrink: 0;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 280px;
+        height: 100vh;
+        background-color: #ffffff;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 100px 30px 30px 30px;
+        gap: 25px;
+        transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 105;
+    }
+
+    .nav-links.mobile-active {
+        right: 0;
+    }
+
+    .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.45);
+        z-index: 104;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .nav-overlay.active {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .nav-links a {
+        font-size: 16px;
+        width: 100%;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(113, 112, 116, 0.1);
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+        border-bottom: 2px solid transparent;
+    }
+
+    .btn-quote-header {
+        width: 100%;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .menu-toggle.open {
+        border-color: var(--tdt-orange);
+    }
+
+    .menu-toggle.open .bar:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+        background-color: var(--tdt-orange);
+    }
+
+    .menu-toggle.open .bar:nth-child(2) {
+        opacity: 0;
+    }
+
+    .menu-toggle.open .bar:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+        background-color: var(--tdt-orange);
+    }
+}
+
+@media (max-width: 480px) {
+    .site-logo {
+        max-height: 26px;
+    }
+}
+
+/* --- GRAY TEXT OVERRIDES --- */
+.top-bar {
+    color: #717074 !important; 
+}
+
+.nav-links a {
+    color: #717074 !important;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--tdt-orange) !important;
+}

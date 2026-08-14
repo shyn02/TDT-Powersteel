@@ -1,0 +1,455 @@
+/* --- HERO SECTION --- */
+.hero-section {
+    padding: 80px 0;
+    background: transparent;
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 50px;
+    align-items: center;
+}
+
+@media (min-width: 992px) {
+    .hero-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+    }
+}
+
+.hero-badge {
+    background-color: #fff3eb;
+    color: var(--tdt-orange);
+    border: 1px solid rgba(230, 112, 38, 0.2);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.hero-title {
+    font-family: var(--font-bebas);
+    font-size: 76px;
+    line-height: 1.05;
+    margin-bottom: 20px;
+    letter-spacing: 0.01em;
+    color: var(--tdt-gray);
+}
+
+@media (max-width: 991px) {
+    .hero-title {
+        font-size: 56px;
+    }
+
+    /* Pull content up closer to the header instead of leaving a big
+       empty gap, and center the badge/title/description/stats. */
+    .hero-section {
+        padding: 24px 0 60px 0;
+    }
+
+    .hero-left {
+        text-align: center;
+    }
+
+    .hero-stats {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 38px;
+    }
+
+    .hero-stats {
+        flex-wrap: wrap;
+        row-gap: 20px;
+        /* With centering + wrap, 2 stats land on the first row and the
+           3rd centers on its own row below — an "upside-down triangle". */
+    }
+}
+
+.hero-title .highlight {
+    color: var(--tdt-orange);
+}
+
+.hero-desc {
+    color: var(--tdt-gray);
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 35px;
+    max-width: 550px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 45px;
+}
+
+/* Stats Row */
+.hero-stats {
+    display: flex;
+    gap: 40px;
+    border-top: 1px solid rgba(113, 112, 116, 0.15);
+    padding-top: 30px;
+}
+
+.stat-item h3 {
+    font-family: var(--font-bebas);
+    font-size: 32px;
+    color: var(--tdt-orange);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-item p {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--tdt-gray);
+    letter-spacing: 0.05em;
+}
+/* --- HERO RIGHT: REQUEST A QUOTE CARD --- */
+.hero-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.quote-form-card {
+    background-color: #ffffff; /* Dark charcoal card background */
+    border-left: 4px solid #e67026; /* Orange accent line sa gilid tulad ng mockup mo */
+    border-radius: 8px;
+    padding: 25px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+/* Card Header */
+.card-header-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333333;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.card-header-form h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1.5px;
+    color: #717074;
+    margin: 0;
+}
+
+.card-header-form .cat-year {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: #e67026;
+    letter-spacing: 1px;
+}
+
+/* Form Inputs styling */
+.hero-quote-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-group-hero input,
+.form-group-hero textarea,
+.form-group-hero select {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #dcdcdc; /* Light gray input background base sa mockup mo */
+    border: none;
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    color: #121010;
+    font-weight: 500;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+/* Placeholder color styling */
+.form-group-hero input::placeholder,
+.form-group-hero textarea::placeholder {
+    color: #666666;
+}
+
+/* Focus state para sa inputs */
+.form-group-hero input:focus,
+.form-group-hero textarea:focus,
+.form-group-hero select:focus {
+    outline: none;
+    background-color: #ffffff; /* Magiging pure white kapag tinataypan */
+    box-shadow: 0 0 0 2px #e67026;
+}
+
+/* Resizing for Textarea */
+.form-group-hero textarea {
+    resize: none;
+}
+
+/* Orange Submit Button */
+.btn-submit-hero {
+    background-color: #e67026; /* Brand orange */
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 15px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+    text-transform: uppercase;
+    width: 100%;
+}
+
+.btn-submit-hero:hover {
+    background-color: #e15716;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(230, 112, 38, 0.4);
+}
+
+.btn-submit-hero:active {
+    transform: translateY(0);
+}
+
+.preview-items {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.p-item {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.p-icon {
+    font-size: 24px;
+}
+
+.p-item h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.p-item p {
+    font-size: 12px;
+    color: var(--tdt-gray-light);
+}
+
+.card-footer-note {
+    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    padding-top: 20px;
+    font-size: 11px;
+    color: var(--tdt-gray-light);
+    line-height: 1.6;
+}
+
+/* =========================================
+   HERO ENTRANCE TRANSITIONS
+   Toggled by the IntersectionObserver script
+   at the bottom of index.html (adds/removes
+   .revealed as the hero scrolls in/out of view).
+========================================= */
+
+/* LEFT SIDE — "sliding door": panel slides in from the left and settles */
+.reveal-slide-door {
+    opacity: 0;
+    transform: translateX(-90px);
+    transition: opacity 0.8s cubic-bezier(0.22, 0.9, 0.3, 1), transform 0.8s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.reveal-slide-door.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* RIGHT SIDE — "dealt like a card": slides in from the side at an angle,
+   then rotates flat into place, like a playing card being dealt onto a table */
+.reveal-card-deal {
+    opacity: 0;
+    transform: translateX(120px) translateY(-25px) rotate(10deg);
+    transition: opacity 0.8s cubic-bezier(0.34, 1.35, 0.5, 1), transform 0.8s cubic-bezier(0.34, 1.35, 0.5, 1);
+}
+
+.reveal-card-deal.revealed {
+    opacity: 1;
+    transform: translateX(0) translateY(0) rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal-slide-door,
+    .reveal-card-deal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* --- CLOSING SLIDING DOOR EFFECT --- */
+
+/* Parent Container Fix (para walang horizontal scrollbar) */
+.hero-section {
+    overflow: hidden;
+}
+
+/* Kaliwang pinto: Nakatago sa labas sa kaliwa (-100%) */
+.slide-door-left {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+    will-change: transform, opacity;
+}
+
+/* Kanang pinto: Nakatago sa labas sa kanan (+100%) */
+.slide-door-right {
+    opacity: 0;
+    transform: translateX(100%);
+    transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+    will-change: transform, opacity;
+}
+
+/* Magse-sara / magtatagpo sa gitna (0) pag pumasok sa viewport */
+.slide-door-left.revealed,
+.slide-door-right.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* =========================================
+   MOBILE: "REQUEST A QUOTE" BECOMES A BUTTON
+   Desktop (>=992px) is completely untouched —
+   the card stays inline exactly as before.
+   Below 992px (where the hero grid already
+   stacks to one column) the card is hidden
+   until the button opens it as a popup.
+========================================= */
+
+/* Trigger button: hidden on desktop */
+.hero-quote-mobile-btn {
+    display: none;
+}
+
+/* Close button inside the card: hidden on desktop */
+.hero-quote-close {
+    display: none;
+}
+
+@media (max-width: 991px) {
+    /* Center the Refer a Project / View Catalogue / Request a Quote
+       buttons as a stack, instead of them sitting left-aligned. */
+    .hero-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hero-actions > a,
+    .hero-actions > button {
+        width: 100%;
+        max-width: 320px;
+        text-align: center;
+    }
+
+    .hero-quote-mobile-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        /* Put it first in the stack — it's the primary action. */
+        order: -1;
+        /* Solid orange fill so it stands out as the primary action,
+           unlike the outlined Refer a Project / View Catalogue buttons. */
+        background-color: #e67026;
+        color: #ffffff;
+        border-color: #e67026;
+    }
+
+    .hero-quote-mobile-btn:hover {
+        background-color: #e15716;
+        border-color: #e15716;
+        color: #ffffff;
+    }
+
+    /* The card becomes a centered popup instead of an inline block.
+       Specificity matches (and is later in the cascade than) the
+       .slide-door-right.revealed rule above, so this wins even
+       after the scroll-in animation marks it "revealed". */
+    .hero-right.slide-door-right {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 24px;
+        background-color: rgba(17, 16, 16, 0.7);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        pointer-events: none;
+        transform: none;
+        transition: opacity 0.3s ease;
+        z-index: 10000;
+        box-sizing: border-box;
+    }
+
+    .hero-right.slide-door-right.mobile-quote-active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .quote-form-card {
+        position: relative;
+        max-height: 85vh;
+        overflow-y: auto;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    }
+
+    .hero-right.mobile-quote-active .quote-form-card {
+        transform: translateY(0);
+    }
+
+    .card-header-form {
+        position: relative;
+    }
+
+    .hero-quote-close {
+        display: block;
+        position: absolute;
+        top: -6px;
+        right: 0;
+        background: none;
+        border: none;
+        font-size: 28px;
+        line-height: 1;
+        color: #717074;
+        cursor: pointer;
+        padding: 4px;
+    }
+
+    .hero-quote-close:hover {
+        color: #e67026;
+    }
+}

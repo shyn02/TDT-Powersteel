@@ -1,0 +1,124 @@
+.tdt-dm-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 780px;
+}
+
+.tdt-dm-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px 28px;
+}
+
+.tdt-dm-card-title {
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    color: var(--tdt-gray-dark, #2F2D30);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.tdt-dm-icon { font-size: 16px; }
+
+.tdt-dm-desc {
+    color: var(--tdt-gray, #717074);
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0 0 18px 0;
+}
+
+.tdt-dm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    text-decoration: none;
+}
+
+.tdt-dm-btn-primary {
+    background: var(--tdt-orange, #E67026);
+    color: #fff;
+}
+.tdt-dm-btn-primary:hover {
+    background: var(--tdt-orange-hover, #C55618);
+    color: #fff;
+}
+
+.tdt-dm-btn-danger {
+    background: #fff;
+    border-color: #ef4444;
+    color: #ef4444;
+    margin-top: 18px;
+}
+.tdt-dm-btn-danger:hover {
+    background: #fef2f2;
+}
+
+.tdt-dm-section-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--tdt-gray-light, #A6A6A8);
+    text-transform: uppercase;
+    margin: 18px 0 8px 0;
+}
+
+.tdt-dm-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tdt-dm-check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--tdt-gray-dark, #2F2D30);
+    cursor: pointer;
+}
+
+.tdt-dm-check-row input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--tdt-orange, #E67026);
+}
+
+.tdt-dm-count {
+    color: var(--tdt-gray-light, #A6A6A8);
+    font-size: 12px;
+}
+
+.tdt-dm-older-than-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tdt-dm-select, .tdt-dm-input {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--tdt-gray-dark, #2F2D30);
+    min-width: 220px;
+}
+
+.tdt-dm-input {
+    min-width: 140px;
+}
+
+.tdt-dm-select:focus, .tdt-dm-input:focus {
+    outline: none;
+    border-color: var(--tdt-orange, #E67026);
+}

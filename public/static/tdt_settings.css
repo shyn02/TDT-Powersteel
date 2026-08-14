@@ -1,0 +1,265 @@
+/* ==========================================================================
+   SETTINGS PAGE — TDT Powersteel (/admin/settings/)
+   ========================================================================== */
+
+.tdt-settings-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 8px 4px 40px;
+}
+
+/* --- TAB BAR --- */
+.tdt-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.18);
+    margin-bottom: 24px;
+    padding-bottom: 0;
+}
+
+.tdt-tab {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #717074;
+    padding: 10px 16px;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tdt-tab:hover {
+    color: var(--tdt-orange, #E67026);
+    background-color: rgba(230, 112, 38, 0.06);
+}
+
+.tdt-tab.tdt-tab-active {
+    color: var(--tdt-orange, #E67026);
+    border-bottom-color: var(--tdt-orange, #E67026);
+}
+
+/* --- PANELS --- */
+.tdt-panel { display: none; flex-direction: column; gap: 20px; }
+.tdt-panel.tdt-panel-active { display: flex; }
+
+/* --- CARDS --- */
+.tdt-card {
+    background: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.16);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .tdt-card { background: #1f2124; border-color: rgba(255, 255, 255, 0.08); }
+
+.tdt-card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    margin: 0 0 6px;
+    color: var(--tdt-dark, #111010);
+}
+
+.dark .tdt-card-title { color: #f3f4f6; }
+
+.tdt-hint {
+    font-size: 12.5px;
+    color: #717074;
+    margin: 4px 0 0;
+    line-height: 1.5;
+}
+
+/* --- FIELDS --- */
+.tdt-field { margin-bottom: 18px; }
+
+.tdt-field label {
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--tdt-dark, #111010);
+}
+
+.dark .tdt-field label { color: #e5e7eb; }
+
+.tdt-field input[type="text"],
+.tdt-field input[type="email"],
+.tdt-field input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13.5px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tdt-field input:focus,
+.tdt-maintenance-msg-box textarea:focus {
+    outline: none;
+    border-color: var(--tdt-orange, #E67026) !important;
+    box-shadow: 0 0 0 3px rgba(230, 112, 38, 0.15);
+}
+
+/* --- TOGGLE ROW --- */
+.tdt-toggle-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.12);
+}
+
+.tdt-toggle-row:last-of-type { border-bottom: none; }
+
+.tdt-toggle-title {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--tdt-dark, #111010);
+}
+
+.dark .tdt-toggle-title { color: #e5e7eb; }
+
+/* --- SWITCH --- */
+.tdt-switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.tdt-switch input { opacity: 0; width: 0; height: 0; }
+
+.tdt-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #d1d5db;
+    border-radius: 999px;
+    transition: 0.2s;
+}
+
+.tdt-slider::before {
+    position: absolute;
+    content: "";
+    height: 18px; width: 18px;
+    left: 3px; bottom: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+.tdt-switch input:checked + .tdt-slider { background-color: var(--tdt-orange, #E67026); }
+.tdt-switch input:checked + .tdt-slider::before { transform: translateX(18px); }
+
+/* --- MAINTENANCE MESSAGE BOX --- */
+.tdt-maintenance-msg-box {
+    border: 1px solid var(--tdt-orange, #E67026);
+    background: rgba(230, 112, 38, 0.05);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 14px 0 18px;
+}
+
+.tdt-maintenance-msg-box textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13.5px;
+    resize: vertical;
+}
+
+/* --- BUTTONS --- */
+.tdt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 10px;
+    padding: 11px 18px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.tdt-btn:hover { transform: translateY(-1px); }
+
+.tdt-btn-primary {
+    background-color: var(--tdt-orange, #E67026);
+    color: #fff;
+}
+.tdt-btn-primary:hover { background-color: var(--tdt-orange-hover, #C55618); color: #fff; }
+
+.tdt-btn-secondary {
+    background-color: #f3f4f6;
+    color: var(--tdt-dark, #111010);
+}
+.tdt-btn-secondary:hover { background-color: #e5e7eb; }
+
+.tdt-btn-block { width: 100%; }
+
+.tdt-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.tdt-btn-row-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.tdt-btn-row-4 form { display: contents; }
+
+@media (max-width: 700px) {
+    .tdt-btn-row-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* --- SYSTEM INFO GRID --- */
+.tdt-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.tdt-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(113, 112, 116, 0.06);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.tdt-info-item span {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #717074;
+    font-weight: 700;
+}
+
+.tdt-info-item strong {
+    font-size: 14px;
+    color: var(--tdt-dark, #111010);
+}
+
+.dark .tdt-info-item strong { color: #f3f4f6; }
