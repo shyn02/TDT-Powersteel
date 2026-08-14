@@ -264,6 +264,43 @@
     font-size: 13px;
 }
 
+/* Loading spinner on submit (matches the pattern used by .btn-orange
+   elsewhere on the site — needed here since this button uses its own
+   .referral-submit-btn class instead of .btn-orange). */
+.referral-submit-btn {
+    position: relative;
+}
+
+.referral-submit-btn .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: referral-spin 0.8s linear infinite;
+}
+
+.referral-submit-btn.loading .btn-text {
+    visibility: hidden;
+}
+
+.referral-submit-btn.loading .spinner {
+    display: inline-block;
+    position: absolute;
+    left: calc(50% - 9px);
+    top: calc(50% - 9px);
+}
+
+.referral-submit-btn:disabled {
+    opacity: 0.85;
+    cursor: not-allowed;
+}
+
+@keyframes referral-spin {
+    to { transform: rotate(360deg); }
+}
+
 /* --- Responsive --- */
 @media (max-width: 900px) {
     .referral-hero-title {

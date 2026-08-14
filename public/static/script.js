@@ -349,6 +349,49 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================================
+    // REFERRAL FORM (Refer a Project page)
+    // ==========================================================
+    const referralForm = document.getElementById('referralForm');
+
+    if (referralForm) {
+        referralForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('referralSubmitBtn');
+            const nameInput = document.getElementById('ref_fullname');
+            const name = nameInput ? nameInput.value : 'there';
+
+            if (submitBtn) {
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            }
+
+            try {
+                const formData = new FormData(referralForm);
+                const response = await fetch(ADMIN_ENDPOINT, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': csrftoken, 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    showToast(`Thank you, ${name}! Your referral has been received. Our team will follow up with the referred company shortly.`);
+                    referralForm.reset();
+                } else {
+                    showToast('May error sa pag-send. Subukan ulit.');
+                }
+            } catch (error) {
+                console.error('Referral submit error:', error);
+                showToast('Network error. Check your connection.');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                }
+            }
+        });
+    }
+
+    // ==========================================================
     // MOBILE "REQUEST A QUOTE" BUTTON -> OPENS HERO CARD AS POPUP
     // (No effect on desktop — the button and popup styles are
     // only active below the 991px breakpoint via CSS.)
