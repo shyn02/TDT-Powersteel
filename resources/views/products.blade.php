@@ -1,11 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-<<<<<<< HEAD
 <link rel="stylesheet" href="/static/products.css">
-=======
-<link rel="stylesheet" href="/static/subpages.css">
->>>>>>> 37fa31520cb1f53b400f2af28defd377eee43a9b
 @endpush
 
 @section('title', 'Steel Products | TDT Powersteel Corporation')
