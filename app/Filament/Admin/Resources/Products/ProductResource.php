@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Products;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\Products\Pages\CreateProduct;
 use App\Filament\Admin\Resources\Products\Pages\EditProduct;
 use App\Filament\Admin\Resources\Products\Pages\ListProducts;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class ProductResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = Product::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Store Management';
@@ -28,15 +31,8 @@ class ProductResource extends Resource
 
     // Matches Django's can_view_products() — Products/Categories are admin-only;
     // regular staff (sales rep, warehouse, etc.) don't see this in the sidebar at all.
-    public static function shouldRegisterNavigation(): bool
-    {
-        return auth()->user()?->isAdminPosition() ?? false;
-    }
-
-    public static function canViewAny(): bool
-    {
-        return auth()->user()?->isAdminPosition() ?? false;
-    }
+    // SECURITY: canCreate()/canEdit()/canDelete() now also gated (were
+    // previously open to any authenticated staff via direct URL).
 
     public static function form(Schema $schema): Schema
     {

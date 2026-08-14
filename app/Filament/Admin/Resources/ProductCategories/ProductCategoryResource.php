@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\ProductCategories;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\ProductCategories\Pages\CreateProductCategory;
 use App\Filament\Admin\Resources\ProductCategories\Pages\EditProductCategory;
 use App\Filament\Admin\Resources\ProductCategories\Pages\ListProductCategories;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ProductCategoryResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = ProductCategory::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Store Management';
@@ -25,15 +28,8 @@ class ProductCategoryResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     // Matches Django's can_view_product_categories() — admin position only.
-    public static function shouldRegisterNavigation(): bool
-    {
-        return auth()->user()?->isAdminPosition() ?? false;
-    }
-
-    public static function canViewAny(): bool
-    {
-        return auth()->user()?->isAdminPosition() ?? false;
-    }
+    // SECURITY: canCreate()/canEdit()/canDelete() now also gated (were
+    // previously open to any authenticated staff via direct URL).
 
     public static function form(Schema $schema): Schema
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\PasswordResetRequests;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\PasswordResetRequests\Pages\CreatePasswordResetRequest;
 use App\Filament\Admin\Resources\PasswordResetRequests\Pages\EditPasswordResetRequest;
 use App\Filament\Admin\Resources\PasswordResetRequests\Pages\ListPasswordResetRequests;
@@ -16,13 +17,23 @@ use Filament\Tables\Table;
 
 class PasswordResetRequestResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = PasswordResetRequest::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'User Access & Accounts';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'php artisan make:filament-resource Project --generate';
+    // Was a leftover copy-paste of the artisan scaffolding command instead
+    // of an actual column name — harmless (just a display-label fallback)
+    // but fixed to the real column.
+    protected static ?string $recordTitleAttribute = 'email';
+
+    // SECURITY: this resource had NO authorization gates at all before —
+    // any authenticated staff account could view, edit, or resolve other
+    // people's password-reset requests. Now admin-only, matching the
+    // rest of the "User Access & Accounts" group.
 
     public static function form(Schema $schema): Schema
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Users;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\Users\Pages\CreateUser;
 use App\Filament\Admin\Resources\Users\Pages\EditUser;
 use App\Filament\Admin\Resources\Users\Pages\ListUsers;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class UserResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = User::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'User Access & Accounts';
@@ -27,15 +30,11 @@ class UserResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     // User management stays Admin-only, same as Product/ProductCategory.
-    public static function shouldRegisterNavigation(): bool
-    {
-        return auth()->user()?->isAdminPosition() ?? false;
-    }
-
-    public static function canViewAny(): bool
-    {
-        return auth()->user()?->isAdminPosition() ?? false;
-    }
+    // SECURITY: previously only shouldRegisterNavigation()/canViewAny()
+    // were gated here — canCreate()/canEdit()/canDelete() had no override,
+    // so a non-admin could still reach /admin/users/create or
+    // /admin/users/{id}/edit directly and make themselves (or anyone) an
+    // admin account. AdminOnlyResource now covers all five checks.
 
     public static function form(Schema $schema): Schema
     {

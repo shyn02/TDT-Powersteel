@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\SystemSettings;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\SystemSettings\Pages\CreateSystemSettings;
 use App\Filament\Admin\Resources\SystemSettings\Pages\EditSystemSettings;
 use App\Filament\Admin\Resources\SystemSettings\Pages\ListSystemSettings;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class SystemSettingsResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = SystemSettings::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'System';
@@ -30,10 +33,11 @@ class SystemSettingsResource extends Resource
 
     // Superadmin/admin-only, same gate as Django's superadmin_required
     // (approximated here via isAdminPosition() — see app/Models/User.php).
-    public static function shouldRegisterNavigation(): bool
-    {
-        return auth()->user()?->isAdminPosition() ?? false;
-    }
+    // SECURITY: canEdit() previously had no override at all, so any
+    // authenticated staff could reach /admin/system-settings/1/edit
+    // directly even though it was hidden from their sidebar.
+    // canCreate/canDelete stay hardcoded false below (singleton row,
+    // blocked for admins too) — these two override the trait on purpose.
 
     public static function canCreate(): bool
     {

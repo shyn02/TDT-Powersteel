@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\SiteSettings;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\SiteSettings\Pages\CreateSiteSettings;
 use App\Filament\Admin\Resources\SiteSettings\Pages\EditSiteSettings;
 use App\Filament\Admin\Resources\SiteSettings\Pages\ListSiteSettings;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class SiteSettingsResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = SiteSettings::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -29,6 +32,14 @@ class SiteSettingsResource extends Resource
     // that mirrors Django's settings_view()). Kept registered so the
     // model/table/artisan commands still work, just hidden from the
     // sidebar to avoid two competing "Settings" entries.
+    //
+    // SECURITY: previously this resource had ONLY shouldRegisterNavigation()
+    // set to false — canViewAny()/canEdit() had no override at all, so
+    // any authenticated staff could bypass the custom Settings page's
+    // admin check entirely by hitting /admin/site-settings/1/edit
+    // directly. AdminOnlyResource closes that; shouldRegisterNavigation()
+    // stays false below since it should never appear in the sidebar
+    // even for admins.
     public static function shouldRegisterNavigation(): bool
     {
         return false;

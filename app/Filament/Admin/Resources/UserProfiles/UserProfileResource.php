@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\UserProfiles;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\UserProfiles\Pages\CreateUserProfile;
 use App\Filament\Admin\Resources\UserProfiles\Pages\EditUserProfile;
 use App\Filament\Admin\Resources\UserProfiles\Pages\ListUserProfiles;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class UserProfileResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = UserProfile::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -26,10 +29,12 @@ class UserProfileResource extends Resource
     // edit-only via the inline on UserAdmin. We keep the resource (handy
     // for artisan/debugging) but hide it from the sidebar; manage
     // position/contact number from the User's own edit page instead.
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
+    //
+    // SECURITY: this resource controls the `position` field that decides
+    // whether a staff account is treated as admin (see User::isAdminPosition()).
+    // It MUST stay behind AdminOnlyResource's gates — never remove the
+    // trait or add a public canEdit()/canViewAny() override here, or any
+    // logged-in staff account can self-promote to admin via a direct URL.
 
     public static function form(Schema $schema): Schema
     {
