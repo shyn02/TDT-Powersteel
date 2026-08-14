@@ -25,11 +25,20 @@ Route::get('/products/{slug}/', [PageController::class, 'categoryDetail'])->name
 Route::get('/blog/{slug}/', [PageController::class, 'blogDetail'])->name('blog_detail');
 
 // ---- API ENDPOINTS FOR FORM SUBMISSIONS ----
-Route::post('/api/submit-quote/', [QuoteController::class, 'submit'])->name('submit_quote');
+// Public, anonymous-visitor endpoints. Rate-limited (throttle) since these
+// write directly to the DB with no login and are a spam/flood target.
+Route::post('/api/submit-quote/', [QuoteController::class, 'submit'])
+    ->name('submit_quote')
+    ->middleware('throttle:10,1');
 Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])->name('quote_product_data');
 
 // ---- LIVE CHAT ----
-Route::match(['get', 'post'], '/api/chat/messages', [ChatController::class, 'messages'])->name('chat_messages_api');
+Route::match(['get', 'post'], '/api/chat/messages', [ChatController::class, 'messages'])
+    ->name('chat_messages_api')
+    ->middleware('throttle:30,1');
+
+// Staff-only chat pool. Requires login -> NOT exempted from CSRF (see
+// bootstrap/app.php), unlike the two public routes above.
 Route::get('/api/chats/unassigned/', [ChatController::class, 'unassignedQueue'])->name('unassigned_chat_queue')
     ->middleware('auth');
 Route::post('/api/chats/{sessionId}/claim/', [ChatController::class, 'claim'])->name('claim_chat')

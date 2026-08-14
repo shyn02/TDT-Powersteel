@@ -20,6 +20,33 @@ class QuoteController extends Controller
      */
     public function submit(Request $request): JsonResponse
     {
+        // Basic anti-abuse guardrails: this endpoint is public/anonymous
+        // and previously had zero validation, so a bot could post
+        // arbitrarily long strings into every text column (DB bloat) or
+        // garbage into email fields. Cap every incoming string field and
+        // check the format of the ones that look like an email address —
+        // without hardcoding the exact field names, since the four forms
+        // below share this one endpoint with different field sets.
+        $lengthRules = [];
+        foreach ($request->keys() as $field) {
+            $lengthRules[$field] = ['nullable', 'string', 'max:2000'];
+        }
+        if ($lengthRules) {
+            $request->validate($lengthRules);
+        }
+
+        foreach (['clientContact', 'cEmail', 'ref_email', 'referrer_email', 'email'] as $emailField) {
+            if ($request->filled($emailField)) {
+                $value = $request->input($emailField);
+                // clientContact is a combined "email OR phone" field, so
+                // only enforce the email format when it actually looks
+                // like one (contains an "@").
+                if ($emailField !== 'clientContact' || str_contains($value, '@')) {
+                    $request->validate([$emailField => ['email:rfc']]);
+                }
+            }
+        }
+
         // ---- Case 1: quoteForm modal (embedded on Home, Products, and every category page) ----
         if ($request->hasAny(['clientName', 'clientContact', 'estimatedQty'])) {
             [$fullName, $companyName] = $this->splitNameCompany($request->input('clientName', ''));

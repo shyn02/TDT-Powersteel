@@ -12,12 +12,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Public form-submission endpoints (quote modal, contact form,
-        // referral form) are plain fetch() POSTs from anonymous site
-        // visitors, matching how the Django version handled these same
-        // forms via CSRF cookie rather than Laravel's session-token form.
+        // Only the genuinely public, anonymous-visitor endpoints are CSRF
+        // exempt (quote modal, contact/referral forms, and the public chat
+        // widget). These are plain fetch() POSTs from visitors who may not
+        // have a fresh session yet, matching how the old Django version
+        // handled them via a CSRF cookie rather than Laravel's token.
+        //
+        // IMPORTANT: this list must stay explicit rather than a blanket
+        // 'api/*' exemption — 'api/chats/*' below requires login and must
+        // keep CSRF protection, or a logged-in staff member could be
+        // tricked into performing actions (e.g. claiming a chat) via a
+        // forged cross-site request.
         $middleware->validateCsrfTokens(except: [
-            'api/*',
+            'api/submit-quote/',
+            'api/chat/messages',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
