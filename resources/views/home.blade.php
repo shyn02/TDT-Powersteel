@@ -100,184 +100,27 @@
 
                 <div class="products-carousel-viewport" id="productsViewport">
                     <div class="products-grid" id="productsTrack">
+                        @forelse ($categories as $category)
                         <div class="product-card reveal">
                             <div class="product-img-container">
-                                <img src="/static/images/columns-beams.png" alt="Columns and Beams" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">BEAMS</div>
+                                @if ($category->image)
+                                <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                @endif
+                                <div class="fallback-placeholder"@if ($category->image) style="display:none;" @endif>{{ strtoupper($category->name) }}</div>
                             </div>
                             <div class="product-info">
-                                <h3><span>Beams & Columns</span></h3>
-                                <p class="product-desc">Heavy-duty structural Wide Flanges, I-Beams, H-Beams, and C-Channels built for superior structural integrity.</p>
+                                <h3><span>{{ $category->name }}</span></h3>
+                                <p class="product-desc">{{ $category->banner_desc ?: $category->intro_desc }}</p>
                                 <div class="product-footer">
-                                    <span class="product-spec">Structural Beams</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Columns and Beams">Inquire Sizes</button>
+                                    <a href="{{ route('category_detail', $category->slug) }}" class="btn-outline-dark" style="text-align:center;">View Products</a>
+                                    <button class="btn-quote-trigger btn-orange-sm" data-product="{{ $category->name }}">Inquire Sizes</button>
                                 </div>
                             </div>
                         </div>
+                        @empty
+                        <p class="products-empty-msg">No product categories yet — add one in the admin panel.</p>
+                        @endforelse
 
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/Construction.png" alt="Construction Materials" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">MATERIALS</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Construction Materials</span></h3>
-                                <p class="product-desc">Cement, gravel, sand, and board materials sourced and delivered to keep every phase of your project moving.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Cement, Gravel & Sand</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Construction Materials">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/hardware.png" alt="Hardware and Products" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">HARDWARE</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Hardware</span></h3>
-                                <p class="product-desc">Construction nails, bolts, welding rods, grinding and cutting discs, and heavy-duty clamps for every job site.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Nails, Bolts & Discs</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Hardware and Products">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/Plates.png" alt="Plates and Sheets" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">PLATES</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Plates & Sheets</span></h3>
-                                <p class="product-desc">Commercial-grade mild steel plates, checker floor plates, and hot/cold rolled steel sheets cut precisely to custom sizes.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Mild & Checker Plates</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Plates and Sheets">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/Roofing.png" alt="Roofing" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">ROOFING</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Roofing</span></h3>
-                                <p class="product-desc">Insulated roof and wall panels plus stone rib profiles for durable, weather-ready roofing systems.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Insulated Panels & Stone Rib</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Roofing">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-                    <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/Shafting.png" alt="Shafting" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">SHAFTING</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Shafting</span></h3>
-                                <p class="product-desc">Precision-machined Tool Steel and Cold Rolled Shafting for industrial machinery and equipment fabrication.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Tool Steel & CRS</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Shafting">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/Sheet Piles.png" alt="Sheet Pile" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">SHEET PILE</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Sheet Pile</span></h3>
-                                <p class="product-desc">Type 2 to Type 4 sheet piles built for retaining walls, excavation support, and waterfront construction.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Retaining Wall Grade</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Sheet Pile">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/deform-bar.png" alt="Steel Bars" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">BARS</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Steel Bars </span></h3>
-                                <p class="product-desc">High-tensile reinforcement and structural bar options including Deformed Steel Bars, Flat Bars, Angle Bars, and more.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Steel, Flat, & Angle</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Steel Bars">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/Purlins.png" alt="Steel Purlins" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">PURLINS</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Steel Purlins</span></h3>
-                                <p class="product-desc">C-Purlins and Z-Purlins engineered for durable roof and wall framing support in steel-frame structures.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">C & Z Purlins</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Steel Purlins">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/tubes-pipes.png" alt="Tubes and Pipes" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">PIPES</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Tubes & Pipes</span></h3>
-                                <p class="product-desc">Galvanized (GI) Pipes, Black Iron (BI) Pipes, and a versatile selection of structural square or rectangular tubings.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">GI, BI, & Tubing</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Tubes and Pipes">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/WideFlange.png" alt="Wide Flange" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">WIDE FLANGE</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Wide Flange</span></h3>
-                                <p class="product-desc">Heavy-duty Wide Flange (W-Beams) engineered for load-bearing structural framing in high-rise and industrial builds.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">W-Beams</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Wide Flange">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="product-card reveal">
-                            <div class="product-img-container">
-                                <img src="/static/images/mesh-wire.png" alt="Wire Meshes" class="product-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="fallback-placeholder">MESH</div>
-                            </div>
-                            <div class="product-info">
-                                <h3><span>Wire Meshes</span></h3>
-                                <p class="product-desc">Welded wire mesh, cyclone wire, gabion wire, and hog wire for fencing, reinforcement, and security needs.</p>
-                                <div class="product-footer">
-                                    <span class="product-spec">Welded, Cyclone & Gabion</span>
-                                    <button class="btn-quote-trigger btn-orange-sm" data-product="Wire Meshes">Inquire Sizes</button>
-                                </div>
-                            </div>
-                        </div>
 
                         </div>
                 </div>

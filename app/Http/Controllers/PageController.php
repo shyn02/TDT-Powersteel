@@ -12,7 +12,9 @@ class PageController extends Controller
 {
     public function home(): View
     {
-        return view('home');
+        $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
+
+        return view('home', compact('categories'));
     }
 
     public function products(): View
