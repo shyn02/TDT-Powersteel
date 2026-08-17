@@ -47,6 +47,7 @@
                     </div>
             
                     <form class="hero-quote-form" id="heroQuoteForm" method="POST">
+                        @csrf
                         <div class="form-group-hero">
                             <input type="text" id="heroName" name="name" required placeholder="Full Name*">
                         </div>

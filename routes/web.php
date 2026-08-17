@@ -30,7 +30,8 @@ Route::get('/blog/{slug}/', [PageController::class, 'blogDetail'])->name('blog_d
 Route::post('/api/submit-quote/', [QuoteController::class, 'submit'])
     ->name('submit_quote')
     ->middleware('throttle:10,1');
-Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])->name('quote_product_data');
+Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])->name('quote_product_data')
+    ->middleware('throttle:60,1');
 
 // ---- LIVE CHAT ----
 Route::match(['get', 'post'], '/api/chat/messages', [ChatController::class, 'messages'])

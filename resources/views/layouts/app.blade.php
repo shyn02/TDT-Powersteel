@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>@yield('title', 'Steel Supplier in Manila | TDT Powersteel Corporation')</title>
     <meta name="description" content="@yield('description', 'Steel supplier in Sampaloc, Manila carrying PNS-certified steel bars, steel beams, steel plates, and steel pipes, with nationwide delivery. Request a free quote in minutes.')">
     <meta name="author" content="TDT Powersteel">

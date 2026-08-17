@@ -195,6 +195,12 @@ class Settings extends Page implements HasSchemas
         Notification::make()->title('Settings saved')->success()->send();
     }
 
+    /** Sanitize a table name to only contain safe characters (alphanumeric + underscore). */
+    private function safeTableName(string $name): string
+    {
+        return preg_replace('/[^a-zA-Z0-9_]/', '', $name);
+    }
+
     /**
      * Table names for the active connection — SQLite and MySQL expose
      * this completely differently, so branch on the driver rather than
@@ -262,7 +268,8 @@ class Settings extends Page implements HasSchemas
                             }
                         } else {
                             foreach ($this->listTables() as $table) {
-                                $result = DB::select("CHECK TABLE `{$table}`");
+                                $safe = $this->safeTableName($table);
+                                $result = DB::select("CHECK TABLE `{$safe}`");
                                 foreach ($result as $row) {
                                     if (($row->Msg_text ?? 'OK') !== 'OK') {
                                         $issues[] = "{$table}: {$row->Msg_text}";
@@ -295,7 +302,8 @@ class Settings extends Page implements HasSchemas
                             DB::statement('VACUUM');
                         } else {
                             foreach ($this->listTables() as $table) {
-                                DB::statement("OPTIMIZE TABLE `{$table}`");
+                                $safe = $this->safeTableName($table);
+                                DB::statement("OPTIMIZE TABLE `{$safe}`");
                             }
                         }
 
@@ -332,16 +340,18 @@ class Settings extends Page implements HasSchemas
                         $sql .= $create->sql.";\n\n";
                     }
                 } else {
-                    $create = DB::select("SHOW CREATE TABLE `{$table}`")[0];
+                    $safe = $this->safeTableName($table);
+                    $create = DB::select("SHOW CREATE TABLE `{$safe}`")[0];
                     $sql .= array_values((array) $create)[1].";\n\n";
                 }
             }
 
-            DB::table($table)->orderBy(DB::raw('1'))->chunk(500, function ($rows) use (&$sql, $table) {
+            $safeTable = $this->safeTableName($table);
+            DB::table($table)->orderBy(DB::raw('1'))->chunk(500, function ($rows) use (&$sql, $safeTable) {
                 foreach ($rows as $row) {
                     $values = collect((array) $row)->map(fn ($v) => is_null($v) ? 'NULL' : DB::getPdo()->quote((string) $v))->implode(', ');
                     $columns = implode('`, `', array_keys((array) $row));
-                    $sql .= "INSERT INTO `{$table}` (`{$columns}`) VALUES ({$values});\n";
+                    $sql .= "INSERT INTO `{$safeTable}` (`{$columns}`) VALUES ({$values});\n";
                 }
             });
 

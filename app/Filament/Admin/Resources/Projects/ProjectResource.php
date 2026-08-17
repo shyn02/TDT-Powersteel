@@ -22,7 +22,7 @@ class ProjectResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'php artisan make:filament-resource ChatSession --generate';
+    protected static ?string $recordTitleAttribute = 'contractor';
 
     public static function form(Schema $schema): Schema
     {

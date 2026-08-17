@@ -18,7 +18,7 @@
     }
 
     // ---- CONFIG ----------------------------------------------------
-    const CHAT_API_ENDPOINT = "http://127.0.0.1:8000/api/chat/messages";
+    const CHAT_API_ENDPOINT = "/api/chat/messages";
     const POLL_INTERVAL_MS = 4000;
 
     // We now use sessionStorage instead of localStorage.

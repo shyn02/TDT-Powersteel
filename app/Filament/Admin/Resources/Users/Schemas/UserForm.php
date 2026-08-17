@@ -29,11 +29,8 @@ class UserForm
                         TextInput::make('password')
                             ->password()
                             ->revealable()
-                            // Only required when creating; leave blank on
-                            // edit to keep the current password.
                             ->required(fn (string $operation) => $operation === 'create')
                             ->dehydrated(fn (?string $state) => filled($state))
-                            ->dehydrateStateUsing(fn (string $state) => bcrypt($state))
                             ->helperText('Leave blank to keep the current password.'),
                         Toggle::make('is_active')
                             ->label('Active')

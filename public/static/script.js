@@ -229,21 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modal Form
     const ADMIN_ENDPOINT = '/api/submit-quote/';
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    const csrftoken = getCookie('csrftoken');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
     if (quoteForm) {
         quoteForm.addEventListener('submit', async (e) => {
@@ -269,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch(ADMIN_ENDPOINT, {
                     method: 'POST',
                     body: formData,
-                    headers: { 'X-CSRFToken': csrftoken, 'Accept': 'application/json' }
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
                 if (response.ok) {
@@ -326,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch(ADMIN_ENDPOINT, {
                     method: 'POST',
                     body: formData,
-                    headers: { 'X-CSRFToken': csrftoken, 'Accept': 'application/json' }
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
                 if (response.ok) {
@@ -370,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch(ADMIN_ENDPOINT, {
                     method: 'POST',
                     body: formData,
-                    headers: { 'X-CSRFToken': csrftoken, 'Accept': 'application/json' }
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
                 if (response.ok) {
@@ -461,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch(ADMIN_ENDPOINT, {
                     method: 'POST',
                     body: formData,
-                    headers: { 'X-CSRFToken': csrftoken, 'Accept': 'application/json' }
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
                 if (response.ok) {
