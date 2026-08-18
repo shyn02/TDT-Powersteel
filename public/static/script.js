@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(`Thank you, ${client}! We have successfully received your quote request for "${itemLabel}".`);
                     closeModal();
                 } else {
-                    showToast('May error sa pag-send. Subukan ulit.');
+                    showToast('Failed to send. Please try again.');
                 }
             } catch (error) {
                 console.error('Quote submit error:', error);
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     directForm.reset();
                     if (cHowHeardOtherGroup) cHowHeardOtherGroup.style.display = 'none';
                 } else {
-                    showToast('May error sa pag-send. Subukan ulit.');
+                    showToast('Failed to send. Please try again.');
                 }
             } catch (error) {
                 console.error('Contact submit error:', error);
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(`Thank you, ${name}! Your referral has been received. Our team will follow up with the referred company shortly.`);
                     referralForm.reset();
                 } else {
-                    showToast('May error sa pag-send. Subukan ulit.');
+                    showToast('Failed to send. Please try again.');
                 }
             } catch (error) {
                 console.error('Referral submit error:', error);
@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (heroHowHeardOtherGroup) heroHowHeardOtherGroup.style.display = 'none';
                     closeHeroQuoteOverlay();
                 } else {
-                    showToast('May error sa pag-send. Subukan ulit.');
+                    showToast('Failed to send. Please try again.');
                 }
             } catch (error) {
                 console.error('Hero quote submit error:', error);
