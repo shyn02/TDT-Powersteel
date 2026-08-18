@@ -493,3 +493,495 @@ div[class*="lg:w-2/3"] {
 .dark #nav-sidebar span[class*="min-w-[18px]"] {
     color: rgb(251 146 60) !important;      /* TDT brand orange (primary-400, mas maliwanag sa dark mode) */
 }
+
+/* =========================================
+   DASHBOARD WIDGETS — NEW (maangas stats)
+========================================= */
+
+/* --- Chart Card (shared container for trends, categories, geo, response) --- */
+.tdt-chart-card {
+    background: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05);
+    overflow: hidden;
+}
+
+.tdt-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.08);
+    background: var(--tdt-bg-light);
+}
+
+.tdt-chart-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tdt-gray-dark);
+    margin: 0;
+}
+
+.tdt-chart-subtitle {
+    font-size: 12px;
+    color: var(--tdt-gray);
+}
+
+.tdt-chart-meta {
+    display: flex;
+    gap: 8px;
+}
+
+.tdt-meta-pill {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tdt-gray);
+    background: rgba(113, 112, 116, 0.08);
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+.tdt-chart-body {
+    padding: 20px;
+}
+
+.tdt-chart-body-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+    text-align: center;
+}
+
+/* --- Monthly Trends Bar Chart --- */
+.tdt-chart-legend {
+    display: flex;
+    gap: 16px;
+}
+
+.tdt-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tdt-gray);
+}
+
+.tdt-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.tdt-bars-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 160px;
+    padding-top: 10px;
+}
+
+.tdt-bars-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.tdt-bars-stack {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.tdt-bars-group {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+}
+
+.tdt-bar-col-item {
+    width: 14px;
+    min-height: 2px;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.4s ease;
+}
+
+.tdt-bars-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tdt-gray);
+    margin-top: 8px;
+    text-transform: uppercase;
+}
+
+/* --- Top Categories Horizontal Bars --- */
+.tdt-cat-row {
+    margin-bottom: 14px;
+}
+
+.tdt-cat-row:last-child {
+    margin-bottom: 0;
+}
+
+.tdt-cat-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.tdt-cat-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-cat-count {
+    font-size: 11px;
+    color: var(--tdt-gray);
+}
+
+.tdt-cat-bar-track {
+    height: 8px;
+    background: rgba(113, 112, 116, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.tdt-cat-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--tdt-orange), #f59e0b);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+/* --- Geographic Breakdown --- */
+.tdt-geo-row {
+    margin-bottom: 12px;
+}
+
+.tdt-geo-row:last-child {
+    margin-bottom: 0;
+}
+
+.tdt-geo-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.tdt-geo-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-geo-count {
+    font-size: 11px;
+    color: var(--tdt-gray);
+}
+
+.tdt-geo-bar-track {
+    height: 8px;
+    background: rgba(113, 112, 116, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.tdt-geo-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0ea5e9, #8b5cf6);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+/* --- Response Time / Aging --- */
+.tdt-aging-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.06);
+}
+
+.tdt-aging-row:last-child {
+    border-bottom: none;
+}
+
+.tdt-aging-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tdt-aging-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.tdt-aging-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-aging-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tdt-aging-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-aging-pct {
+    font-size: 11px;
+    color: var(--tdt-gray);
+    min-width: 30px;
+    text-align: right;
+}
+
+.tdt-aging-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(244, 63, 94, 0.06);
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #f43f5e;
+}
+
+.tdt-aging-alert-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f43f5e;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.tdt-response-big-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--tdt-orange);
+    margin-bottom: 6px;
+}
+
+.tdt-response-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tdt-gray-dark);
+    margin-bottom: 2px;
+}
+
+.tdt-response-sublabel {
+    font-size: 11px;
+    color: var(--tdt-gray);
+}
+
+/* --- Pipeline Status --- */
+.tdt-pipeline-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tdt-pipeline-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.06);
+}
+
+.tdt-pipeline-item:last-child {
+    border-bottom: none;
+}
+
+.tdt-pipeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.tdt-pipeline-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tdt-gray-dark);
+    flex: 1;
+}
+
+.tdt-pipeline-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-pipeline-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid rgba(113, 112, 116, 0.12);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-pipeline-total-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--tdt-orange);
+}
+
+/* --- Quick Actions --- */
+.tdt-quick-actions {
+    background: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05);
+    padding: 16px 20px;
+}
+
+.tdt-quick-actions-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tdt-gray-dark);
+    margin: 0 0 14px 0;
+}
+
+.tdt-quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 700px) {
+    .tdt-quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tdt-quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.tdt-quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.tdt-qa-amber {
+    background: rgba(245, 158, 11, 0.06);
+    border-color: rgba(245, 158, 11, 0.15);
+}
+
+.tdt-qa-amber:hover {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.tdt-qa-amber .tdt-qa-icon-wrap {
+    background: #f59e0b;
+    color: #fff;
+}
+
+.tdt-qa-sky {
+    background: rgba(14, 165, 233, 0.06);
+    border-color: rgba(14, 165, 233, 0.15);
+}
+
+.tdt-qa-sky:hover {
+    background: rgba(14, 165, 233, 0.1);
+}
+
+.tdt-qa-sky .tdt-qa-icon-wrap {
+    background: #0ea5e9;
+    color: #fff;
+}
+
+.tdt-qa-rose {
+    background: rgba(244, 63, 94, 0.06);
+    border-color: rgba(244, 63, 94, 0.15);
+}
+
+.tdt-qa-rose:hover {
+    background: rgba(244, 63, 94, 0.1);
+}
+
+.tdt-qa-rose .tdt-qa-icon-wrap {
+    background: #f43f5e;
+    color: #fff;
+}
+
+.tdt-qa-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.tdt-qa-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.tdt-qa-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-qa-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tdt-gray);
+    margin-top: 2px;
+}
