@@ -18,6 +18,24 @@
     color: var(--tdt-gray);
 }
 
+/* products.css's generic .page-banner rules (text-align: left on
+   .container, max-width without margin:auto on the title, and
+   justify-content: flex-start on the breadcrumb) win by specificity
+   on any page that doesn't scope its own override — this page never
+   had one. Same fix as contact.css / blog.css. */
+.page-banner.terms-banner .container {
+    text-align: center;
+}
+
+.page-banner.terms-banner .page-banner-title {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.page-banner.terms-banner .breadcrumb {
+    justify-content: center;
+}
+
 .legal-content {
     max-width: 820px;
     margin: 0 auto;
