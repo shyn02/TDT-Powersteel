@@ -28,8 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(\App\Filament\Admin\Pages\Auth\Login::class)
             ->renderHook(
-                'head',
-                fn () => '<link rel="stylesheet" href="' . asset('static/admin_custom.css') . '">',
+                'body.start',
+                fn () => '<link rel="stylesheet" href="' . asset('static/admin_custom.css') . '?v=' . filemtime(public_path('static/admin_custom.css')) . '">',
             )
             ->colors([
                 'primary' => Color::Amber,
