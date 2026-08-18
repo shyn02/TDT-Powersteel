@@ -99,12 +99,12 @@
     100%      { opacity: 0; }
 }
 
-/* White overlay so text stays readable */
+/* Light overlay for subtle blending */
 .hero-section::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.3);
     z-index: 1;
     pointer-events: none;
 }
@@ -114,7 +114,7 @@
         animation-duration: 18s;
     }
     .hero-section::after {
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.5);
     }
 }
 
