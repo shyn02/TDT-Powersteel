@@ -7,13 +7,13 @@
     <section id="home" class="hero-section">
         <!-- Product slideshow background -->
         <div class="hero-slideshow" aria-hidden="true">
-            <img src="{{ asset('static/images/steel1.jpg') }}" alt="">
-            <img src="{{ asset('static/images/steel2.jpg') }}" alt="">
-            <img src="{{ asset('static/images/steel3.jpg') }}" alt="">
-            <img src="{{ asset('static/images/steel4.jpg') }}" alt="">
-            <img src="{{ asset('static/images/steel5.jpg') }}" alt="">
-            <img src="{{ asset('static/images/steel6.jpg') }}" alt="">
-            <img src="{{ asset('static/images/steel7.jpeg') }}" alt="">
+            <img src="{{ asset('static/images/steelbars.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steelbeams.jpg') }}" alt="">
+            <img src="{{ asset('static/images/Steel Plates Banner.jpg') }}" alt="">
+            <img src="{{ asset('static/images/Sheet Piles Banner.jpg') }}" alt="">
+            <img src="{{ asset('static/images/Roofing Banner.png') }}" alt="">
+            <img src="{{ asset('static/images/wiremesh banner.jpg') }}" alt="">
+            <img src="{{ asset('static/images/Galvanized-Iron-Pipes.jpg') }}" alt="">
         </div>
         <!-- Decorative circles -->
         <div class="hero-circles" aria-hidden="true">
