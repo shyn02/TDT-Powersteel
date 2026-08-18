@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Admin\Pages\Auth\Login::class)
+            ->logo(fn () => '<a href="' . route('filament.admin.pages.dashboard') . '" class="block py-3 px-4"><img src="' . asset('static/images/logo.png') . '" alt="TDT Powersteel" class="h-10 w-auto"></a>')
             ->renderHook(
                 'body.start',
                 fn () => '<link rel="stylesheet" href="' . asset('static/admin_custom.css') . '?v=' . filemtime(public_path('static/admin_custom.css')) . '">',

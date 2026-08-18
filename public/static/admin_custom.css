@@ -493,3 +493,15 @@ div[class*="lg:w-2/3"] {
 .dark #nav-sidebar span[class*="min-w-[18px]"] {
     color: rgb(251 146 60) !important;
 }
+
+/* --- SIDEBAR LOGO --- */
+.sidebar-brand-logo {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.1) !important;
+}
+
+.sidebar-brand-logo img {
+    max-height: 40px;
+    width: auto;
+    display: block;
+}
