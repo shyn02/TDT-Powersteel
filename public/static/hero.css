@@ -2,6 +2,74 @@
 .hero-section {
     padding: 80px 0;
     background: transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- DECORATIVE CIRCLES --- */
+.hero-circles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hc {
+    position: absolute;
+    border-radius: 50%;
+}
+
+/* Large orange circle - top right */
+.hc-1 {
+    width: 320px;
+    height: 320px;
+    background: rgba(230, 112, 38, 0.07);
+    top: -60px;
+    right: -80px;
+}
+
+/* Medium gray circle - bottom left */
+.hc-2 {
+    width: 200px;
+    height: 200px;
+    background: rgba(113, 112, 116, 0.06);
+    bottom: -40px;
+    left: -50px;
+}
+
+/* Small orange ring - mid left */
+.hc-3 {
+    width: 80px;
+    height: 80px;
+    border: 3px solid rgba(230, 112, 38, 0.15);
+    background: transparent;
+    top: 40%;
+    left: 8%;
+}
+
+/* Tiny white/gray dot - top center */
+.hc-4 {
+    width: 14px;
+    height: 14px;
+    background: rgba(113, 112, 116, 0.12);
+    top: 20%;
+    left: 45%;
+}
+
+/* Medium orange dot - bottom right */
+.hc-5 {
+    width: 40px;
+    height: 40px;
+    background: rgba(230, 112, 38, 0.1);
+    bottom: 25%;
+    right: 12%;
+}
+
+@media (max-width: 991px) {
+    .hc-1 { width: 200px; height: 200px; top: -40px; right: -60px; }
+    .hc-2 { width: 140px; height: 140px; bottom: -30px; left: -40px; }
+    .hc-3 { width: 50px; height: 50px; left: 4%; }
+    .hc-5 { display: none; }
 }
 
 .hero-grid {
@@ -9,6 +77,8 @@
     grid-template-columns: 1fr;
     gap: 50px;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
 @media (min-width: 992px) {
