@@ -493,3 +493,159 @@ div[class*="lg:w-2/3"] {
 .dark #nav-sidebar span[class*="min-w-[18px]"] {
     color: rgb(251 146 60) !important;      /* TDT brand orange (primary-400, mas maliwanag sa dark mode) */
 }
+
+/* =========================================
+   DASHBOARD — QUOTE STATUS DONUT CHART
+========================================= */
+.tdt-status-card {
+    background: #ffffff;
+    border: 1px solid rgba(113, 112, 116, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(17, 16, 16, 0.05);
+    overflow: hidden;
+}
+
+.tdt-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.08);
+    background: var(--tdt-bg-light);
+}
+
+.tdt-status-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tdt-gray-dark);
+    margin: 0;
+}
+
+.tdt-status-total {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tdt-gray);
+    background: rgba(113, 112, 116, 0.08);
+    padding: 3px 12px;
+    border-radius: 999px;
+}
+
+.tdt-status-body {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 24px 28px;
+}
+
+@media (max-width: 700px) {
+    .tdt-status-body {
+        flex-direction: column;
+        gap: 24px;
+    }
+}
+
+/* Donut */
+.tdt-donut-wrap {
+    flex-shrink: 0;
+}
+
+.tdt-donut {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tdt-donut-hole {
+    width: 88px;
+    height: 88px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.tdt-donut-total {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-donut-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--tdt-gray);
+}
+
+/* Legend */
+.tdt-status-legend {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tdt-legend-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tdt-legend-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tdt-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.tdt-legend-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tdt-gray-dark);
+    flex: 1;
+}
+
+.tdt-legend-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--tdt-gray-dark);
+}
+
+.tdt-legend-bar-track {
+    height: 6px;
+    background: rgba(113, 112, 116, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.tdt-legend-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.tdt-legend-pct {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tdt-gray);
+    text-align: right;
+}
