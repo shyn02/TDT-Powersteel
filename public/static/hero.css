@@ -1,9 +1,12 @@
 /* --- HERO SECTION --- */
 .hero-section {
-    padding: 80px 0 0 0;
+    min-height: 100vh;
+    padding: 120px 0 80px 0;
     background: #ffffff;
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
 }
 
 /* --- DECORATIVE CIRCLES --- */
