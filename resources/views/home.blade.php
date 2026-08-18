@@ -5,16 +5,8 @@
 
 @section('content')
     <section id="home" class="hero-section">
-        <!-- Decorative circles -->
-        <div class="hero-circles" aria-hidden="true">
-            <div class="hc hc-1"></div>
-            <div class="hc hc-2"></div>
-            <div class="hc hc-3"></div>
-            <div class="hc hc-4"></div>
-            <div class="hc hc-5"></div>
-        </div>
         <div class="container hero-grid">
-            <!-- LEFT CONTENT - Has slide-door-left class for animation -->
+            <!-- KALIWANG CONTENT - Nilagyan ng slide-door-left para umandar ang animation -->
             <div class="hero-left slide-door-left">
                 <span class="hero-badge">TRUSTED PARTNER IN CONSTRUCTION</span>
                 <h1 class="hero-title">THE PHILIPPINES' NO. 1 TRUSTED <br><span class="highlight">STEEL SUPPLIER</span></h1>
@@ -44,7 +36,7 @@
                 </div>
             </div>
             
-            <!-- RIGHT FORM CARD - Has slide-door-right class for animation -->
+            <!-- KANANG FORM CARD - Nilagyan ng slide-door-right para umandar ang animation -->
             <div class="hero-right slide-door-right" id="heroQuoteOverlay">
                 <div class="quote-form-card">
                     <div class="card-header-form">

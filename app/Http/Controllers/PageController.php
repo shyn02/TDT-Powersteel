@@ -29,6 +29,11 @@ class PageController extends Controller
         return view('about');
     }
 
+    public function trackOrder(): View
+    {
+        return view('track_order');
+    }
+
     public function blog(): View
     {
         $activePosts = BlogPost::where('is_active', true)->orderByDesc('published_date')->get();
