@@ -123,7 +123,7 @@
 
 .quote-form-card {
     background-color: #ffffff; /* Dark charcoal card background */
-    border-left: 4px solid #e67026; /* Orange accent line sa gilid tulad ng mockup mo */
+    border-left: 4px solid #e67026; /* Orange accent line on the side like your mockup */
     border-radius: 8px;
     padding: 25px;
     width: 100%;
@@ -170,7 +170,7 @@
 .form-group-hero select {
     width: 100%;
     padding: 12px 15px;
-    background-color: #dcdcdc; /* Light gray input background base sa mockup mo */
+    background-color: #dcdcdc; /* Light gray input background based on your mockup */
     border: none;
     border-radius: 4px;
     font-family: 'Montserrat', sans-serif;
@@ -187,12 +187,12 @@
     color: #666666;
 }
 
-/* Focus state para sa inputs */
+/* Focus state for inputs */
 .form-group-hero input:focus,
 .form-group-hero textarea:focus,
 .form-group-hero select:focus {
     outline: none;
-    background-color: #ffffff; /* Magiging pure white kapag tinataypan */
+    background-color: #ffffff; /* Becomes pure white when focused */
     box-shadow: 0 0 0 2px #e67026;
 }
 
@@ -312,12 +312,12 @@
 
 /* --- CLOSING SLIDING DOOR EFFECT --- */
 
-/* Parent Container Fix (para walang horizontal scrollbar) */
+/* Parent Container Fix (so there's no horizontal scrollbar) */
 .hero-section {
     overflow: hidden;
 }
 
-/* Kaliwang pinto: Nakatago sa labas sa kaliwa (-100%) */
+/* Left door: Hidden outside to the left (-100%) */
 .slide-door-left {
     opacity: 0;
     transform: translateX(-100%);
@@ -325,7 +325,7 @@
     will-change: transform, opacity;
 }
 
-/* Kanang pinto: Nakatago sa labas sa kanan (+100%) */
+/* Right door: Hidden outside to the right (+100%) */
 .slide-door-right {
     opacity: 0;
     transform: translateX(100%);
@@ -333,7 +333,7 @@
     will-change: transform, opacity;
 }
 
-/* Magse-sara / magtatagpo sa gitna (0) pag pumasok sa viewport */
+/* Will close / meet in the center (0) when entering the viewport */
 .slide-door-left.revealed,
 .slide-door-right.revealed {
     opacity: 1;

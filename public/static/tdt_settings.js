@@ -8,7 +8,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         var tabs = document.querySelectorAll(".tdt-tab");
         var panels = document.querySelectorAll(".tdt-panel");
-        if (!tabs.length || !panels.length) return; // hindi ito ang settings page
+        if (!tabs.length || !panels.length) return; // not on the settings page
 
         var initial = window.TDT_ACTIVE_TAB || "general";
         if (!document.querySelector('.tdt-panel[data-panel="' + initial + '"]')) {

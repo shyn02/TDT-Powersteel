@@ -19,7 +19,7 @@
 }
 
 html {
-    scroll-behavior: auto; /* Pinatay para sa manual JS physics control */
+    scroll-behavior: auto; /* Disabled for manual JS physics control */
     overflow-x: hidden;
     max-width: 100%;
 }
@@ -264,7 +264,7 @@ h1, h2, h3, .section-title {
 
 .quote-form-card {
     background-color: #ffffff; /* Dark charcoal card background */
-    border-left: 4px solid #e67026; /* Orange accent line sa gilid tulad ng mockup mo */
+    border-left: 4px solid #e67026; /* Orange accent line on the side like your mockup */
     border-radius: 8px;
     padding: 25px;
     width: 100%;
@@ -310,7 +310,7 @@ h1, h2, h3, .section-title {
 .form-group-hero textarea {
     width: 100%;
     padding: 12px 15px;
-    background-color: #dcdcdc; /* Light gray input background base sa mockup mo */
+    background-color: #dcdcdc; /* Light gray input background based on your mockup */
     border: none;
     border-radius: 4px;
     font-family: 'Montserrat', sans-serif;
@@ -327,11 +327,11 @@ h1, h2, h3, .section-title {
     color: #666666;
 }
 
-/* Focus state para sa inputs */
+/* Focus state for inputs */
 .form-group-hero input:focus,
 .form-group-hero textarea:focus {
     outline: none;
-    background-color: #ffffff; /* Magiging pure white kapag tinataypan */
+    background-color: #ffffff; /* Becomes pure white when focused */
     box-shadow: 0 0 0 2px #e67026;
 }
 
@@ -470,15 +470,15 @@ h1, h2, h3, .section-title {
         #ffffff 0%,
         #ffffff 25%,
         var(--tdt-orange) 25%,
-        var(--tdt-orange) 28%,  /* Unang manipis na guhit (pinaakyat) */
+        var(--tdt-orange) 28%,  /* First thin line (pushed up) */
         #ffffff 28%,
-        #ffffff 33%,            /* Puting puwang */
+        #ffffff 33%,            /* White space */
         var(--tdt-orange) 33%,
-        var(--tdt-orange) 53%,  /* Makapal na guhit (pinaakyat) */
+        var(--tdt-orange) 53%,  /* Thick line (pushed up) */
         #ffffff 53%,
-        #ffffff 58%,            /* Puting puwang */
+        #ffffff 58%,            /* White space */
         var(--tdt-orange) 58%,
-        var(--tdt-orange) 61%,  /* Pangalawang manipis na guhit (pinaakyat) */
+        var(--tdt-orange) 61%,  /* Second thin line (pushed up) */
         #ffffff 61%,
         #ffffff 100%
     );
@@ -756,30 +756,30 @@ h1, h2, h3, .section-title {
     border-top: 1px solid rgba(113, 112, 116, 0.1);
 }
 
-/* Base layout: Single column muna sa mobile */
+/* Base layout: Single column on mobile first */
 .contact-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 40px;
 }
 
-/* Kapag desktop (992px pataas), hahatiin sa dalawang column (Kaliwa at Kanan) */
+/* On desktop (992px and up), split into two columns (Left and Right) */
 @media (min-width: 992px) {
     .contact-grid {
-        grid-template-columns: 1fr 1.2fr; /* 1fr sa Info Card, 1.2fr sa Map+Form Column */
+        grid-template-columns: 1fr 1.2fr; /* 1fr for Info Card, 1.2fr for Map+Form Column */
         align-items: start;
     }
 }
 
-/* BAGONG WRAPPER: Naka-vertical stack ang Maps at Message Form sa kanan */
+/* NEW WRAPPER: Maps and Message Form are vertically stacked on the right */
 .contact-right-column {
     display: flex;
     flex-direction: column;
-    gap: 30px; /* Distansya sa pagitan ng Maps at Form */
+    gap: 30px; /* Space between Maps and Form */
     width: 100%;
 }
 
-/* Pinag-isang style para sa dalawang card (Kaliwang Info at Kanang Form) */
+/* Unified style for both cards (Left Info and Right Form) */
 .contact-info-panel,
 .contact-form-panel {
     background-color: var(--tdt-bg-light);
@@ -789,7 +789,7 @@ h1, h2, h3, .section-title {
     box-sizing: border-box;
 }
 
-/* Heading styles gamit ang mga variables mo */
+/* Heading styles using your variables */
 .contact-info-panel h3,
 .contact-form-panel h3 {
     font-family: var(--font-bebas);
@@ -807,17 +807,17 @@ h1, h2, h3, .section-title {
 
 /* --- CONTACT SECTION LAYOUT & ALIGNMENT FIX --- */
 
-/* 1. Tiyakin na pantay ang pagkakahati (50% - 50%) at magkatapat ang taas */
+/* 1. Ensure even split (50% - 50%) and same height */
 @media (min-width: 992px) {
     .contact-grid {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important; /* Pantay na laki para sa Kaliwa at Kanan */
+        grid-template-columns: 1fr 1fr !important; /* Equal size for Left and Right */
         gap: 40px !important;
-        align-items: stretch !important; /* Hihilahin pababa para maging pantay ang grid cells */
+        align-items: stretch !important; /* Pull down to make grid cells even */
     }
 }
 
-/* 2. Tanggalin ang anomang space sa tuktok ng kanang kolum para umangat at pumantay */
+/* 2. Remove any space at the top of the right column so it rises and aligns */
 .contact-right-column {
     display: flex !important;
     flex-direction: column !important;
@@ -828,20 +828,20 @@ h1, h2, h3, .section-title {
     justify-content: flex-start !important;
 }
 
-/* 3. Mas pinalaking Google Maps para bumagay sa laki ng info panel */
+/* 3. Larger Google Maps to match the info panel size */
 .map-container {
     width: 100% !important;
-    height: 480px !important; /* Tinaasan pa natin para mas dominant at malinaw ang mapa */
+    height: 480px !important; /* Increased further for a more dominant and clear map */
     margin: 0 !important;
 }
 
 .map-wrapper {
     width: 100% !important;
     height: 100% !important;
-    border-radius: 4px !important; /* Ginawang 4px para match sa border-radius ng panels mo */
+    border-radius: 4px !important; /* Made 4px to match the border-radius of your panels */
     overflow: hidden !important;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
-    border: 1px solid rgba(113, 112, 116, 0.15) !important; /* Match sa border ng cards mo */
+    border: 1px solid rgba(113, 112, 116, 0.15) !important; /* Match the border of your cards */
 }
 
 .map-wrapper iframe {
@@ -850,13 +850,13 @@ h1, h2, h3, .section-title {
     display: block !important;
 }
 
-/* 4. Siguraduhing pantay ang padding at typography ng Direct Message card */
+/* 4. Ensure even padding and typography of Direct Message card */
 .contact-form-panel {
     width: 100% !important;
     box-sizing: border-box !important;
 }
 
-/* Tiyakin na ang form inputs ay responsive pa rin sa loob */
+/* Ensure form inputs are still responsive inside */
 .form-row-2 {
     display: flex;
     gap: 16px;
@@ -1566,7 +1566,7 @@ footer {
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* Container at border adjustment ayon sa brand rules */
+/* Container and border adjustment per brand rules */
 .social-links-container {
     margin-top: 30px;
     border-top: 1px solid #7d7d80; /* Sub palette gray */
@@ -1582,7 +1582,7 @@ footer {
     margin-bottom: 12px;
 }
 
-/* Base style ng pabilog na icons */
+/* Base style for circular icons */
 .social-btn {
     display: inline-flex;
     align-items: center;
@@ -1604,45 +1604,45 @@ footer {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
-/* Container at layout alignment sa loob ng footer */
+/* Container and layout alignment inside the footer */
 .footer-links {
     display: flex;
     align-items: center;
-    gap: 20px; /* Distansya sa pagitan ng social links at static text links */
+    gap: 20px; /* Space between social links and static text links */
 }
 
 /* Social Icons Alignment */
 .social-icons {
     display: flex;
-    gap: 10px; /* Space sa pagitan ng bawat social icon */
-    margin-right: 10px; /* Distansya papunta sa "Privacy Policy" */
+    gap: 10px; /* Space between each social icon */
+    margin-right: 10px; /* Space before "Privacy Policy" */
 }
 
-/* UPDATED: Mas malaki at mas kitang-kitang social buttons */
+/* UPDATED: Larger and more visible social buttons */
 .social-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 35px;         /* Laki ng bilog (Dati: 35px) */
-    height: 35px;        /* Laki ng bilog (Dati: 35px) */
+    width: 35px;         /* Circle size (Previously: 35px) */
+    height: 35px;        /* Circle size (Previously: 35px) */
     border-radius: 50%;
     background-color: #717074; 
     color: #ffffff !important; 
-    font-size: 22px;     /* Laki ng mismong logo sa loob (Dati: 16px) */
+    font-size: 22px;     /* Inner logo size (Previously: 16px) */
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
 /* Hover effects: stays grey, no color change */
 .social-btn:hover {
-    transform: translateY(-4px); /* Mas aangat nang bahagya */
+    transform: translateY(-4px); /* Slightly lifts up */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Styling para sa bagong PNG logo image */
+/* Styling for the new PNG logo image */
 .logo-img {
-    height: 30px; /* Saktong taas para sa desktop navigation header */
-    width: auto;  /* Awtomatikong ia-adjust ang lapad para hindi ma-stretch ang logo */
+    height: 30px; /* Exact height for desktop navigation header */
+    width: auto;  /* Automatically adjusts width so the logo doesn't stretch */
     display: block;
     object-fit: contain;
 }
@@ -1656,7 +1656,7 @@ footer {
 
 .section-subtitle {
     font-family: 'Raleway', sans-serif;
-    color: #e67026; /* Gawaing Orange ang subtitle */
+    color: #e67026; /* Make the subtitle Orange */
     font-weight: 700;
     letter-spacing: 2px;
 }
@@ -1716,21 +1716,21 @@ footer {
 
 /* --- NEW ROW-BASED CONTACT LAYOUT --- */
 
-/* Unang row: grid na may dalawang columns sa desktop */
+/* First row: grid with two columns on desktop */
 .contact-top-row {
     display: grid !important;
-    grid-template-columns: 1fr !important; /* Isang column sa mobile */
+    grid-template-columns: 1fr !important; /* Single column on mobile */
     gap: 30px !important;
 }
 
 @media (min-width: 992px) {
     .contact-top-row {
-        grid-template-columns: 1fr 1fr !important; /* Side-by-side sa desktop */
-        align-items: stretch !important; /* Pinapantay ang taas ng Office Box at Google Map */
+        grid-template-columns: 1fr 1fr !important; /* Side-by-side on desktop */
+        align-items: stretch !important; /* Aligning the height of Office Box and Google Map */
     }
 }
 
-/* Pangalawang row: direct message form settings */
+/* Second row: direct message form settings */
 .contact-bottom-row .form-row-2 {
     display: grid !important;
     grid-template-columns: 1fr !important;
@@ -1739,7 +1739,7 @@ footer {
 
 @media (min-width: 768px) {
     .contact-bottom-row .form-row-2 {
-        grid-template-columns: 1fr 1fr !important; /* Tabing Name at Email sa desktop */
+        grid-template-columns: 1fr 1fr !important; /* Side-by-side Name and Email on desktop */
     }
 }
 

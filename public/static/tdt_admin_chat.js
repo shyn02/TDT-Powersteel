@@ -61,7 +61,7 @@
     // ---------------------------------------------------------------
     var activeSessionToken = null;
     var threadPollTimer = null;
-    var salesReps = []; // { id, name, position } — para sa "Transfer to Sales Rep" ⋮ menu
+    var salesReps = []; // { id, name, position } — for the "Transfer to Sales Rep" menu
     var currentAssignedToId = null;
 
     function initLiveChatPage() {
@@ -260,11 +260,11 @@
 
     // ---------------------------------------------------------------
     // SIDEBAR BADGES (Quote Requests / Referrals / Live Chat) — live
-    // update nang walang full page refresh. Nire-reuse ang parehong
-    // exact class list na ginagamit ng Unfold mismo para sa badge
-    // span (nakuha mula sa aktwal na HTML) kaya awtomatikong
-    // sumusunod din ito sa CSS override natin sa admin_custom.css
-    // (orange number lang, walang background).
+    // update without a full page refresh. Reuses the same
+    // exact class list used by Unfold itself for the badge
+    // span (taken from the actual HTML) so it automatically
+    // follows our CSS override in admin_custom.css
+    // (orange number only, no background).
     // ---------------------------------------------------------------
     var SIDEBAR_BADGE_CLASS =
         "font-semibold h-[18px] leading-[18px] ml-2 px-1 relative rounded-xs " +

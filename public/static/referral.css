@@ -328,7 +328,7 @@
 
 /* 1. Page Hero Banner Background Image & Overlay */
 .referral-hero {
-    /* Palitan ang path sa sarili mong image URL */
+    /* Change the path to your own image URL */
     background-image: url('images/referral_handshaking.jpg') !important; 
     background-size: cover !important;
     background-position: center !important;
@@ -336,7 +336,7 @@
     background-color: #222222 !important; 
 }
 
-/* Dark Overlay sa Hero Banner para malinaw pa rin basahin ang white title */
+    /* Dark Overlay on Hero Banner so white title is still clear to read */
 .referral-hero::before {
     background: linear-gradient(90deg, rgba(26,26,26,0.85) 10%, rgba(26,26,26,0.60) 55%, rgba(26,26,26,0.30) 100%) !important;
 }

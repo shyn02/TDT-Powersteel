@@ -1,7 +1,7 @@
 /* ==========================================================================
    ADMIN CUSTOM STYLES — TDT Powersteel
-   Modern/branded design pass sa ibabaw ng Unfold admin theme.
-   Ginagamit ang parehong orange/gray palette ng public site.
+   Modern/branded design pass on top of the Unfold admin theme.
+   Uses the same orange/gray palette as the public site.
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap');
@@ -434,7 +434,7 @@ form#changelist-search {
     margin: 0 0 14px 0;
 }
 
-/* I-hide ang Recent Actions sidebar container sa Django Unfold index dashboard */
+/* Hide the Recent Actions sidebar container on the Django Unfold index dashboard */
 div[class*="lg:w-80"],
 div[class*="lg:w-1/3"]:has(h2:contains("Recent")),
 #content-related,
@@ -443,7 +443,7 @@ aside.recent-actions {
     display: none !important;
 }
 
-/* Gawing 100% full width ang main dashboard container */
+/* Make the main dashboard container 100% full width */
 #content-main,
 .dashboard-content,
 div[class*="lg:w-2/3"] {
@@ -456,14 +456,14 @@ div[class*="lg:w-2/3"] {
    SIDEBAR NOTIFICATION BADGES
    -----------------------------------------
    Unfold's sidebar badge (Quote Requests / Referrals / Live Chat,
-   from settings.py -> "badge" key sa UNFOLD["SIDEBAR"]["navigation"])
-   ay walang sariling custom class -- basta Tailwind utility classes
-   lang (bg-primary-100, dark:bg-primary-500/20, min-w-[18px], atbp),
-   kaya tina-target natin dito gamit ang attribute selector sa
-   halip na isang class name. Walang background/pill -- plain
-   orange number na lang (brand color). Lumalabas lang ito kapag
-   may unseen/unread pa -- nawawala rin agad kapag naka-seen na
-   lahat, at automatic na natatago ng ":empty" kapag walang laman.
+   from settings.py -> "badge" key in UNFOLD["SIDEBAR"]["navigation"])
+   has no custom class of its own -- just Tailwind utility classes
+   (bg-primary-100, dark:bg-primary-500/20, min-w-[18px], etc.),
+   so we target it here using the attribute selector instead
+   of a class name. No background/pill -- plain
+   orange number only (brand color). Only shows when
+   there are unseen/unread messages -- disappears immediately
+   all, and automatically hidden by ":empty" when empty.
 ========================================= */
 #nav-sidebar span[class*="min-w-[18px]"] {
     background: transparent !important;

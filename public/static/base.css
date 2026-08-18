@@ -19,7 +19,7 @@
 }
 
 html {
-    scroll-behavior: auto; /* Pinatay para sa manual JS physics control */
+    scroll-behavior: auto; /* Disabled for manual JS physics control */
     overflow-x: clip;
     max-width: 100%;
 }/* --- GLOBAL RESET & VARIABLES --- */
@@ -43,7 +43,7 @@ html {
 }
 
 html {
-    scroll-behavior: auto; /* Pinatay para sa manual JS physics control */
+    scroll-behavior: auto; /* Disabled for manual JS physics control */
     overflow-x: clip;
     max-width: 100%;
 }

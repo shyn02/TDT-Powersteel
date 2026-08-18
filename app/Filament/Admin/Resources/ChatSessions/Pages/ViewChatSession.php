@@ -21,11 +21,11 @@ class ViewChatSession extends ViewRecord
     // clicking one fills the reply field so staff can still edit before
     // sending, rather than firing off immediately.
     public array $quickReplies = [
-        'Salamat po sa inyong mensahe! Sasagot po kami sa lalong madaling panahon.',
-        'Puwede niyo pong tawagan ang (02) 8831-0000 para sa agarang tulong.',
-        'Isang saglit lang po, ichecheck namin yan.',
-        'Available po kami Mon-Fri, 8:00 AM - 5:00 PM.',
-        'Paki-share po ang inyong contact number para masundan namin kayo.',
+        'Thank you for your message! We will respond as soon as possible.',
+        'You can call (02) 8831-0000 for immediate assistance.',
+        'One moment please, we will check on that.',
+        'We are available Mon-Fri, 8:00 AM - 5:00 PM.',
+        'Please share your contact number so we can follow up with you.',
     ];
 
     public function mount(int|string $record): void

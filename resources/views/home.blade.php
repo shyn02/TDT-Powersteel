@@ -6,7 +6,7 @@
 @section('content')
     <section id="home" class="hero-section">
         <div class="container hero-grid">
-            <!-- KALIWANG CONTENT - Nilagyan ng slide-door-left para umandar ang animation -->
+            <!-- LEFT CONTENT - Has slide-door-left class for animation -->
             <div class="hero-left slide-door-left">
                 <span class="hero-badge">TRUSTED PARTNER IN CONSTRUCTION</span>
                 <h1 class="hero-title">THE PHILIPPINES' NO. 1 TRUSTED <br><span class="highlight">STEEL SUPPLIER</span></h1>
@@ -36,7 +36,7 @@
                 </div>
             </div>
             
-            <!-- KANANG FORM CARD - Nilagyan ng slide-door-right para umandar ang animation -->
+            <!-- RIGHT FORM CARD - Has slide-door-right class for animation -->
             <div class="hero-right slide-door-right" id="heroQuoteOverlay">
                 <div class="quote-form-card">
                     <div class="card-header-form">

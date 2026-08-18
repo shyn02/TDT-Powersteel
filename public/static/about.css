@@ -232,7 +232,7 @@
     }
 }
 .overview-content {
-        margin-top: 80px;  /* Dagdag space sa itaas para bumaba siya sa desktop */
+        margin-top: 80px;  /* Added space on top so it goes down on desktop */
         margin-bottom: 40px;
     }
 .overview-visual {
@@ -718,7 +718,7 @@
 }
 
 /* =========================================
-   MOBILE PHONES ONLY (HINDI MAAPEKTUHAN ANG LAPTOP/DESKTOP)
+   MOBILE PHONES ONLY (DOES NOT AFFECT LAPTOP/DESKTOP)
 ========================================= */
 @media screen and (max-width: 767px) and (pointer: coarse) {
     .overview-person {

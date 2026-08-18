@@ -552,7 +552,7 @@
 }
 
 .social-card .social-embed-wrap {
-    height: 380px; /* Dagdagan ng bahagyang height para kasya ang player */
+    height: 380px; /* Increased height slightly so the player fits */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -577,7 +577,7 @@
     max-height: 380px !important;
     margin: 0 auto !important;
     position: relative !important;
-    /* Pinipigilan ang biglang pagtalon ng layout */
+        /* Prevents sudden layout jumping */
     contain: layout size style; 
 }
 

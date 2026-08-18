@@ -336,7 +336,7 @@ body.quote-modal-open #mainHeader {
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* Container at border adjustment ayon sa brand rules */
+/* Container and border adjustment per brand rules */
 .social-links-container {
     margin-top: 30px;
     border-top: 1px solid #7d7d80; /* Sub palette gray */
@@ -352,7 +352,7 @@ body.quote-modal-open #mainHeader {
     margin-bottom: 12px;
 }
 
-/* Base style ng pabilog na icons */
+/* Base style for circular icons */
 .social-btn {
     display: inline-flex;
     align-items: center;
@@ -368,11 +368,11 @@ body.quote-modal-open #mainHeader {
     transition: all 0.3s ease;
 }
 
-/* Hover style: Magpapalit sa Brand Orange (#e67026) na may magandang glow */
+/* Hover style: Changes to Brand Orange (#e67026) with a nice glow */
 .social-btn:hover {
     background-color: #e67026; /* Official Brand Orange */
     border-color: #e67026;
-    color: #121010 !important; /* Gagawing madilim ang icon pag naka-hover para kitang-kita */
+    color: #121010 !important; /* Make the icon dark when hovered for visibility */
     transform: translateY(-4px);
     box-shadow: 0 4px 15px rgba(230, 112, 38, 0.4); /* Brand Orange Glow */
 }
@@ -393,40 +393,40 @@ body.quote-modal-open #mainHeader {
     box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
 }
 
-/* Container at layout alignment sa loob ng footer */
+/* Container and layout alignment inside the footer */
 .footer-links {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px 20px; /* Distansya sa pagitan ng social links at static text links */
+    gap: 12px 20px; /* Space between social links and static text links */
 }
 
 /* Social Icons Alignment */
 .social-icons {
     display: flex;
-    gap: 10px; /* Space sa pagitan ng bawat social icon */
-    margin-right: 10px; /* Distansya papunta sa "Privacy Policy" */
+    gap: 10px; /* Space between each social icon */
+    margin-right: 10px; /* Space before "Privacy Policy" */
 }
 
-/* UPDATED: Mas malaki at mas kitang-kitang social buttons */
+/* UPDATED: Larger and more visible social buttons */
 .social-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 35px;         /* Laki ng bilog (Dati: 35px) */
-    height: 35px;        /* Laki ng bilog (Dati: 35px) */
+    width: 35px;         /* Circle size (Previously: 35px) */
+    height: 35px;        /* Circle size (Previously: 35px) */
     border-radius: 50%;
     background-color: #2c2c2c; 
     color: #ffffff !important; 
-    font-size: 22px;     /* Laki ng mismong logo sa loob (Dati: 16px) */
+    font-size: 22px;     /* Inner logo size (Previously: 16px) */
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
-/* Hover effects (Ganun pa rin pero mas maganda ang galaw dahil mas malaki) */
+/* Hover effects (Same but smoother movement due to larger size) */
 .social-btn:hover {
-    transform: translateY(-4px); /* Mas aangat nang bahagya */
+    transform: translateY(-4px); /* Slightly lifts up */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -442,15 +442,15 @@ body.quote-modal-open #mainHeader {
     background-color: #ff0000;
 }
 
-/* Styling para sa bagong PNG logo image */
+/* Styling for the new PNG logo image */
 .logo-img {
-    height: 30px; /* Saktong taas para sa desktop navigation header */
-    width: auto;  /* Awtomatikong ia-adjust ang lapad para hindi ma-stretch ang logo */
+    height: 30px; /* Exact height for desktop navigation header */
+    width: auto;  /* Automatically adjusts width so the logo doesn't stretch */
     display: block;
     object-fit: contain;
 }
 
-/* Siguraduhing pantay pa rin ang subtitle sa ilalim ng logo */
+/* Ensure subtitle stays aligned under the logo */
 .logo-group {
     display: flex;
     flex-direction: column;
@@ -466,7 +466,7 @@ body.quote-modal-open #mainHeader {
 
 .section-subtitle {
     font-family: 'Raleway', sans-serif;
-    color: #e67026; /* Gawaing Orange ang subtitle */
+    color: #e67026; /* Make the subtitle Orange */
     font-weight: 700;
     letter-spacing: 2px;
 }

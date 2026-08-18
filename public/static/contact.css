@@ -7,7 +7,7 @@
     background-position: center 25%;
     background-repeat: no-repeat;
     
-    /* Taasan natin ang padding para lumabas ang mas malaking parte ng litrato */
+    /* Increased padding so a larger part of the photo shows */
     padding: 160px 0; 
     
     text-align: center;
@@ -15,7 +15,7 @@
     border-bottom: 1px solid rgba(113, 112, 116, 0.1);
 }
 
-/* Dark overlay para maging malinaw at madaling basahin ang text */
+/* Dark overlay to make text clear and easy to read */
 .page-banner::before {
     content: "";
     position: absolute;
@@ -24,7 +24,7 @@
     z-index: 1;
 }
 
-/* Siguraduhing nasa ibabaw ng overlay ang content */
+/* Ensure the content is above the overlay */
 .page-banner .container {
     position: relative;
     z-index: 2;
@@ -45,7 +45,7 @@
     justify-content: center;
 }
 
-/* Tiyakin ang Kulay ng mga Text para sa Dark Banner */
+/* Ensure the Text Color for Dark Banner */
 .page-banner .section-subtitle {
     color: var(--tdt-orange) !important;
     font-weight: 700;
