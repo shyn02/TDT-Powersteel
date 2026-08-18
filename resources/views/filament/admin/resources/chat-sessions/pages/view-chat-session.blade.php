@@ -11,12 +11,16 @@
         wire:poll.5s="markIncomingAsRead"
         style="margin: 0; padding: 0;"
     >
+        @php
+            $messages = $this->record->messages()->orderBy('created_at')->get();
+            $prevSender = null;
+        @endphp
         <div
             x-ref="thread"
             style="
                 display: flex;
                 flex-direction: column;
-                gap: 4px;
+                gap: 0;
                 height: 420px;
                 overflow-y: auto;
                 padding: 16px;
@@ -26,12 +30,22 @@
                 border: 1px solid rgb(229 231 235);
             "
         >
-            @forelse ($this->record->messages()->orderBy('created_at')->get() as $message)
+            @forelse ($messages as $message)
                 @php
                     $isStaff = $message->sender === 'staff';
+                    $senderChanged = $prevSender !== null && $prevSender !== $message->sender;
+                    $prevSender = $message->sender;
                 @endphp
-                <div style="display: flex; justify-content: {{ $isStaff ? 'flex-end' : 'flex-start' }}; margin: 0; padding: 2px 0;">
+
+                {{-- Bigger gap when sender changes --}}
+                <div style="display: flex; justify-content: {{ $isStaff ? 'flex-end' : 'flex-start' }}; margin: 0; padding: {{ $senderChanged ? '10px 0 2px' : '1px 0' }};">
                     <div style="max-width: 65%; display: flex; flex-direction: column; align-items: {{ $isStaff ? 'flex-end' : 'flex-start' }}; margin: 0;">
+                        {{-- Timestamp label only when sender changes --}}
+                        @if ($senderChanged)
+                            <span style="font-size: 10.5px; color: rgb(156 163 175); margin: 0 4px 3px; {{ $isStaff ? 'text-align: right;' : '' }}">
+                                {{ $isStaff ? 'Staff' : 'Client' }} · {{ \Carbon\Carbon::parse($message->created_at)->format('g:i A') }}
+                            </span>
+                        @endif
                         <div style="
                             padding: 8px 13px;
                             border-radius: 16px;
@@ -44,9 +58,6 @@
                             word-break: break-word;
                             margin: 0;
                         ">{{ $message->message }}</div>
-                        <span style="font-size: 10.5px; color: rgb(156 163 175); margin: 2px 4px 0;">
-                            {{ $isStaff ? 'Staff' : 'Client' }} · {{ \Carbon\Carbon::parse($message->created_at)->format('g:i A') }}
-                        </span>
                     </div>
                 </div>
             @empty
@@ -54,7 +65,7 @@
             @endforelse
         </div>
 
-        {{-- Quick replies: tap to fill the input box below, then edit/send as needed --}}
+        {{-- Quick replies --}}
         <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0;">
             @foreach ($quickReplies as $reply)
                 <button
