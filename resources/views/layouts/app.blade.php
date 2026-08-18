@@ -71,7 +71,6 @@
                 <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">HOME</a>
                 <a href="{{ route('products') }}" class="{{ request()->is('products*') ? 'active' : '' }}">PRODUCTS</a>
                 <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">ABOUT US</a>
-                <a href="{{ route('track_order') }}" class="{{ request()->routeIs('track_order') ? 'active' : '' }}">TRACK ORDER</a>
                 <a href="{{ route('blog') }}" class="{{ request()->is('blog*') ? 'active' : '' }}">BLOG</a>
                 <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">CONTACT</a>
             </nav>
@@ -107,7 +106,6 @@
                     <li><a href="{{ route('home') }}">Home</a></li>
                     <li><a href="{{ route('products') }}">Products</a></li>
                     <li><a href="{{ route('about') }}">About Us</a></li>
-                    <li><a href="{{ route('track_order') }}">Track Order</a></li>
                     <li><a href="{{ route('blog') }}">Blog</a></li>
                     <li><a href="{{ route('contact') }}">Contact</a></li>
                 </ul>

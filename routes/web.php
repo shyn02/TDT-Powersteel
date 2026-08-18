@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/products/', [PageController::class, 'products'])->name('products');
 Route::get('/about/', [PageController::class, 'about'])->name('about');
-Route::get('/track-order/', [PageController::class, 'trackOrder'])->name('track_order');
 Route::get('/blog/', [PageController::class, 'blog'])->name('blog');
 Route::get('/contact/', [PageController::class, 'contact'])->name('contact');
 Route::get('/privacy-policy/', [PageController::class, 'privacyPolicy'])->name('privacy_policy');
