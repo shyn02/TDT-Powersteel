@@ -83,6 +83,42 @@ h1, h2, h3, .section-title {
     transform: translateY(-2px);
 }
 
+@media (max-width: 991px) {
+    .hero-title {
+        font-size: 56px;
+    }
+
+    .hero-section {
+        padding: 100px 0 60px 0;
+    }
+
+    .hero-left {
+        text-align: center;
+    }
+
+    .hero-stats {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 38px;
+    }
+
+    .hero-badge {
+        font-size: 10px;
+    }
+
+    .hero-desc {
+        font-size: 14px;
+    }
+
+    .hero-actions {
+        justify-content: center;
+    }
+}
+
 /* --- VIEW CATALOGUE --- */
 .btn-outline-dark {
     background: transparent;
