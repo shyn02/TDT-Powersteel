@@ -6,13 +6,28 @@
     overflow: hidden;
 }
 
-/* Crane background image */
+/* Steel building background - left side */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    bottom: 0;
+    width: 560px;
+    height: 100%;
+    background: url('/static/images/steel-building.png') no-repeat bottom left;
+    background-size: contain;
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Crane background - right side */
 .hero-section::after {
     content: '';
     position: absolute;
-    right: -40px;
+    right: -20px;
     bottom: 0;
-    width: 480px;
+    width: 560px;
     height: 100%;
     background: url('/static/images/crane.png') no-repeat bottom right;
     background-size: contain;
@@ -22,14 +37,20 @@
 }
 
 @media (max-width: 991px) {
-    .hero-section::after {
-        width: 300px;
+    .hero-section::before {
+        width: 350px;
         opacity: 0.05;
-        right: -60px;
+        left: -40px;
+    }
+    .hero-section::after {
+        width: 350px;
+        opacity: 0.05;
+        right: -40px;
     }
 }
 
 @media (max-width: 576px) {
+    .hero-section::before,
     .hero-section::after {
         display: none;
     }
