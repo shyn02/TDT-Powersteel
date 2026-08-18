@@ -27,6 +27,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Admin\Pages\Auth\Login::class)
+            ->renderHook(
+                'head',
+                fn () => '<link rel="stylesheet" href="' . asset('static/admin_custom.css') . '">',
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
