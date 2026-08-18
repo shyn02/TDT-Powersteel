@@ -5,6 +5,16 @@
 
 @section('content')
     <section id="home" class="hero-section">
+        <!-- Product slideshow background -->
+        <div class="hero-slideshow" aria-hidden="true">
+            <img src="{{ asset('static/images/steel1.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steel2.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steel3.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steel4.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steel5.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steel6.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steel7.jpeg') }}" alt="">
+        </div>
         <!-- Decorative circles -->
         <div class="hero-circles" aria-hidden="true">
             <div class="hc hc-1"></div>
