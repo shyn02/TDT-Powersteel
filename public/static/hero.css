@@ -99,22 +99,9 @@
     100%      { opacity: 0; }
 }
 
-/* Light overlay for subtle blending */
-.hero-section::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.3);
-    z-index: 1;
-    pointer-events: none;
-}
-
 @media (max-width: 991px) {
     .hero-slideshow img {
         animation-duration: 18s;
-    }
-    .hero-section::after {
-        background: rgba(255, 255, 255, 0.5);
     }
 }
 
