@@ -71,6 +71,9 @@
                         <button class="btn-orange btn-quote-trigger" data-product="{{ $category->name }}">
                             <span class="btn-text">REQUEST A QUOTE</span>
                         </button>
+                        <button class="btn-calc-trigger" data-product-name="{{ $product->name }}" data-category-slug="{{ $category->slug }}">
+                            <i class="fa-solid fa-calculator"></i> CALCULATE WEIGHT
+                        </button>
                     </div>
                 </div>
                 @empty

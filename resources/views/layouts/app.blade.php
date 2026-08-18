@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="/static/footer.css">
     <link rel="stylesheet" href="/static/widgets.css">
     <link rel="stylesheet" href="/static/chatwidget.css">
+    <link rel="stylesheet" href="/static/calculator.css">
     @stack('styles')
 </head>
 <body>
@@ -157,6 +158,33 @@
         </div>
     </footer>
 
+    <!-- Weight Calculator Modal -->
+    <div id="calcModalOverlay" class="calc-modal-overlay">
+        <div class="calc-modal">
+            <div class="calc-header">
+                <h2>WEIGHT CALCULATOR</h2>
+                <button class="calc-close" id="calcClose">&times;</button>
+            </div>
+            <div class="calc-body">
+                <div class="calc-product-name" id="calcProductName"></div>
+                <div id="calcFormContainer"></div>
+                <div class="calc-btn-row">
+                    <button type="button" class="calc-btn calc-btn-calc" id="calcCalcBtn">CALCULATE</button>
+                    <button type="button" class="calc-btn calc-btn-reset" id="calcResetBtn">RESET</button>
+                </div>
+                <div class="calc-result" id="calcResult">
+                    <div class="calc-result-label">Estimated Weight</div>
+                    <div class="calc-result-weight" id="calcResultWeight"></div>
+                    <div class="calc-result-secondary" id="calcResultSecondary"></div>
+                    <div class="calc-result-breakdown" id="calcResultBreakdown"></div>
+                    <div class="calc-btn-row result-actions">
+                        <button type="button" class="calc-btn calc-btn-quote" id="calcQuoteBtn">REQUEST A QUOTE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quote Modal -->
     <div id="quoteModal" class="modal-overlay">
         <div class="modal-card">
@@ -223,6 +251,7 @@
     <!-- Main JavaScript file handles everything cleanly -->
     <script src="/static/script.js"></script>
     <script src="/static/chatwidget.js"></script>
+    <script src="/static/calculator.js"></script>
     @stack('scripts')
 </body>
 </html>
