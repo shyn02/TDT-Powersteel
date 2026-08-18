@@ -257,8 +257,8 @@
     justify-content: center;
     gap: 6px;
     background: #fff;
-    border: 2px solid var(--tdt-gray);
-    color: var(--tdt-gray);
+    border: 2px solid var(--tdt-orange);
+    color: var(--tdt-orange);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.1em;
