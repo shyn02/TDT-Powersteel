@@ -53,12 +53,14 @@ class ChatController extends Controller
                 'session_id' => $session->id,
                 'sender' => 'client',
                 'message' => '[Requested to speak with a live agent]',
+                'created_at' => now(),
             ]);
         } elseif ($type === 'message' && $text !== '') {
             ChatMessage::create([
                 'session_id' => $session->id,
                 'sender' => 'client',
                 'message' => $text,
+                'created_at' => now(),
             ]);
         }
 
