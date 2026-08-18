@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Support\HtmlString;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Admin\Pages\Auth\Login::class)
-            ->logo(fn () => '<a href="' . route('filament.admin.pages.dashboard') . '" class="block py-3 px-4"><img src="' . asset('static/images/logo.png') . '" alt="TDT Powersteel" class="h-10 w-auto"></a>')
+            ->brandName(new HtmlString('<img src="' . asset('static/images/logo.png') . '" alt="TDT Powersteel" style="height:40px;width:auto;display:block;">'))
             ->renderHook(
                 'body.start',
                 fn () => '<link rel="stylesheet" href="' . asset('static/admin_custom.css') . '?v=' . filemtime(public_path('static/admin_custom.css')) . '">',
