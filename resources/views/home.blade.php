@@ -13,7 +13,7 @@
             <img src="{{ asset('static/images/Sheet Piles Banner.jpg') }}" alt="">
             <img src="{{ asset('static/images/Roofing Banner.png') }}" alt="">
             <img src="{{ asset('static/images/wiremesh banner.jpg') }}" alt="">
-            <img src="{{ asset('static/images/Angle Bar.png') }}" alt="">
+            <img src="{{ asset('static/images/ss-angle-bar.png') }}" alt="">
         </div>
         <!-- Decorative circles -->
         <div class="hero-circles" aria-hidden="true">
