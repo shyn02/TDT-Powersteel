@@ -12,7 +12,7 @@
         style="margin: 0; padding: 0;"
     >
         @php
-            $messages = $this->record->messages()->orderBy('created_at')->get();
+            $messages = $this->record->messages()->orderBy('created_at')->orderBy('id')->get();
             $prevSender = null;
         @endphp
         <div
@@ -34,14 +34,15 @@
                 @php
                     $isStaff = $message->sender === 'staff';
                     $senderChanged = $prevSender !== null && $prevSender !== $message->sender;
+                    $isFirst = $prevSender === null;
                     $prevSender = $message->sender;
                 @endphp
 
                 {{-- Bigger gap when sender changes --}}
-                <div style="display: flex; justify-content: {{ $isStaff ? 'flex-end' : 'flex-start' }}; margin: 0; padding: {{ $senderChanged ? '10px 0 2px' : '1px 0' }};">
+                <div style="display: flex; justify-content: {{ $isStaff ? 'flex-end' : 'flex-start' }}; margin: 0; padding: {{ ($senderChanged || $isFirst) ? '10px 0 2px' : '1px 0' }};">
                     <div style="max-width: 65%; display: flex; flex-direction: column; align-items: {{ $isStaff ? 'flex-end' : 'flex-start' }}; margin: 0;">
-                        {{-- Timestamp label only when sender changes --}}
-                        @if ($senderChanged)
+                        {{-- Timestamp label when sender changes or first message --}}
+                        @if ($senderChanged || $isFirst)
                             <span style="font-size: 10.5px; color: rgb(156 163 175); margin: 0 4px 3px; {{ $isStaff ? 'text-align: right;' : '' }}">
                                 {{ $isStaff ? 'Staff' : 'Client' }} · {{ \Carbon\Carbon::parse($message->created_at)->format('g:i A') }}
                             </span>
