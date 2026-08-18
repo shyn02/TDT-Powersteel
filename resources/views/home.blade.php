@@ -5,6 +5,14 @@
 
 @section('content')
     <section id="home" class="hero-section">
+        <!-- Decorative circles -->
+        <div class="hero-circles" aria-hidden="true">
+            <div class="hc hc-1"></div>
+            <div class="hc hc-2"></div>
+            <div class="hc hc-3"></div>
+            <div class="hc hc-4"></div>
+            <div class="hc hc-5"></div>
+        </div>
         <div class="container hero-grid">
             <!-- KALIWANG CONTENT - Nilagyan ng slide-door-left para umandar ang animation -->
             <div class="hero-left slide-door-left">

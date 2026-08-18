@@ -6,13 +6,72 @@
     overflow: hidden;
 }
 
+/* --- DECORATIVE CIRCLES --- */
+.hero-circles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hc {
+    position: absolute;
+    border-radius: 50%;
+}
+
+/* Large orange circle - top right */
+.hc-1 {
+    width: 320px;
+    height: 320px;
+    background: rgba(230, 112, 38, 0.07);
+    top: -60px;
+    right: -80px;
+}
+
+/* Medium gray circle - bottom left */
+.hc-2 {
+    width: 200px;
+    height: 200px;
+    background: rgba(113, 112, 116, 0.06);
+    bottom: -40px;
+    left: -50px;
+}
+
+/* Small orange ring - mid left */
+.hc-3 {
+    width: 80px;
+    height: 80px;
+    border: 3px solid rgba(230, 112, 38, 0.15);
+    background: transparent;
+    top: 40%;
+    left: 8%;
+}
+
+/* Tiny gray dot - top center */
+.hc-4 {
+    width: 14px;
+    height: 14px;
+    background: rgba(113, 112, 116, 0.12);
+    top: 20%;
+    left: 45%;
+}
+
+/* Medium orange dot - bottom right */
+.hc-5 {
+    width: 40px;
+    height: 40px;
+    background: rgba(230, 112, 38, 0.1);
+    bottom: 25%;
+    right: 12%;
+}
+
 /* Steel building background - left side */
 .hero-section::before {
     content: '';
     position: absolute;
     left: -20px;
     bottom: 0;
-    width: 560px;
+    width: 700px;
     height: 100%;
     background: url('/static/images/steel-building.png') no-repeat bottom left;
     background-size: contain;
@@ -27,7 +86,7 @@
     position: absolute;
     right: -20px;
     bottom: 0;
-    width: 560px;
+    width: 700px;
     height: 100%;
     background: url('/static/images/crane.png') no-repeat bottom right;
     background-size: contain;
@@ -38,12 +97,12 @@
 
 @media (max-width: 991px) {
     .hero-section::before {
-        width: 350px;
+        width: 450px;
         opacity: 0.05;
         left: -40px;
     }
     .hero-section::after {
-        width: 350px;
+        width: 450px;
         opacity: 0.05;
         right: -40px;
     }
