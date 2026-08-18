@@ -207,15 +207,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="clientName">Your Name / Company</label>
-                    <input type="text" name="clientName" id="clientName" required placeholder="e.g. Juan Construction">
+                    <label for="clientName">Full Name *</label>
+                    <input type="text" name="clientName" id="clientName" required placeholder="e.g. Juan Dela Cruz">
                 </div>
                 <div class="form-group">
-                    <label for="clientContact">Contact Number / Email</label>
+                    <label for="clientCompany">Company Name</label>
+                    <input type="text" name="clientCompany" id="clientCompany" placeholder="e.g. ABC Construction">
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">Email Address *</label>
+                    <input type="email" name="clientEmail" id="clientEmail" required placeholder="e.g. juan@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="clientContact">Contact Number *</label>
                     <input type="text" name="clientContact" id="clientContact" required placeholder="e.g. 0917XXXXXXX">
                 </div>
                 <div class="form-group">
-                    <label for="estimatedQty">Estimated Quantity Needed</label>
+                    <label for="clientAddress">Project Address</label>
+                    <input type="text" name="clientAddress" id="clientAddress" placeholder="e.g. Sampaloc, Manila">
+                </div>
+                <div class="form-group">
+                    <label for="estimatedQty">Estimated Quantity Needed *</label>
                     <input type="text" name="estimatedQty" id="estimatedQty" required placeholder="e.g. 500 pcs / 10 tons">
                 </div>
                 <div class="form-group">

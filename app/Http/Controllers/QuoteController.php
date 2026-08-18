@@ -49,8 +49,15 @@ class QuoteController extends Controller
 
         // ---- Case 1: quoteForm modal (embedded on Home, Products, and every category page) ----
         if ($request->hasAny(['clientName', 'clientContact', 'estimatedQty'])) {
-            [$fullName, $companyName] = $this->splitNameCompany($request->input('clientName', ''));
-            [$email, $phone] = $this->splitContact($request->input('clientContact', ''));
+            $fullName = trim((string) $request->input('clientName', ''));
+            $companyName = trim((string) $request->input('clientCompany', ''));
+            $email = trim((string) $request->input('clientEmail', ''));
+            $phone = trim((string) $request->input('clientContact', ''));
+            $address = trim((string) $request->input('clientAddress', ''));
+
+            $howHeard = trim((string) $request->input('qHowHeard', ''));
+            $howHeardOther = trim((string) $request->input('qHowHeardOther', ''));
+            $howHeardLabel = ($howHeard === 'others' && $howHeardOther !== '') ? $howHeardOther : $howHeard;
 
             $estimatedQty = trim((string) $request->input('estimatedQty', ''));
             $subProduct = trim((string) $request->input('subProduct', ''));
@@ -76,6 +83,8 @@ class QuoteController extends Controller
                 'company_name' => $companyName ?: null,
                 'email' => $email ?: null,
                 'phone' => $phone ?: null,
+                'address' => $address ?: null,
+                'how_heard' => $howHeardLabel ?: null,
                 'estimated_qty' => $estimatedQty ?: '-',
                 'status' => 'new',
                 'source' => $sourcePage,
