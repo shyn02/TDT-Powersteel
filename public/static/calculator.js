@@ -370,14 +370,30 @@
         '</div>';
     }
 
-    function buildBeamForm() {
-        var opts = '<option value="">-- Select Size --</option>';
-        BEAM_SIZES.forEach(function (s, i) {
-            opts += '<option value="' + i + '">' + s.label + ' (' + s.weight + ' kg/m)</option>';
+    /* Custom-styled dropdown markup used in place of a native <select> for the
+       "Size"/"Type" field (beam/purlin/sheet-pile forms). Native <select> popups
+       can't be restyled and render as a plain OS list on mobile, so this mirrors
+       the homepage product dropdown (.calc-dropdown) which is already mobile-friendly. */
+    function buildSizeDropdownMarkup(optionLabels, placeholder) {
+        var optsHtml = '';
+        optionLabels.forEach(function (label, i) {
+            optsHtml += '<div class="calc-dropdown-option" role="option" tabindex="0" data-value="' + i + '">' + label + '</div>';
         });
+        return '<div class="calc-dropdown" id="calcSizeDropdown">' +
+            '<button type="button" class="calc-dropdown-trigger" id="calcSizeDropdownTrigger" aria-haspopup="listbox" aria-expanded="false">' +
+                '<span id="calcSizeDropdownLabel" data-placeholder="' + placeholder + '">' + placeholder + '</span>' +
+                '<i class="fa-solid fa-chevron-down calc-dropdown-arrow"></i>' +
+            '</button>' +
+            '<div class="calc-dropdown-panel" id="calcSizeDropdownPanel" role="listbox" tabindex="-1">' + optsHtml + '</div>' +
+            '<input type="hidden" id="calcSize" value="">' +
+        '</div>';
+    }
+
+    function buildBeamForm() {
+        var labels = BEAM_SIZES.map(function (s) { return s.label + ' (' + s.weight + ' kg/m)'; });
         return '<div class="form-group">' +
             '<label>Size</label>' +
-            '<select id="calcSize">' + opts + '</select>' +
+            buildSizeDropdownMarkup(labels, '-- Select Size --') +
         '</div>' +
         '<div class="form-row">' +
             '<div class="form-group">' +
@@ -396,13 +412,10 @@
     }
 
     function buildPurlinForm() {
-        var opts = '<option value="">-- Select Size --</option>';
-        PURLIN_SIZES.forEach(function (s, i) {
-            opts += '<option value="' + i + '">' + s.label + ' (' + s.weight + ' kg/m)</option>';
-        });
+        var labels = PURLIN_SIZES.map(function (s) { return s.label + ' (' + s.weight + ' kg/m)'; });
         return '<div class="form-group">' +
             '<label>Size</label>' +
-            '<select id="calcSize">' + opts + '</select>' +
+            buildSizeDropdownMarkup(labels, '-- Select Size --') +
         '</div>' +
         '<div class="form-row">' +
             '<div class="form-group">' +
@@ -421,13 +434,10 @@
     }
 
     function buildSheetPileForm() {
-        var opts = '<option value="">-- Select Type --</option>';
-        SHEET_PILE_TYPES.forEach(function (s, i) {
-            opts += '<option value="' + i + '">' + s.label + '</option>';
-        });
+        var labels = SHEET_PILE_TYPES.map(function (s) { return s.label; });
         return '<div class="form-group">' +
             '<label>Type</label>' +
-            '<select id="calcSize">' + opts + '</select>' +
+            buildSizeDropdownMarkup(labels, '-- Select Type --') +
         '</div>' +
         '<div class="form-group">' +
             '<label>Length</label>' +
@@ -683,6 +693,102 @@
         });
     }
 
+    /* ---------- Custom SIZE dropdown behaviour (delegated, works for both modals) ---------- */
+
+    function positionSizeDropdownPanel(trigger, panel) {
+        var rect = trigger.getBoundingClientRect();
+        var viewportHeight = window.innerHeight;
+        var spaceBelow = viewportHeight - rect.bottom - 12;
+        var spaceAbove = rect.top - 12;
+        var openUpward = spaceBelow < 180 && spaceAbove > spaceBelow;
+        var maxHeight = Math.max(140, Math.min(320, openUpward ? spaceAbove : spaceBelow));
+
+        panel.style.left = rect.left + 'px';
+        panel.style.width = rect.width + 'px';
+        panel.style.maxHeight = maxHeight + 'px';
+
+        if (openUpward) {
+            panel.style.top = 'auto';
+            panel.style.bottom = (viewportHeight - rect.top + 6) + 'px';
+        } else {
+            panel.style.bottom = 'auto';
+            panel.style.top = (rect.bottom + 6) + 'px';
+        }
+    }
+
+    function closeSizeDropdown() {
+        var dropdown = document.getElementById('calcSizeDropdown');
+        var trigger = document.getElementById('calcSizeDropdownTrigger');
+        if (dropdown) dropdown.classList.remove('open');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function resetSizeDropdown(container) {
+        var dropdown = container ? container.querySelector('#calcSizeDropdown') : null;
+        if (!dropdown) return;
+        dropdown.classList.remove('open');
+        var label = dropdown.querySelector('#calcSizeDropdownLabel');
+        var hidden = dropdown.querySelector('#calcSize');
+        var trigger = dropdown.querySelector('#calcSizeDropdownTrigger');
+        if (label) label.textContent = label.getAttribute('data-placeholder') || label.textContent;
+        if (hidden) hidden.value = '';
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        dropdown.querySelectorAll('.calc-dropdown-option.selected').forEach(function (o) { o.classList.remove('selected'); });
+    }
+
+    document.addEventListener('click', function (e) {
+        var dropdown = document.getElementById('calcSizeDropdown');
+        if (!dropdown) return;
+
+        var trigger = e.target.closest('#calcSizeDropdownTrigger');
+        if (trigger) {
+            e.stopPropagation();
+            var panel = document.getElementById('calcSizeDropdownPanel');
+            if (dropdown.classList.contains('open')) {
+                closeSizeDropdown();
+            } else {
+                positionSizeDropdownPanel(trigger, panel);
+                dropdown.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+            }
+            return;
+        }
+
+        var opt = e.target.closest('#calcSizeDropdownPanel .calc-dropdown-option');
+        if (opt) {
+            var panel2 = document.getElementById('calcSizeDropdownPanel');
+            var label = document.getElementById('calcSizeDropdownLabel');
+            var hidden = document.getElementById('calcSize');
+            panel2.querySelectorAll('.calc-dropdown-option.selected').forEach(function (o) { o.classList.remove('selected'); });
+            opt.classList.add('selected');
+            if (label) label.textContent = opt.textContent;
+            if (hidden) hidden.value = opt.getAttribute('data-value');
+            closeSizeDropdown();
+            return;
+        }
+
+        if (dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
+            closeSizeDropdown();
+        }
+    });
+
+    function repositionOpenSizeDropdown() {
+        var dropdown = document.getElementById('calcSizeDropdown');
+        if (dropdown && dropdown.classList.contains('open')) {
+            positionSizeDropdownPanel(document.getElementById('calcSizeDropdownTrigger'), document.getElementById('calcSizeDropdownPanel'));
+        }
+    }
+    window.addEventListener('resize', repositionOpenSizeDropdown);
+    window.addEventListener('scroll', repositionOpenSizeDropdown, true);
+
+    document.addEventListener('keydown', function (e) {
+        var opt = e.target.closest && e.target.closest('.calc-dropdown-option');
+        if (opt && (e.key === 'Enter' || e.key === ' ') && opt.closest('#calcSizeDropdownPanel')) {
+            e.preventDefault();
+            opt.click();
+        }
+    });
+
     /* ---------- Wire everything up on DOMContentLoaded ---------- */
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -752,7 +858,10 @@
         /* ESC to close */
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
-                if (homeCalcDropdown && homeCalcDropdown.classList.contains('open')) {
+                var openSizeDropdown = document.getElementById('calcSizeDropdown');
+                if (openSizeDropdown && openSizeDropdown.classList.contains('open')) {
+                    closeSizeDropdown();
+                } else if (homeCalcDropdown && homeCalcDropdown.classList.contains('open')) {
                     closeHomeCalcDropdownPanel();
                 } else if (overlay && overlay.classList.contains('active')) {
                     closeCalcModal();
@@ -794,6 +903,7 @@
             resetBtn.addEventListener('click', function () {
                 formContainer.querySelectorAll('input').forEach(function (input) { input.value = ''; });
                 formContainer.querySelectorAll('select').forEach(function (sel) { if (sel.className !== 'calc-unit-select') sel.selectedIndex = 0; });
+                resetSizeDropdown(formContainer);
                 resultEl.classList.remove('show');
             });
         }
@@ -992,6 +1102,7 @@
                 if (homeFormContainer) {
                     homeFormContainer.querySelectorAll('input').forEach(function (i) { i.value = ''; });
                     homeFormContainer.querySelectorAll('select').forEach(function (s) { if (s.className !== 'calc-unit-select') s.selectedIndex = 0; });
+                    resetSizeDropdown(homeFormContainer);
                 }
                 homeCalcResult.classList.remove('show');
             });
