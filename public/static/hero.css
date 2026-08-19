@@ -2,7 +2,7 @@
 .hero-section {
     min-height: 100vh;
     padding: 140px 0 80px 0;
-    background: #1a1a2e;
+    background: #ffffff;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -97,8 +97,8 @@
 
 @keyframes heroSlide {
     0%        { opacity: 0; }
-    2%        { opacity: 0.28; }
-    12.5%     { opacity: 0.28; }
+    2%        { opacity: 0.35; }
+    12.5%     { opacity: 0.35; }
     14.3%     { opacity: 0; }
     100%      { opacity: 0; }
 }
