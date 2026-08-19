@@ -225,6 +225,16 @@
     line-height: 1.8;
 }
 
+.calc-error-msg {
+    display: block;
+    color: #e74c3c;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    border-top: none;
+    padding-top: 0;
+}
+
 .calc-btn-row.result-actions {
     margin-top: 16px;
 }

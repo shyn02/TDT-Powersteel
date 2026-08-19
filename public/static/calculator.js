@@ -517,11 +517,24 @@
 
     /* ---------- Calculation functions (read unit-converted values) ---------- */
 
+    /* Guards against 0, NaN, empty AND negative numbers — a bare `!x` check in
+       JS only catches 0/NaN/empty, so a manually-typed negative value (the
+       spinner's min="0" attribute doesn't stop a typed or pasted value) would
+       previously slip through and produce a negative "weight" result. */
+    function isPositive(n) {
+        return typeof n === 'number' && isFinite(n) && n > 0;
+    }
+
+    function positiveQty() {
+        var q = parseInt(document.getElementById('calcQty').value, 10);
+        return isPositive(q) ? q : 1;
+    }
+
     function calcRoundBar() {
         var d = toMm(parseFloat(document.getElementById('calcDiameter').value));
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!d || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(d) || !isPositive(L)) return null;
         var perPc = d * d * 0.006165 * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
@@ -530,8 +543,8 @@
         var w = toMm(parseFloat(document.getElementById('calcWidth').value));
         var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!w || !t || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(w) || !isPositive(t) || !isPositive(L)) return null;
         var perPc = w * t * L * STEEL_DENSITY / 1000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
@@ -539,8 +552,8 @@
     function calcSquareBar() {
         var d = toMm(parseFloat(document.getElementById('calcDiameter').value));
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!d || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(d) || !isPositive(L)) return null;
         var perPc = d * d * L * STEEL_DENSITY / 1000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
@@ -550,8 +563,9 @@
         var b = toMm(parseFloat(document.getElementById('calcLegB').value));
         var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!a || !b || !t || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(a) || !isPositive(b) || !isPositive(t) || !isPositive(L)) return null;
+        if (t >= a + b) return { error: 'Thickness looks too large for those leg lengths — please double-check the values.' };
         var perPc = (a + b - t) * t * L * STEEL_DENSITY / 1000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
@@ -560,8 +574,8 @@
         var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var w = toMm(parseFloat(document.getElementById('calcWidth').value));
         var L = toMm(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!t || !w || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(t) || !isPositive(w) || !isPositive(L)) return null;
         var perPc = t * w * L * STEEL_DENSITY / 1000000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
@@ -572,8 +586,9 @@
         var od = toMm(parseFloat(document.getElementById('calcOD').value));
         var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!od || !t || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(od) || !isPositive(t) || !isPositive(L)) return null;
+        if (t >= od) return { error: 'Wall thickness must be smaller than the outer diameter — please double-check the values.' };
         var perM = (od - t) * t * 0.02466;
         var perPc = perM * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
@@ -584,8 +599,9 @@
         var h = toMm(parseFloat(document.getElementById('calcHeight').value));
         var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!w || !h || !t || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(w) || !isPositive(h) || !isPositive(t) || !isPositive(L)) return null;
+        if (2 * t >= w + h) return { error: 'Wall thickness looks too large for those width/height values — please double-check.' };
         var perM = (w + h - 2 * t) * 2 * t * 0.0157;
         var perPc = perM * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
@@ -594,8 +610,8 @@
     function calcBeam() {
         var idx = document.getElementById('calcSize').value;
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (idx === '' || !L) return null;
+        var q = positiveQty();
+        if (idx === '' || !isPositive(L)) return null;
         var unitW = BEAM_SIZES[parseInt(idx)].weight;
         var perPc = unitW * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
@@ -604,8 +620,8 @@
     function calcPurlin() {
         var idx = document.getElementById('calcSize').value;
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (idx === '' || !L) return null;
+        var q = positiveQty();
+        if (idx === '' || !isPositive(L)) return null;
         var unitW = PURLIN_SIZES[parseInt(idx)].weight;
         var perPc = unitW * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
@@ -614,7 +630,7 @@
     function calcSheetPile() {
         var idx = document.getElementById('calcSize').value;
         var L = toM(parseFloat(document.getElementById('calcLength').value));
-        if (idx === '' || !L) return null;
+        if (idx === '' || !isPositive(L)) return null;
         var perM = SHEET_PILE_TYPES[parseInt(idx)].weightPerM;
         var total = perM * L;
         return { perPiece: total, total: total, qty: 1, unit: 'kg', breakdown: perM + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
@@ -624,8 +640,8 @@
         var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var w = toMm(parseFloat(document.getElementById('calcWidth').value));
         var L = toMm(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!t || !w || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(t) || !isPositive(w) || !isPositive(L)) return null;
         var areaM2 = (w / 1000) * (L / 1000);
         var perSheet = areaM2 * t * t * 0.00617 * 40;
         return { perPiece: perSheet, total: perSheet * q, qty: q, unit: 'kg', note: 'Approximate weight' };
@@ -635,8 +651,8 @@
         var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var w = toMm(parseFloat(document.getElementById('calcWidth').value));
         var L = toMm(parseFloat(document.getElementById('calcLength').value));
-        var q = parseInt(document.getElementById('calcQty').value) || 1;
-        if (!t || !w || !L) return null;
+        var q = positiveQty();
+        if (!isPositive(t) || !isPositive(w) || !isPositive(L)) return null;
         var perPc = t * w * L * STEEL_DENSITY / 1000000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
@@ -881,6 +897,13 @@
                     resultEl.classList.remove('show');
                     return;
                 }
+                if (result.error) {
+                    resultWeightEl.innerHTML = '';
+                    resultSecondaryEl.textContent = '';
+                    resultBreakdownEl.innerHTML = '<span class="calc-error-msg">' + result.error + '</span>';
+                    resultEl.classList.add('show');
+                    return;
+                }
 
                 var totalKg = result.total;
                 var totalLb = totalKg * LB_PER_KG;
@@ -1079,6 +1102,13 @@
                 var result = homeCalcCalcFn();
                 if (!result) {
                     homeCalcResult.classList.remove('show');
+                    return;
+                }
+                if (result.error) {
+                    homeCalcWeightEl.innerHTML = '';
+                    homeCalcSecondaryEl.textContent = '';
+                    homeCalcBreakdownEl.innerHTML = '<span class="calc-error-msg">' + result.error + '</span>';
+                    homeCalcResult.classList.add('show');
                     return;
                 }
                 var totalKg = result.total;
