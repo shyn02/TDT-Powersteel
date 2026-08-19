@@ -26,7 +26,7 @@
 .hc-1 {
     width: 320px;
     height: 320px;
-    background: rgba(230, 112, 38, 0.14);
+    background: rgba(230, 112, 38, 0.22);
     top: -60px;
     right: -80px;
 }
@@ -35,7 +35,7 @@
 .hc-2 {
     width: 200px;
     height: 200px;
-    background: rgba(113, 112, 116, 0.12);
+    background: rgba(113, 112, 116, 0.2);
     bottom: -40px;
     left: -50px;
 }
@@ -44,7 +44,7 @@
 .hc-3 {
     width: 80px;
     height: 80px;
-    border: 3px solid rgba(230, 112, 38, 0.25);
+    border: 3px solid rgba(230, 112, 38, 0.35);
     background: transparent;
     top: 40%;
     left: 8%;
@@ -54,7 +54,7 @@
 .hc-4 {
     width: 14px;
     height: 14px;
-    background: rgba(113, 112, 116, 0.2);
+    background: rgba(113, 112, 116, 0.3);
     top: 20%;
     left: 45%;
 }
@@ -63,7 +63,7 @@
 .hc-5 {
     width: 40px;
     height: 40px;
-    background: rgba(230, 112, 38, 0.18);
+    background: rgba(230, 112, 38, 0.28);
     bottom: 25%;
     right: 12%;
 }
@@ -97,8 +97,8 @@
 
 @keyframes heroSlide {
     0%        { opacity: 0; }
-    2%        { opacity: 0.35; }
-    12.5%     { opacity: 0.35; }
+    2%        { opacity: 0.42; }
+    12.5%     { opacity: 0.42; }
     14.3%     { opacity: 0; }
     100%      { opacity: 0; }
 }
