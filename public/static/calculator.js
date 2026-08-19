@@ -8,35 +8,61 @@
     var STEEL_DENSITY = 7850; // kg/m³
     var LB_PER_KG = 2.20462;
 
+    /* ---------- Unit conversion helpers ---------- */
+    /*  Cross-section inputs: base = mm */
+    var DIM_TO_MM = { 'mm': 1, 'cm': 10, 'in': 25.4, 'ft': 304.8 };
+    var DIM_UNITS = ['mm', 'cm', 'in', 'ft'];
+    var DIM_PLACEHOLDERS = { 'mm': 'e.g. 12', 'cm': 'e.g. 1.2', 'in': 'e.g. 0.5', 'ft': 'e.g. 0.04' };
+    /*  Length inputs: base = m */
+    var LEN_TO_M = { 'm': 1, 'ft': 0.3048, 'yd': 0.9144, 'in': 0.0254 };
+    var LEN_UNITS = ['m', 'ft', 'yd', 'in'];
+    var LEN_PLACEHOLDERS = { 'm': 'e.g. 6', 'ft': 'e.g. 20', 'yd': 'e.g. 22', 'in': 'e.g. 240' };
+
+    /* Global unit state — shared across both calculators */
+    var currentDimUnit = 'mm';
+    var currentLenUnit = 'm';
+
+    function dimUnitSelect(id) {
+        var h = '<select id="' + id + '-unit" class="calc-unit-select">';
+        DIM_UNITS.forEach(function (u) {
+            h += '<option value="' + u + '"' + (u === currentDimUnit ? ' selected' : '') + '>' + u + '</option>';
+        });
+        return h + '</select>';
+    }
+
+    function lenUnitSelect(id) {
+        var h = '<select id="' + id + '-unit" class="calc-unit-select">';
+        LEN_UNITS.forEach(function (u) {
+            h += '<option value="' + u + '"' + (u === currentLenUnit ? ' selected' : '') + '>' + u + '</option>';
+        });
+        return h + '</select>';
+    }
+
+    function toMm(val) { return val * DIM_TO_MM[currentDimUnit]; }
+    function toM(val)   { return val * LEN_TO_M[currentLenUnit]; }
+
+    function dimPlaceholder() { return DIM_PLACEHOLDERS[currentDimUnit]; }
+    function lenPlaceholder() { return LEN_PLACEHOLDERS[currentLenUnit]; }
+    function dimHint() { return currentDimUnit; }
+    function lenHint() { return currentLenUnit; }
+
     /* ---------- Product-name → calculator-type mapping ---------- */
-    /*  Each entry: key = product name (as stored in DB, case-insensitive match),
-        value = calc type.  If a product isn't listed, we fall back to the
-        category-slug mapping below.                                     */
     var PRODUCT_TYPE_MAP = {
-        /* Steel Bars */
         'deformed round bar':      'round_bar',
         'plain round bar':         'round_bar',
         'flat bar':                'flat_bar',
         'square bar':              'square_bar',
         'angle bar':               'angle_bar',
-
-        /* Columns & Beams */
         'channel bar':             'beam',
         'i-bar':                   'beam',
         'i-beam':                  'beam',
         't-bar':                   'beam',
         'z-bar':                   'beam',
         'wide flange':             'beam',
-
-        /* Sheet Pile */
         'sheet pile':              'sheet_pile',
-
-        /* Shafting */
         'cold rolled shafting':    'round_bar',
         'crs':                     'round_bar',
         'tool steel shafting':     'round_bar',
-
-        /* Plates & Sheets */
         'mild steel plate':        'plate',
         'boiler plate':            'plate',
         'armored plate':           'plate',
@@ -45,8 +71,6 @@
         'galvanized iron sheet':   'sheet',
         'gi sheet':                'sheet',
         'black iron sheet':        'sheet',
-
-        /* Tubes & Pipes */
         'square tube':             'tube',
         'round tube':              'tube',
         'rectangular tube':        'tube',
@@ -54,26 +78,19 @@
         'gi pipe':                 'pipe',
         'black iron pipe':         'pipe',
         'boiler tube':             'tube',
-
-        /* Steel Purlins */
         'c-purlins':               'purlin',
         'z-purlins':               'purlin',
         'c purlins':               'purlin',
         'z purlins':               'purlin',
         'c-purlin':                'purlin',
         'z-purlin':                'purlin',
-
-        /* Wire Mesh */
         'welded wire mesh':        'wire_mesh',
         'wire mesh':               'wire_mesh',
-
-        /* Roofing */
         'insulated roof panels':   'roofing',
         'insulated wall panels':   'roofing',
         'stone rib':               'roofing',
     };
 
-    /* Category-slug fallback (when product name isn't in the map above) */
     var CATEGORY_TYPE_MAP = {
         'steel-bars':        'round_bar',
         'columns-beams':     'beam',
@@ -128,19 +145,36 @@
         { label: 'Type 4 (400mm, 76.1 kg/m)', weightPerM: 76.1 },
     ];
 
+    /* ---------- Unit toggle HTML (shared) ---------- */
+    function unitToggleHTML() {
+        return '<div class="calc-unit-bar-inner">' +
+            '<label>Units:</label>' +
+            '<select class="calc-unit-select calc-dim-unit">' +
+                DIM_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentDimUnit ? ' selected' : '') + '>' + u + ' (cross-section)</option>'; }).join('') +
+            '</select>' +
+            '<select class="calc-unit-select calc-len-unit">' +
+                LEN_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentLenUnit ? ' selected' : '') + '>' + u + ' (length)</option>'; }).join('') +
+            '</select>' +
+        '</div>';
+    }
+
     /* ---------- Form HTML builders per calculator type ---------- */
 
     function buildRoundBarForm() {
         return '<div class="form-row">' +
             '<div class="form-group">' +
                 '<label>Diameter</label>' +
-                '<input type="number" id="calcDiameter" placeholder="e.g. 12" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcDiameter" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcDiameter') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-group">' +
@@ -154,18 +188,24 @@
         return '<div class="form-row three-col">' +
             '<div class="form-group">' +
                 '<label>Width</label>' +
-                '<input type="number" id="calcWidth" placeholder="e.g. 50" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcWidth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcWidth') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Thickness</label>' +
-                '<input type="number" id="calcThickness" placeholder="e.g. 6" min="0.5" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-group">' +
@@ -179,13 +219,17 @@
         return '<div class="form-row">' +
             '<div class="form-group">' +
                 '<label>Side</label>' +
-                '<input type="number" id="calcDiameter" placeholder="e.g. 25" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcDiameter" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcDiameter') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-group">' +
@@ -199,25 +243,33 @@
         return '<div class="form-row three-col">' +
             '<div class="form-group">' +
                 '<label>Leg A</label>' +
-                '<input type="number" id="calcLegA" placeholder="e.g. 50" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLegA" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcLegA') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Leg B</label>' +
-                '<input type="number" id="calcLegB" placeholder="e.g. 50" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLegB" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcLegB') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Thickness</label>' +
-                '<input type="number" id="calcThickness" placeholder="e.g. 5" min="0.5" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-row">' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Quantity</label>' +
@@ -231,18 +283,24 @@
         return '<div class="form-row three-col">' +
             '<div class="form-group">' +
                 '<label>Thickness</label>' +
-                '<input type="number" id="calcThickness" placeholder="e.g. 10" min="0.5" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Width</label>' +
-                '<input type="number" id="calcWidth" placeholder="e.g. 1200" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcWidth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcWidth') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 2400" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-group">' +
@@ -252,26 +310,30 @@
         '</div>';
     }
 
-    function buildSheetForm() {
-        return buildPlateForm();
-    }
+    function buildSheetForm() { return buildPlateForm(); }
 
     function buildPipeForm() {
         return '<div class="form-row three-col">' +
             '<div class="form-group">' +
                 '<label>Outer Diameter</label>' +
-                '<input type="number" id="calcOD" placeholder="e.g. 48.3" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcOD" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcOD') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Wall Thickness</label>' +
-                '<input type="number" id="calcThickness" placeholder="e.g. 3.2" min="0.5" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-group">' +
@@ -285,25 +347,33 @@
         return '<div class="form-row">' +
             '<div class="form-group">' +
                 '<label>Width</label>' +
-                '<input type="number" id="calcWidth" placeholder="e.g. 50" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcWidth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcWidth') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Height</label>' +
-                '<input type="number" id="calcHeight" placeholder="e.g. 50" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcHeight" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcHeight') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-row three-col">' +
             '<div class="form-group">' +
                 '<label>Wall Thickness</label>' +
-                '<input type="number" id="calcThickness" placeholder="e.g. 2.3" min="0.5" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Quantity</label>' +
@@ -325,8 +395,10 @@
         '<div class="form-row">' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Quantity</label>' +
@@ -348,8 +420,10 @@
         '<div class="form-row">' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 6" min="0.1" step="any">' +
-                '<div class="unit-hint">meters</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Quantity</label>' +
@@ -370,8 +444,10 @@
         '</div>' +
         '<div class="form-group">' +
             '<label>Length</label>' +
-            '<input type="number" id="calcLength" placeholder="e.g. 12" min="0.1" step="any">' +
-            '<div class="unit-hint">meters</div>' +
+            '<div class="calc-input-row">' +
+                '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                lenUnitSelect('calcLength') +
+            '</div>' +
         '</div>';
     }
 
@@ -379,18 +455,25 @@
         return '<div class="form-row three-col">' +
             '<div class="form-group">' +
                 '<label>Thickness</label>' +
-                '<input type="number" id="calcThickness" placeholder="e.g. 3" min="0.5" step="any">' +
-                '<div class="unit-hint">mm (wire dia)</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
+                '<div class="unit-hint">wire dia</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Width</label>' +
-                '<input type="number" id="calcWidth" placeholder="e.g. 1200" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcWidth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcWidth') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 2400" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-group">' +
@@ -404,18 +487,24 @@
         return '<div class="form-row three-col">' +
             '<div class="form-group">' +
                 '<label>Thickness</label>' +
-                '<input type="number" id="calcThickness" placeholder="e.g. 0.5" min="0.1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.01" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Width</label>' +
-                '<input type="number" id="calcWidth" placeholder="e.g. 1000" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcWidth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcWidth') +
+                '</div>' +
             '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
-                '<input type="number" id="calcLength" placeholder="e.g. 3000" min="1" step="any">' +
-                '<div class="unit-hint">mm</div>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcLength') +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div class="form-group">' +
@@ -429,32 +518,30 @@
         return '<p style="color:#999; font-size:13px; text-align:center; padding:20px 0;">Weight calculator is not available for this product. Please <strong>Request a Quote</strong> and our team will provide weight estimates with your quotation.</p>';
     }
 
-    /* ---------- Calculation functions ---------- */
+    /* ---------- Calculation functions (read unit-converted values) ---------- */
 
     function calcRoundBar() {
-        var d = parseFloat(document.getElementById('calcDiameter').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var d = toMm(parseFloat(document.getElementById('calcDiameter').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!d || !L) return null;
-        // W (kg) = d² × 0.006165 × L × qty
         var perPc = d * d * 0.006165 * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
 
     function calcFlatBar() {
-        var w = parseFloat(document.getElementById('calcWidth').value);
-        var t = parseFloat(document.getElementById('calcThickness').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var w = toMm(parseFloat(document.getElementById('calcWidth').value));
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!w || !t || !L) return null;
-        // W (kg) = w(mm) × t(mm) × L(m) × 7850 / 1,000,000 × qty
         var perPc = w * t * L * STEEL_DENSITY / 1000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
 
     function calcSquareBar() {
-        var d = parseFloat(document.getElementById('calcDiameter').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var d = toMm(parseFloat(document.getElementById('calcDiameter').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!d || !L) return null;
         var perPc = d * d * L * STEEL_DENSITY / 1000000;
@@ -462,24 +549,22 @@
     }
 
     function calcAngleBar() {
-        var a = parseFloat(document.getElementById('calcLegA').value);
-        var b = parseFloat(document.getElementById('calcLegB').value);
-        var t = parseFloat(document.getElementById('calcThickness').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var a = toMm(parseFloat(document.getElementById('calcLegA').value));
+        var b = toMm(parseFloat(document.getElementById('calcLegB').value));
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!a || !b || !t || !L) return null;
-        // Approximate: area = (a + b - t) × t
         var perPc = (a + b - t) * t * L * STEEL_DENSITY / 1000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
 
     function calcPlate() {
-        var t = parseFloat(document.getElementById('calcThickness').value);
-        var w = parseFloat(document.getElementById('calcWidth').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var w = toMm(parseFloat(document.getElementById('calcWidth').value));
+        var L = toMm(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!t || !w || !L) return null;
-        // All in mm: W (kg) = T × W × L × 7850 / 1e9 × qty
         var perPc = t * w * L * STEEL_DENSITY / 1000000000;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
@@ -487,25 +572,23 @@
     function calcSheet() { return calcPlate(); }
 
     function calcPipe() {
-        var od = parseFloat(document.getElementById('calcOD').value);
-        var t = parseFloat(document.getElementById('calcThickness').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var od = toMm(parseFloat(document.getElementById('calcOD').value));
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!od || !t || !L) return null;
-        // W (kg/m) = (OD - T) × T × 0.02466
         var perM = (od - t) * t * 0.02466;
         var perPc = perM * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
 
     function calcTube() {
-        var w = parseFloat(document.getElementById('calcWidth').value);
-        var h = parseFloat(document.getElementById('calcHeight').value);
-        var t = parseFloat(document.getElementById('calcThickness').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var w = toMm(parseFloat(document.getElementById('calcWidth').value));
+        var h = toMm(parseFloat(document.getElementById('calcHeight').value));
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!w || !h || !t || !L) return null;
-        // W (kg/m) = (W + H - 2T) × 2T × 0.0157
         var perM = (w + h - 2 * t) * 2 * t * 0.0157;
         var perPc = perM * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
@@ -513,50 +596,48 @@
 
     function calcBeam() {
         var idx = document.getElementById('calcSize').value;
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (idx === '' || !L) return null;
         var unitW = BEAM_SIZES[parseInt(idx)].weight;
         var perPc = unitW * L;
-        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m × ' + L + ' m' };
+        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
     }
 
     function calcPurlin() {
         var idx = document.getElementById('calcSize').value;
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (idx === '' || !L) return null;
         var unitW = PURLIN_SIZES[parseInt(idx)].weight;
         var perPc = unitW * L;
-        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m × ' + L + ' m' };
+        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
     }
 
     function calcSheetPile() {
         var idx = document.getElementById('calcSize').value;
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
         if (idx === '' || !L) return null;
         var perM = SHEET_PILE_TYPES[parseInt(idx)].weightPerM;
         var total = perM * L;
-        return { perPiece: total, total: total, qty: 1, unit: 'kg', breakdown: perM + ' kg/m × ' + L + ' m' };
+        return { perPiece: total, total: total, qty: 1, unit: 'kg', breakdown: perM + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
     }
 
     function calcWireMesh() {
-        var t = parseFloat(document.getElementById('calcThickness').value);
-        var w = parseFloat(document.getElementById('calcWidth').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var w = toMm(parseFloat(document.getElementById('calcWidth').value));
+        var L = toMm(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!t || !w || !L) return null;
-        // Rough estimate: wire_dia² × total_wire_length × density
-        // Simplified: area(m²) × wire_dia(mm)² × 0.00617 × est_wires_per_m
         var areaM2 = (w / 1000) * (L / 1000);
         var perSheet = areaM2 * t * t * 0.00617 * 40;
         return { perPiece: perSheet, total: perSheet * q, qty: q, unit: 'kg', note: 'Approximate weight' };
     }
 
     function calcRoofing() {
-        var t = parseFloat(document.getElementById('calcThickness').value);
-        var w = parseFloat(document.getElementById('calcWidth').value);
-        var L = parseFloat(document.getElementById('calcLength').value);
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var w = toMm(parseFloat(document.getElementById('calcWidth').value));
+        var L = toMm(parseFloat(document.getElementById('calcLength').value));
         var q = parseInt(document.getElementById('calcQty').value) || 1;
         if (!t || !w || !L) return null;
         var perPc = t * w * L * STEEL_DENSITY / 1000000000;
@@ -597,6 +678,51 @@
         return n.toFixed(2);
     }
 
+    /* ---------- Shared: read unit selects after form render ---------- */
+
+    function syncUnitSelects() {
+        var dimSels = document.querySelectorAll('.calc-dim-unit');
+        var lenSels = document.querySelectorAll('.calc-len-unit');
+        dimSels.forEach(function (sel) {
+            sel.value = currentDimUnit;
+            sel.addEventListener('change', function () {
+                currentDimUnit = this.value;
+                dimSels.forEach(function (s) { s.value = currentDimUnit; });
+            });
+        });
+        lenSels.forEach(function (sel) {
+            sel.value = currentLenUnit;
+            sel.addEventListener('change', function () {
+                currentLenUnit = this.value;
+                lenSels.forEach(function (s) { s.value = currentLenUnit; });
+            });
+        });
+        /* wire per-input unit selects */
+        document.querySelectorAll('.calc-unit-select[id$="-unit"]').forEach(function (sel) {
+            sel.addEventListener('change', function () {
+                if (sel.id.indexOf('calcLength') === 0) {
+                    currentLenUnit = sel.value;
+                    lenSels.forEach(function (s) { s.value = currentLenUnit; });
+                } else {
+                    currentDimUnit = sel.value;
+                    dimSels.forEach(function (s) { s.value = currentDimUnit; });
+                }
+            });
+        });
+    }
+
+    function updateUnitHints() {
+        document.querySelectorAll('.calc-dim-unit').forEach(function (sel) { sel.value = currentDimUnit; });
+        document.querySelectorAll('.calc-len-unit').forEach(function (sel) { sel.value = currentLenUnit; });
+        document.querySelectorAll('.calc-unit-select[id$="-unit"]').forEach(function (sel) {
+            if (sel.id.indexOf('calcLength') === 0) {
+                sel.value = currentLenUnit;
+            } else {
+                sel.value = currentDimUnit;
+            }
+        });
+    }
+
     /* ---------- Wire everything up on DOMContentLoaded ---------- */
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -608,6 +734,7 @@
         var resultWeightEl = document.getElementById('calcResultWeight');
         var resultSecondaryEl = document.getElementById('calcResultSecondary');
         var resultBreakdownEl = document.getElementById('calcResultBreakdown');
+        var unitBarContainer = document.getElementById('calcUnitBar');
 
         var currentType = null;
         var currentCalcFn = null;
@@ -620,15 +747,18 @@
                 formContainer.innerHTML = buildUnsupportedForm();
                 productNameEl.textContent = productName || '';
                 resultEl.classList.remove('show');
+                if (unitBarContainer) unitBarContainer.innerHTML = '';
                 overlay.classList.add('active');
                 document.body.style.overflowY = 'hidden';
                 return;
             }
 
             currentCalcFn = TYPE_CONFIG[type].calc;
+            if (unitBarContainer) unitBarContainer.innerHTML = unitToggleHTML();
             formContainer.innerHTML = TYPE_CONFIG[type].form();
             productNameEl.textContent = productName || '';
             resultEl.classList.remove('show');
+            syncUnitSelects();
             overlay.classList.add('active');
             document.body.style.overflowY = 'hidden';
         }
@@ -687,7 +817,7 @@
                 var totalKg = result.total;
                 var totalLb = totalKg * LB_PER_KG;
                 resultWeightEl.innerHTML = fmt(totalKg) + ' <span>kg</span>';
-                resultSecondaryEl.textContent = '≈ ' + fmt(totalLb) + ' lbs';
+                resultSecondaryEl.textContent = '\u2248 ' + fmt(totalLb) + ' lbs';
 
                 var breakdown = '';
                 if (result.breakdown) breakdown += result.breakdown + '<br>';
@@ -704,7 +834,7 @@
         if (resetBtn) {
             resetBtn.addEventListener('click', function () {
                 formContainer.querySelectorAll('input').forEach(function (input) { input.value = ''; });
-                formContainer.querySelectorAll('select').forEach(function (sel) { sel.selectedIndex = 0; });
+                formContainer.querySelectorAll('select').forEach(function (sel) { if (sel.className !== 'calc-unit-select') sel.selectedIndex = 0; });
                 resultEl.classList.remove('show');
             });
         }
@@ -763,14 +893,18 @@
         if (homeCalcSelect) {
             homeCalcSelect.addEventListener('change', function () {
                 var type = this.value;
+                var homeUnitBar = document.getElementById('homeCalcUnitBar');
                 if (homeCalcResult) homeCalcResult.classList.remove('show');
                 if (!type || !TYPE_CONFIG[type]) {
                     if (homeFormContainer) homeFormContainer.innerHTML = '';
+                    if (homeUnitBar) homeUnitBar.innerHTML = '';
                     homeCalcCalcFn = null;
                     return;
                 }
                 homeCalcCalcFn = TYPE_CONFIG[type].calc;
+                if (homeUnitBar) homeUnitBar.innerHTML = unitToggleHTML();
                 homeFormContainer.innerHTML = TYPE_CONFIG[type].form();
+                syncUnitSelects();
             });
         }
 
@@ -803,7 +937,7 @@
             homeCalcResetEl.addEventListener('click', function () {
                 if (homeFormContainer) {
                     homeFormContainer.querySelectorAll('input').forEach(function (i) { i.value = ''; });
-                    homeFormContainer.querySelectorAll('select').forEach(function (s) { s.selectedIndex = 0; });
+                    homeFormContainer.querySelectorAll('select').forEach(function (s) { if (s.className !== 'calc-unit-select') s.selectedIndex = 0; });
                 }
                 homeCalcResult.classList.remove('show');
             });
