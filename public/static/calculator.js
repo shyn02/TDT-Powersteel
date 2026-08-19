@@ -146,15 +146,20 @@
     ];
 
     /* ---------- Unit toggle HTML (shared) ---------- */
-    function unitToggleHTML() {
+    /* Types that use a Size/Type preset dropdown instead of cross-section dimension inputs */
+    var PRESET_ONLY_TYPES = { 'beam': true, 'purlin': true, 'sheet_pile': true };
+
+    function unitToggleHTML(type) {
+        var dim = '<select class="calc-unit-select calc-dim-unit">' +
+            DIM_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentDimUnit ? ' selected' : '') + '>' + u + ' (cross-section)</option>'; }).join('') +
+            '</select>';
+        var len = '<select class="calc-unit-select calc-len-unit">' +
+            LEN_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentLenUnit ? ' selected' : '') + '>' + u + ' (length)</option>'; }).join('') +
+            '</select>';
         return '<div class="calc-unit-bar-inner">' +
             '<label>Units:</label>' +
-            '<select class="calc-unit-select calc-dim-unit">' +
-                DIM_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentDimUnit ? ' selected' : '') + '>' + u + ' (cross-section)</option>'; }).join('') +
-            '</select>' +
-            '<select class="calc-unit-select calc-len-unit">' +
-                LEN_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentLenUnit ? ' selected' : '') + '>' + u + ' (length)</option>'; }).join('') +
-            '</select>' +
+            (PRESET_ONLY_TYPES[type] ? '' : dim) +
+            len +
         '</div>';
     }
 
@@ -754,7 +759,7 @@
             }
 
             currentCalcFn = TYPE_CONFIG[type].calc;
-            if (unitBarContainer) unitBarContainer.innerHTML = unitToggleHTML();
+            if (unitBarContainer) unitBarContainer.innerHTML = unitToggleHTML(type);
             formContainer.innerHTML = TYPE_CONFIG[type].form();
             productNameEl.textContent = productName || '';
             resultEl.classList.remove('show');
@@ -902,7 +907,7 @@
                     return;
                 }
                 homeCalcCalcFn = TYPE_CONFIG[type].calc;
-                if (homeUnitBar) homeUnitBar.innerHTML = unitToggleHTML();
+                if (homeUnitBar) homeUnitBar.innerHTML = unitToggleHTML(type);
                 homeFormContainer.innerHTML = TYPE_CONFIG[type].form();
                 syncUnitSelects();
             });
