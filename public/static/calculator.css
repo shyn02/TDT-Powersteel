@@ -232,14 +232,14 @@
 /* Mobile adjustments */
 @media (max-width: 576px) {
     .calc-modal-overlay {
-        padding: 0;
-        align-items: flex-end;
+        padding: 10px;
+        align-items: center;
     }
 
     .calc-modal {
-        max-height: 95vh;
-        border-radius: 12px 12px 0 0;
-        margin-top: auto;
+        max-height: 92vh;
+        border-radius: 12px;
+        margin-top: 0;
         max-width: 100%;
     }
 
