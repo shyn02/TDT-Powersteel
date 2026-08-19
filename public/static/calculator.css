@@ -313,30 +313,7 @@
     font-size: 14px;
 }
 
-/* --- UNIT TOGGLE BAR --- */
-.calc-unit-bar {
-    margin-bottom: 0;
-}
-
-.calc-unit-bar-inner {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
-    margin-bottom: 16px;
-}
-
-.calc-unit-bar label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #555;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
+/* --- UNIT SELECT --- */
 
 .calc-unit-select {
     padding: 4px 5px;

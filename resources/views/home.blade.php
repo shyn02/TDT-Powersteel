@@ -182,7 +182,6 @@
                         <option value="roofing">Roofing / Insulated Panels</option>
                     </select>
                 </div>
-                <div id="homeCalcUnitBar" class="calc-unit-bar"></div>
                 <div id="homeCalcFormContainer"></div>
                 <div class="calc-btn-row">
                     <button type="button" class="calc-btn calc-btn-calc" id="homeCalcBtn">CALCULATE</button>

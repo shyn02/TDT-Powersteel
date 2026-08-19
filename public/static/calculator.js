@@ -145,24 +145,6 @@
         { label: 'Type 4 (400mm, 76.1 kg/m)', weightPerM: 76.1 },
     ];
 
-    /* ---------- Unit toggle HTML (shared) ---------- */
-    /* Types that use a Size/Type preset dropdown instead of cross-section dimension inputs */
-    var PRESET_ONLY_TYPES = { 'beam': true, 'purlin': true, 'sheet_pile': true };
-
-    function unitToggleHTML(type) {
-        var dim = '<select class="calc-unit-select calc-dim-unit">' +
-            DIM_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentDimUnit ? ' selected' : '') + '>' + u + ' (cross-section)</option>'; }).join('') +
-            '</select>';
-        var len = '<select class="calc-unit-select calc-len-unit">' +
-            LEN_UNITS.map(function (u) { return '<option value="' + u + '"' + (u === currentLenUnit ? ' selected' : '') + '>' + u + ' (length)</option>'; }).join('') +
-            '</select>';
-        return '<div class="calc-unit-bar-inner">' +
-            '<label>Units:</label>' +
-            (PRESET_ONLY_TYPES[type] ? '' : dim) +
-            len +
-        '</div>';
-    }
-
     /* ---------- Form HTML builders per calculator type ---------- */
 
     function buildRoundBarForm() {
@@ -686,45 +668,18 @@
     /* ---------- Shared: read unit selects after form render ---------- */
 
     function syncUnitSelects() {
-        var dimSels = document.querySelectorAll('.calc-dim-unit');
-        var lenSels = document.querySelectorAll('.calc-len-unit');
-        dimSels.forEach(function (sel) {
-            sel.value = currentDimUnit;
-            sel.addEventListener('change', function () {
-                currentDimUnit = this.value;
-                dimSels.forEach(function (s) { s.value = currentDimUnit; });
-            });
-        });
-        lenSels.forEach(function (sel) {
-            sel.value = currentLenUnit;
-            sel.addEventListener('change', function () {
-                currentLenUnit = this.value;
-                lenSels.forEach(function (s) { s.value = currentLenUnit; });
-            });
-        });
-        /* wire per-input unit selects */
         document.querySelectorAll('.calc-unit-select[id$="-unit"]').forEach(function (sel) {
+            sel.value = sel.id.indexOf('calcLength') === 0 ? currentLenUnit : currentDimUnit;
             sel.addEventListener('change', function () {
                 if (sel.id.indexOf('calcLength') === 0) {
                     currentLenUnit = sel.value;
-                    lenSels.forEach(function (s) { s.value = currentLenUnit; });
                 } else {
                     currentDimUnit = sel.value;
-                    dimSels.forEach(function (s) { s.value = currentDimUnit; });
                 }
+                document.querySelectorAll('.calc-unit-select[id$="-unit"]').forEach(function (s) {
+                    s.value = s.id.indexOf('calcLength') === 0 ? currentLenUnit : currentDimUnit;
+                });
             });
-        });
-    }
-
-    function updateUnitHints() {
-        document.querySelectorAll('.calc-dim-unit').forEach(function (sel) { sel.value = currentDimUnit; });
-        document.querySelectorAll('.calc-len-unit').forEach(function (sel) { sel.value = currentLenUnit; });
-        document.querySelectorAll('.calc-unit-select[id$="-unit"]').forEach(function (sel) {
-            if (sel.id.indexOf('calcLength') === 0) {
-                sel.value = currentLenUnit;
-            } else {
-                sel.value = currentDimUnit;
-            }
         });
     }
 
@@ -739,7 +694,6 @@
         var resultWeightEl = document.getElementById('calcResultWeight');
         var resultSecondaryEl = document.getElementById('calcResultSecondary');
         var resultBreakdownEl = document.getElementById('calcResultBreakdown');
-        var unitBarContainer = document.getElementById('calcUnitBar');
 
         var currentType = null;
         var currentCalcFn = null;
@@ -752,14 +706,12 @@
                 formContainer.innerHTML = buildUnsupportedForm();
                 productNameEl.textContent = productName || '';
                 resultEl.classList.remove('show');
-                if (unitBarContainer) unitBarContainer.innerHTML = '';
                 overlay.classList.add('active');
                 document.body.style.overflowY = 'hidden';
                 return;
             }
 
             currentCalcFn = TYPE_CONFIG[type].calc;
-            if (unitBarContainer) unitBarContainer.innerHTML = unitToggleHTML(type);
             formContainer.innerHTML = TYPE_CONFIG[type].form();
             productNameEl.textContent = productName || '';
             resultEl.classList.remove('show');
@@ -898,16 +850,13 @@
         if (homeCalcSelect) {
             homeCalcSelect.addEventListener('change', function () {
                 var type = this.value;
-                var homeUnitBar = document.getElementById('homeCalcUnitBar');
                 if (homeCalcResult) homeCalcResult.classList.remove('show');
                 if (!type || !TYPE_CONFIG[type]) {
                     if (homeFormContainer) homeFormContainer.innerHTML = '';
-                    if (homeUnitBar) homeUnitBar.innerHTML = '';
                     homeCalcCalcFn = null;
                     return;
                 }
                 homeCalcCalcFn = TYPE_CONFIG[type].calc;
-                if (homeUnitBar) homeUnitBar.innerHTML = unitToggleHTML(type);
                 homeFormContainer.innerHTML = TYPE_CONFIG[type].form();
                 syncUnitSelects();
             });

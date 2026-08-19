@@ -167,7 +167,6 @@
             </div>
             <div class="calc-body">
                 <div class="calc-product-name" id="calcProductName"></div>
-                <div id="calcUnitBar"></div>
                 <div id="calcFormContainer"></div>
                 <div class="calc-btn-row">
                     <button type="button" class="calc-btn calc-btn-calc" id="calcCalcBtn">CALCULATE</button>
