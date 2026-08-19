@@ -154,6 +154,61 @@
         </div>
     </section>
 
+    <!-- HOMEPAGE WEIGHT CALCULATOR -->
+    <section class="home-calc-section">
+        <div class="container">
+            <div class="home-calc-wrapper reveal">
+                <div class="home-calc-left">
+                    <span class="section-subtitle">INSTANT ESTIMATE</span>
+                    <h2 class="section-title">STEEL WEIGHT <span>CALCULATOR</span></h2>
+                    <div class="accent-line"></div>
+                    <p class="home-calc-desc">Get an instant weight estimate for your steel materials. Select a product type, enter dimensions, and calculate — no signup required.</p>
+                    <a href="{{ route('products') }}" class="btn-outline-dark" style="display:inline-block; margin-top:16px;">VIEW ALL PRODUCTS</a>
+                </div>
+                <div class="home-calc-right">
+                    <div class="home-calc-card">
+                        <div class="home-calc-card-header">
+                            <i class="fa-solid fa-calculator"></i>
+                            <span>QUICK WEIGHT CALCULATOR</span>
+                        </div>
+                        <div class="home-calc-card-body">
+                            <div class="form-group">
+                                <label>Select Steel Product</label>
+                                <select id="homeCalcProduct">
+                                    <option value="">-- Choose a product --</option>
+                                    <option value="round_bar">Round Bar (Steel Bars)</option>
+                                    <option value="flat_bar">Flat Bar (Steel Bars)</option>
+                                    <option value="square_bar">Square Bar (Steel Bars)</option>
+                                    <option value="angle_bar">Angle Bar (Steel Bars)</option>
+                                    <option value="beam">I-Beam / Channel / T-Bar</option>
+                                    <option value="plate">Steel Plate / Checkered Plate</option>
+                                    <option value="sheet">GI Sheet / Black Iron Sheet</option>
+                                    <option value="pipe">GI Pipe / Black Iron Pipe</option>
+                                    <option value="tube">Square / Rectangular Tube</option>
+                                    <option value="purlin">C-Purlins / Z-Purlins</option>
+                                    <option value="sheet_pile">Sheet Pile</option>
+                                    <option value="wire_mesh">Welded Wire Mesh</option>
+                                    <option value="roofing">Roofing / Insulated Panels</option>
+                                </select>
+                            </div>
+                            <div id="homeCalcFormContainer"></div>
+                            <div class="home-calc-btn-row">
+                                <button type="button" class="calc-btn calc-btn-calc" id="homeCalcBtn">CALCULATE</button>
+                                <button type="button" class="calc-btn calc-btn-reset" id="homeCalcResetBtn">RESET</button>
+                            </div>
+                            <div class="calc-result" id="homeCalcResult">
+                                <div class="calc-result-label">Estimated Total Weight</div>
+                                <div class="calc-result-weight" id="homeCalcResultWeight"></div>
+                                <div class="calc-result-secondary" id="homeCalcResultSecondary"></div>
+                                <div class="calc-result-breakdown" id="homeCalcResultBreakdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="projects" class="projects-section">
         <div class="container">
             <div class="section-header reveal">
