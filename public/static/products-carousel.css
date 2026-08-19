@@ -315,7 +315,8 @@ a.product-card .product-spec {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 40px; /* Adjust this to increase/decrease space below the carousel */
+    gap: 16px;
+    margin-top: 40px;
     width: 100%;
 }
 
