@@ -706,7 +706,6 @@
                 formContainer.innerHTML = buildUnsupportedForm();
                 productNameEl.textContent = productName || '';
                 resultEl.classList.remove('show');
-                window.scrollTo(0, 0);
                 overlay.classList.add('active');
                 document.body.style.overflowY = 'hidden';
                 return;
@@ -717,7 +716,6 @@
             productNameEl.textContent = productName || '';
             resultEl.classList.remove('show');
             syncUnitSelects();
-            window.scrollTo(0, 0);
             overlay.classList.add('active');
             document.body.style.overflowY = 'hidden';
         }
@@ -754,7 +752,9 @@
         /* ESC to close */
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
-                if (overlay && overlay.classList.contains('active')) {
+                if (homeCalcDropdown && homeCalcDropdown.classList.contains('open')) {
+                    closeHomeCalcDropdownPanel();
+                } else if (overlay && overlay.classList.contains('active')) {
                     closeCalcModal();
                 } else if (homeOverlay && homeOverlay.classList.contains('active')) {
                     closeHomeCalc();
@@ -821,7 +821,6 @@
 
         function openHomeCalc() {
             if (!homeOverlay) return;
-            window.scrollTo(0, 0);
             homeOverlay.classList.add('active');
             document.body.style.overflowY = 'hidden';
         }
@@ -832,8 +831,7 @@
             document.body.style.overflowY = '';
             if (homeFormContainer) homeFormContainer.innerHTML = '';
             if (homeCalcResult) homeCalcResult.classList.remove('show');
-            var sel = document.getElementById('homeCalcProduct');
-            if (sel) sel.selectedIndex = 0;
+            resetHomeCalcDropdown();
             homeCalcCalcFn = null;
         }
 
@@ -849,21 +847,120 @@
             });
         }
 
-        var homeCalcSelect = document.getElementById('homeCalcProduct');
-        if (homeCalcSelect) {
-            homeCalcSelect.addEventListener('change', function () {
-                var type = this.value;
-                if (homeCalcResult) homeCalcResult.classList.remove('show');
-                if (!type || !TYPE_CONFIG[type]) {
-                    if (homeFormContainer) homeFormContainer.innerHTML = '';
-                    homeCalcCalcFn = null;
-                    return;
-                }
-                homeCalcCalcFn = TYPE_CONFIG[type].calc;
-                homeFormContainer.innerHTML = TYPE_CONFIG[type].form();
-                syncUnitSelects();
+        /* ---------- Custom product dropdown (replaces native <select>) ---------- */
+        var homeCalcDropdown = document.getElementById('homeCalcDropdown');
+        var homeCalcDropdownTrigger = document.getElementById('homeCalcDropdownTrigger');
+        var homeCalcDropdownLabel = document.getElementById('homeCalcDropdownLabel');
+        var homeCalcDropdownPanel = document.getElementById('homeCalcDropdownPanel');
+        var homeCalcHiddenInput = document.getElementById('homeCalcProduct');
+        var DEFAULT_DROPDOWN_LABEL = '-- Choose a product --';
+
+        function resetHomeCalcDropdown() {
+            if (!homeCalcDropdown) return;
+            closeHomeCalcDropdownPanel();
+            if (homeCalcDropdownLabel) homeCalcDropdownLabel.textContent = DEFAULT_DROPDOWN_LABEL;
+            if (homeCalcHiddenInput) homeCalcHiddenInput.value = '';
+            homeCalcDropdownPanel.querySelectorAll('.calc-dropdown-option.selected').forEach(function (o) {
+                o.classList.remove('selected');
             });
         }
+
+        function positionHomeCalcDropdownPanel() {
+            if (!homeCalcDropdownTrigger || !homeCalcDropdownPanel) return;
+            var rect = homeCalcDropdownTrigger.getBoundingClientRect();
+            var viewportHeight = window.innerHeight;
+            var spaceBelow = viewportHeight - rect.bottom - 12;
+            var spaceAbove = rect.top - 12;
+            var openUpward = spaceBelow < 180 && spaceAbove > spaceBelow;
+            var maxHeight = Math.max(140, Math.min(320, openUpward ? spaceAbove : spaceBelow));
+
+            homeCalcDropdownPanel.style.left = rect.left + 'px';
+            homeCalcDropdownPanel.style.width = rect.width + 'px';
+            homeCalcDropdownPanel.style.maxHeight = maxHeight + 'px';
+
+            if (openUpward) {
+                homeCalcDropdownPanel.style.top = 'auto';
+                homeCalcDropdownPanel.style.bottom = (viewportHeight - rect.top + 6) + 'px';
+            } else {
+                homeCalcDropdownPanel.style.bottom = 'auto';
+                homeCalcDropdownPanel.style.top = (rect.bottom + 6) + 'px';
+            }
+        }
+
+        function openHomeCalcDropdownPanel() {
+            if (!homeCalcDropdown) return;
+            positionHomeCalcDropdownPanel();
+            homeCalcDropdown.classList.add('open');
+            homeCalcDropdownTrigger.setAttribute('aria-expanded', 'true');
+            window.addEventListener('resize', positionHomeCalcDropdownPanel);
+            window.addEventListener('scroll', positionHomeCalcDropdownPanel, true);
+        }
+
+        function closeHomeCalcDropdownPanel() {
+            if (!homeCalcDropdown) return;
+            homeCalcDropdown.classList.remove('open');
+            if (homeCalcDropdownTrigger) homeCalcDropdownTrigger.setAttribute('aria-expanded', 'false');
+            window.removeEventListener('resize', positionHomeCalcDropdownPanel);
+            window.removeEventListener('scroll', positionHomeCalcDropdownPanel, true);
+        }
+
+        function selectHomeCalcProduct(optionEl) {
+            var productName = optionEl.getAttribute('data-value');
+            var categorySlug = optionEl.getAttribute('data-category-slug');
+
+            homeCalcDropdownPanel.querySelectorAll('.calc-dropdown-option.selected').forEach(function (o) {
+                o.classList.remove('selected');
+            });
+            optionEl.classList.add('selected');
+            if (homeCalcDropdownLabel) homeCalcDropdownLabel.textContent = productName;
+            if (homeCalcHiddenInput) homeCalcHiddenInput.value = productName;
+            closeHomeCalcDropdownPanel();
+
+            var type = resolveType(productName, categorySlug);
+            if (homeCalcResult) homeCalcResult.classList.remove('show');
+            if (!type || !TYPE_CONFIG[type]) {
+                homeFormContainer.innerHTML = buildUnsupportedForm();
+                homeCalcCalcFn = null;
+                return;
+            }
+            homeCalcCalcFn = TYPE_CONFIG[type].calc;
+            homeFormContainer.innerHTML = TYPE_CONFIG[type].form();
+            syncUnitSelects();
+        }
+
+        if (homeCalcDropdownTrigger) {
+            homeCalcDropdownTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (homeCalcDropdown.classList.contains('open')) {
+                    closeHomeCalcDropdownPanel();
+                } else {
+                    openHomeCalcDropdownPanel();
+                }
+            });
+        }
+
+        if (homeCalcDropdownPanel) {
+            homeCalcDropdownPanel.addEventListener('click', function (e) {
+                var opt = e.target.closest('.calc-dropdown-option');
+                if (opt) selectHomeCalcProduct(opt);
+            });
+            homeCalcDropdownPanel.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    var opt = e.target.closest('.calc-dropdown-option');
+                    if (opt) {
+                        e.preventDefault();
+                        selectHomeCalcProduct(opt);
+                    }
+                }
+            });
+        }
+
+        /* Click outside the dropdown closes it (but not the whole modal) */
+        document.addEventListener('click', function (e) {
+            if (homeCalcDropdown && homeCalcDropdown.classList.contains('open') && !homeCalcDropdown.contains(e.target)) {
+                closeHomeCalcDropdownPanel();
+            }
+        });
 
         var homeCalcBtnEl = document.getElementById('homeCalcBtn');
         if (homeCalcBtnEl) {

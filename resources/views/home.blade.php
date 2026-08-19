@@ -165,22 +165,21 @@
             <div class="calc-body">
                 <div class="form-group">
                     <label>Select Steel Product</label>
-                    <select id="homeCalcProduct">
-                        <option value="">-- Choose a product --</option>
-                        <option value="round_bar">Round Bar (Steel Bars)</option>
-                        <option value="flat_bar">Flat Bar (Steel Bars)</option>
-                        <option value="square_bar">Square Bar (Steel Bars)</option>
-                        <option value="angle_bar">Angle Bar (Steel Bars)</option>
-                        <option value="beam">I-Beam / Channel / T-Bar</option>
-                        <option value="plate">Steel Plate / Checkered Plate</option>
-                        <option value="sheet">GI Sheet / Black Iron Sheet</option>
-                        <option value="pipe">GI Pipe / Black Iron Pipe</option>
-                        <option value="tube">Square / Rectangular Tube</option>
-                        <option value="purlin">C-Purlins / Z-Purlins</option>
-                        <option value="sheet_pile">Sheet Pile</option>
-                        <option value="wire_mesh">Welded Wire Mesh</option>
-                        <option value="roofing">Roofing / Insulated Panels</option>
-                    </select>
+                    <div class="calc-dropdown" id="homeCalcDropdown">
+                        <button type="button" class="calc-dropdown-trigger" id="homeCalcDropdownTrigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="homeCalcDropdownLabel">-- Choose a product --</span>
+                            <i class="fa-solid fa-chevron-down calc-dropdown-arrow"></i>
+                        </button>
+                        <div class="calc-dropdown-panel" id="homeCalcDropdownPanel" role="listbox" tabindex="-1">
+                            @foreach ($calcProducts as $categoryName => $products)
+                            <div class="calc-dropdown-group-label">{{ $categoryName }}</div>
+                            @foreach ($products as $product)
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="{{ $product->name }}" data-category-slug="{{ $product->category->slug }}">{{ $product->name }}</div>
+                            @endforeach
+                            @endforeach
+                        </div>
+                        <input type="hidden" id="homeCalcProduct" value="">
+                    </div>
                 </div>
                 <div id="homeCalcFormContainer"></div>
                 <div class="calc-btn-row">

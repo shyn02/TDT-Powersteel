@@ -14,7 +14,21 @@ class PageController extends Controller
     {
         $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
 
-        return view('home', compact('categories'));
+        // Same categories excluded from "CALCULATE WEIGHT" on the product listing
+        // pages are excluded here too, so the homepage calculator's product list
+        // always matches what's actually calculable on the products pages.
+        $calcExcludedSlugs = ['hardware', 'construction-materials'];
+
+        $calcProducts = Product::with('category')
+            ->where('is_active', true)
+            ->whereHas('category', function ($q) use ($calcExcludedSlugs) {
+                $q->where('is_active', true)->whereNotIn('slug', $calcExcludedSlugs);
+            })
+            ->orderBy('name')
+            ->get()
+            ->groupBy(fn ($product) => $product->category->name);
+
+        return view('home', compact('categories', 'calcProducts'));
     }
 
     public function products(): View
