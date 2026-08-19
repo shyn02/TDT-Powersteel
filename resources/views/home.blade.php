@@ -131,7 +131,6 @@
                                 <p class="product-desc">{{ $category->banner_desc ?: $category->intro_desc }}</p>
                                 <div class="product-footer">
                                     <a href="{{ route('category_detail', $category->slug) }}" class="btn-outline-dark" style="text-align:center;">View Products</a>
-                                    <button class="btn-calc-trigger" data-category-slug="{{ $category->slug }}" data-product-name="{{ $category->name }}"><i class="fa-solid fa-calculator"></i> CALCULATE WEIGHT</button>
                                     <button class="btn-quote-trigger btn-orange-sm" data-product="{{ $category->name }}">Inquire Sizes</button>
                                 </div>
                             </div>
@@ -151,9 +150,55 @@
 
             <div class="view-all-container">
                 <a href="{{ route('products') }}" class="btn-outline-dark">VIEW ALL PRODUCT</a>
+                <button class="btn-calc-homepage" id="homeCalcOpenBtn"><i class="fa-solid fa-calculator"></i> CALCULATE WEIGHT</button>
             </div>
         </div>
     </section>
+
+    <!-- Homepage Weight Calculator Popup -->
+    <div id="homeCalcOverlay" class="calc-modal-overlay">
+        <div class="calc-modal">
+            <div class="calc-header">
+                <h2>STEEL WEIGHT CALCULATOR</h2>
+                <button class="calc-close" id="homeCalcClose">&times;</button>
+            </div>
+            <div class="calc-body">
+                <div class="form-group">
+                    <label>Select Steel Product</label>
+                    <select id="homeCalcProduct">
+                        <option value="">-- Choose a product --</option>
+                        <option value="round_bar">Round Bar (Steel Bars)</option>
+                        <option value="flat_bar">Flat Bar (Steel Bars)</option>
+                        <option value="square_bar">Square Bar (Steel Bars)</option>
+                        <option value="angle_bar">Angle Bar (Steel Bars)</option>
+                        <option value="beam">I-Beam / Channel / T-Bar</option>
+                        <option value="plate">Steel Plate / Checkered Plate</option>
+                        <option value="sheet">GI Sheet / Black Iron Sheet</option>
+                        <option value="pipe">GI Pipe / Black Iron Pipe</option>
+                        <option value="tube">Square / Rectangular Tube</option>
+                        <option value="purlin">C-Purlins / Z-Purlins</option>
+                        <option value="sheet_pile">Sheet Pile</option>
+                        <option value="wire_mesh">Welded Wire Mesh</option>
+                        <option value="roofing">Roofing / Insulated Panels</option>
+                    </select>
+                </div>
+                <div id="homeCalcFormContainer"></div>
+                <div class="calc-btn-row">
+                    <button type="button" class="calc-btn calc-btn-calc" id="homeCalcBtn">CALCULATE</button>
+                    <button type="button" class="calc-btn calc-btn-reset" id="homeCalcResetBtn">RESET</button>
+                </div>
+                <div class="calc-result" id="homeCalcResult">
+                    <div class="calc-result-label">Estimated Total Weight</div>
+                    <div class="calc-result-weight" id="homeCalcResultWeight"></div>
+                    <div class="calc-result-secondary" id="homeCalcResultSecondary"></div>
+                    <div class="calc-result-breakdown" id="homeCalcResultBreakdown"></div>
+                </div>
+                <div class="calc-btn-row result-actions">
+                    <button type="button" class="calc-btn calc-btn-quote" id="homeCalcQuoteBtn">REQUEST A QUOTE</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <section id="projects" class="projects-section">
         <div class="container">

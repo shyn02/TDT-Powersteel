@@ -283,3 +283,32 @@
 .btn-calc-trigger i {
     font-size: 13px;
 }
+
+/* Homepage "CALCULATE WEIGHT" button next to VIEW ALL PRODUCTS */
+.btn-calc-homepage {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 2px solid var(--tdt-orange);
+    color: var(--tdt-orange);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.btn-calc-homepage:hover {
+    background: var(--tdt-orange);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.btn-calc-homepage i {
+    font-size: 14px;
+}

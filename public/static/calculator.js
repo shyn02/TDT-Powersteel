@@ -664,8 +664,12 @@
 
         /* ESC to close */
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) {
-                closeCalcModal();
+            if (e.key === 'Escape') {
+                if (overlay && overlay.classList.contains('active')) {
+                    closeCalcModal();
+                } else if (homeOverlay && homeOverlay.classList.contains('active')) {
+                    closeHomeCalc();
+                }
             }
         });
 
@@ -710,6 +714,105 @@
         if (quoteBtn) {
             quoteBtn.addEventListener('click', function () {
                 closeCalcModal();
+                var quoteTrigger = document.querySelector('.btn-quote-trigger[data-product]');
+                if (quoteTrigger) quoteTrigger.click();
+            });
+        }
+
+        /* ============================================
+           HOMEPAGE WEIGHT CALCULATOR POPUP
+           ============================================ */
+        var homeOverlay = document.getElementById('homeCalcOverlay');
+        var homeFormContainer = document.getElementById('homeCalcFormContainer');
+        var homeCalcResult = document.getElementById('homeCalcResult');
+        var homeCalcWeightEl = document.getElementById('homeCalcResultWeight');
+        var homeCalcSecondaryEl = document.getElementById('homeCalcResultSecondary');
+        var homeCalcBreakdownEl = document.getElementById('homeCalcResultBreakdown');
+        var homeCalcCalcFn = null;
+
+        function openHomeCalc() {
+            if (!homeOverlay) return;
+            homeOverlay.classList.add('active');
+            document.body.style.overflowY = 'hidden';
+        }
+
+        function closeHomeCalc() {
+            if (!homeOverlay) return;
+            homeOverlay.classList.remove('active');
+            document.body.style.overflowY = '';
+            if (homeFormContainer) homeFormContainer.innerHTML = '';
+            if (homeCalcResult) homeCalcResult.classList.remove('show');
+            var sel = document.getElementById('homeCalcProduct');
+            if (sel) sel.selectedIndex = 0;
+            homeCalcCalcFn = null;
+        }
+
+        var homeCalcOpenBtn = document.getElementById('homeCalcOpenBtn');
+        if (homeCalcOpenBtn) homeCalcOpenBtn.addEventListener('click', openHomeCalc);
+
+        var homeCalcCloseBtn = document.getElementById('homeCalcClose');
+        if (homeCalcCloseBtn) homeCalcCloseBtn.addEventListener('click', closeHomeCalc);
+
+        if (homeOverlay) {
+            homeOverlay.addEventListener('click', function (e) {
+                if (e.target === homeOverlay) closeHomeCalc();
+            });
+        }
+
+        var homeCalcSelect = document.getElementById('homeCalcProduct');
+        if (homeCalcSelect) {
+            homeCalcSelect.addEventListener('change', function () {
+                var type = this.value;
+                if (homeCalcResult) homeCalcResult.classList.remove('show');
+                if (!type || !TYPE_CONFIG[type]) {
+                    if (homeFormContainer) homeFormContainer.innerHTML = '';
+                    homeCalcCalcFn = null;
+                    return;
+                }
+                homeCalcCalcFn = TYPE_CONFIG[type].calc;
+                homeFormContainer.innerHTML = TYPE_CONFIG[type].form();
+            });
+        }
+
+        var homeCalcBtnEl = document.getElementById('homeCalcBtn');
+        if (homeCalcBtnEl) {
+            homeCalcBtnEl.addEventListener('click', function () {
+                if (!homeCalcCalcFn) return;
+                var result = homeCalcCalcFn();
+                if (!result) {
+                    homeCalcResult.classList.remove('show');
+                    return;
+                }
+                var totalKg = result.total;
+                var totalLb = totalKg * LB_PER_KG;
+                homeCalcWeightEl.innerHTML = fmt(totalKg) + ' <span>kg</span>';
+                homeCalcSecondaryEl.textContent = '\u2248 ' + fmt(totalLb) + ' lbs';
+
+                var breakdown = '';
+                if (result.breakdown) breakdown += result.breakdown + '<br>';
+                if (result.qty > 1) breakdown += 'Weight per piece: ' + fmt(result.perPiece) + ' kg';
+                if (result.note) breakdown += (breakdown ? '<br>' : '') + result.note;
+                homeCalcBreakdownEl.innerHTML = breakdown;
+
+                homeCalcResult.classList.add('show');
+            });
+        }
+
+        var homeCalcResetEl = document.getElementById('homeCalcResetBtn');
+        if (homeCalcResetEl) {
+            homeCalcResetEl.addEventListener('click', function () {
+                if (homeFormContainer) {
+                    homeFormContainer.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+                    homeFormContainer.querySelectorAll('select').forEach(function (s) { s.selectedIndex = 0; });
+                }
+                homeCalcResult.classList.remove('show');
+            });
+        }
+
+        var homeCalcQuoteEl = document.getElementById('homeCalcQuoteBtn');
+        if (homeCalcQuoteEl) {
+            homeCalcQuoteEl.addEventListener('click', function () {
+                closeHomeCalc();
                 var quoteTrigger = document.querySelector('.btn-quote-trigger[data-product]');
                 if (quoteTrigger) quoteTrigger.click();
             });
