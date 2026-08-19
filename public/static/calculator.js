@@ -706,6 +706,7 @@
                 formContainer.innerHTML = buildUnsupportedForm();
                 productNameEl.textContent = productName || '';
                 resultEl.classList.remove('show');
+                window.scrollTo(0, 0);
                 overlay.classList.add('active');
                 document.body.style.overflowY = 'hidden';
                 return;
@@ -716,6 +717,7 @@
             productNameEl.textContent = productName || '';
             resultEl.classList.remove('show');
             syncUnitSelects();
+            window.scrollTo(0, 0);
             overlay.classList.add('active');
             document.body.style.overflowY = 'hidden';
         }
@@ -819,6 +821,7 @@
 
         function openHomeCalc() {
             if (!homeOverlay) return;
+            window.scrollTo(0, 0);
             homeOverlay.classList.add('active');
             document.body.style.overflowY = 'hidden';
         }
