@@ -52,7 +52,7 @@ h1, h2, h3, .section-title {
 
 }
 
-.container {
+.container:not(.nav-container) {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
@@ -1298,14 +1298,10 @@ footer {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }transition: color 0.2s;
-        }
+    to { transform: rotate(360deg); }
+}
 
-        .toast-close:hover {
-            color: var(--tdt-orange);
-        }
-
-        /* --- SCREEN SCREEN LOADER FOR FORMS --- */
+/* --- SCREEN SCREEN LOADER FOR FORMS --- */
         .submit-loader {
             position: absolute;
             inset: 0;
