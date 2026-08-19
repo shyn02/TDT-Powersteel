@@ -114,7 +114,7 @@
 }
 
 .calc-body .form-row.three-col {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 }
 
 .calc-body .unit-hint {
@@ -339,10 +339,10 @@
 }
 
 .calc-unit-select {
-    padding: 5px 8px;
+    padding: 4px 5px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 11px;
     font-family: 'Montserrat', sans-serif;
     color: #333;
     background: #fff;
@@ -363,7 +363,7 @@
 
 .calc-input-row input {
     flex: 1;
-    min-width: 0;
+    min-width: 70px;
     padding: 10px 12px;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -382,5 +382,5 @@
 .calc-input-row .calc-unit-select {
     flex: 0 0 auto;
     width: auto;
-    min-width: 52px;
+    min-width: 44px;
 }
