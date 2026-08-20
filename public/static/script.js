@@ -845,4 +845,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { threshold: 0.15, rootMargin: '0px' });
 
     items.forEach(function (el) { observer.observe(el); });
+
+    // ==========================================================
+    // HERO SLIDESHOW (JS-controlled crossfade with product labels)
+    // ==========================================================
+    const heroSlides = document.querySelectorAll('.hero-slide');
+    if (heroSlides.length > 1) {
+        let currentSlide = 0;
+        const slideInterval = 5000; // 5 seconds per slide
+
+        setInterval(function () {
+            heroSlides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % heroSlides.length;
+            heroSlides[currentSlide].classList.add('active');
+        }, slideInterval);
+    }
 })();

@@ -7,14 +7,37 @@
     <section id="home" class="hero-section">
         <!-- Product slideshow background -->
         <div class="hero-slideshow" aria-hidden="true">
-            <img src="{{ asset('static/images/steelbars.jpg') }}" alt="">
-            <img src="{{ asset('static/images/steelbeams.jpg') }}" alt="">
-            <img src="{{ asset('static/images/Steel Plates Banner.jpg') }}" alt="">
-            <img src="{{ asset('static/images/Sheet Piles Banner.jpg') }}" alt="">
-            <img src="{{ asset('static/images/Roofing Banner.png') }}" alt="">
-            <img src="{{ asset('static/images/wiremesh banner.jpg') }}" alt="">
-            <img src="{{ asset('static/images/ss-angle-bar.png') }}" alt="">
+            <div class="hero-slide active" data-product="Steel Bars">
+                <img src="{{ asset('static/images/steelbars.jpg') }}" alt="">
+                <div class="hero-slide-label">Steel Bars</div>
+            </div>
+            <div class="hero-slide" data-product="Steel Beams">
+                <img src="{{ asset('static/images/steelbeams.jpg') }}" alt="">
+                <div class="hero-slide-label">Steel Beams</div>
+            </div>
+            <div class="hero-slide" data-product="Steel Plates">
+                <img src="{{ asset('static/images/Steel Plates Banner.jpg') }}" alt="">
+                <div class="hero-slide-label">Steel Plates</div>
+            </div>
+            <div class="hero-slide" data-product="Sheet Piles">
+                <img src="{{ asset('static/images/Sheet Piles Banner.jpg') }}" alt="">
+                <div class="hero-slide-label">Sheet Piles</div>
+            </div>
+            <div class="hero-slide" data-product="Roofing">
+                <img src="{{ asset('static/images/Roofing Banner.png') }}" alt="">
+                <div class="hero-slide-label">Roofing</div>
+            </div>
+            <div class="hero-slide" data-product="Wire Mesh">
+                <img src="{{ asset('static/images/wiremesh banner.jpg') }}" alt="">
+                <div class="hero-slide-label">Wire Mesh</div>
+            </div>
+            <div class="hero-slide" data-product="Angle Bar">
+                <img src="{{ asset('static/images/ss-angle-bar.png') }}" alt="">
+                <div class="hero-slide-label">Angle Bar</div>
+            </div>
         </div>
+        <!-- Dark gradient overlay -->
+        <div class="hero-overlay" aria-hidden="true"></div>
         <!-- Decorative circles -->
         <div class="hero-circles" aria-hidden="true">
             <div class="hc hc-1"></div>
@@ -103,6 +126,13 @@
                     </form>
                 </div>
             </div>
+        </div>
+        <!-- Mouse scroll indicator -->
+        <div class="hero-scroll-indicator" aria-hidden="true">
+            <div class="mouse">
+                <div class="mouse-wheel"></div>
+            </div>
+            <span>Scroll Down</span>
         </div>
     </section>
 
