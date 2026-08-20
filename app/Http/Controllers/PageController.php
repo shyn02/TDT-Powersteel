@@ -137,9 +137,10 @@ class PageController extends Controller
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
         foreach ($all as $page) {
+            $lastmod = isset($page['lastmod']) ? $page['lastmod'] : $now;
             $xml .= '  <url>' . "\n";
             $xml .= "    <loc>{$baseUrl}{$page['loc']}</loc>\n";
-            $xml .= "    <lastmod>{$page['lastmod'] ?? $now}</lastmod>\n";
+            $xml .= "    <lastmod>{$lastmod}</lastmod>\n";
             $xml .= "    <changefreq>{$page['changefreq']}</changefreq>\n";
             $xml .= "    <priority>{$page['priority']}</priority>\n";
             $xml .= '  </url>' . "\n";
