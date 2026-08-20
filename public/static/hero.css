@@ -157,7 +157,7 @@
 }
 
 .hero-badge {
-    background-color: rgba(255,255,255,0.15);
+    background-color: rgba(230, 112, 38, 0.9);
     color: #ffffff;
     border: 1px solid rgba(255,255,255,0.3);
     font-size: 11px;
@@ -212,7 +212,7 @@
 }
 
 .hero-title .highlight {
-    color: #ffffff;
+    color: #e67026;
 }
 
 .hero-desc {
@@ -221,6 +221,20 @@
     line-height: 1.8;
     margin-bottom: 35px;
     max-width: 550px;
+}
+
+/* Hero buttons - white text on orange bg */
+.hero-actions .btn-dark,
+.hero-actions .btn-outline-dark {
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.hero-actions .btn-dark:hover,
+.hero-actions .btn-outline-dark:hover {
+    background-color: #ffffff;
+    color: #e67026;
+    border-color: #ffffff;
 }
 
 .hero-actions {
@@ -234,14 +248,14 @@
 .hero-stats {
     display: flex;
     gap: 40px;
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-top: 1px solid rgba(230, 112, 38, 0.4);
     padding-top: 30px;
 }
 
 .stat-item h3 {
     font-family: var(--font-bebas);
     font-size: 32px;
-    color: #ffffff;
+    color: #e67026;
     line-height: 1;
     margin-bottom: 4px;
 }
@@ -249,7 +263,7 @@
 .stat-item p {
     font-size: 10px;
     font-weight: 800;
-    color: rgba(255,255,255,0.8);
+    color: rgba(255,255,255,0.9);
     letter-spacing: 0.05em;
 }
 /* --- HERO RIGHT: REQUEST A QUOTE CARD --- */
