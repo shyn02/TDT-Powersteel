@@ -212,3 +212,40 @@
 .faq-item {
     position: relative;
 }
+
+/* --- EXTRA SCATTERED QUESTION MARKS --- */
+.faq-marks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.faq-marks span {
+    position: absolute;
+    font-family: var(--font-bebas);
+    color: var(--tdt-orange);
+    user-select: none;
+}
+
+.faq-marks span:nth-child(1)  { font-size: 50px;  top: 5%;   left: 8%;   opacity: 0.05; transform: rotate(-22deg); }
+.faq-marks span:nth-child(2)  { font-size: 90px;  top: 12%;  right: 12%; opacity: 0.06; transform: rotate(17deg); }
+.faq-marks span:nth-child(3)  { font-size: 35px;  top: 25%;  left: 3%;   opacity: 0.04; transform: rotate(30deg); }
+.faq-marks span:nth-child(4)  { font-size: 70px;  top: 8%;   left: 55%;  opacity: 0.05; transform: rotate(-10deg); }
+.faq-marks span:nth-child(5)  { font-size: 45px;  top: 35%;  right: 5%;  opacity: 0.06; transform: rotate(24deg); }
+.faq-marks span:nth-child(6)  { font-size: 100px; top: 15%;  left: 25%;  opacity: 0.04; transform: rotate(-5deg); }
+.faq-marks span:nth-child(7)  { font-size: 55px;  top: 42%;  left: 10%;  opacity: 0.05; transform: rotate(12deg); }
+.faq-marks span:nth-child(8)  { font-size: 80px;  top: 50%;  right: 18%; opacity: 0.05; transform: rotate(-28deg); }
+.faq-marks span:nth-child(9)  { font-size: 40px;  top: 55%;  left: 45%;  opacity: 0.04; transform: rotate(8deg); }
+.faq-marks span:nth-child(10) { font-size: 65px;  top: 60%;  left: 2%;   opacity: 0.06; transform: rotate(-15deg); }
+.faq-marks span:nth-child(11) { font-size: 110px; top: 30%;  left: 60%;  opacity: 0.04; transform: rotate(20deg); }
+.faq-marks span:nth-child(12) { font-size: 45px;  top: 68%;  right: 8%;  opacity: 0.05; transform: rotate(-32deg); }
+.faq-marks span:nth-child(13) { font-size: 75px;  top: 72%;  left: 15%;  opacity: 0.05; transform: rotate(14deg); }
+.faq-marks span:nth-child(14) { font-size: 55px;  top: 45%;  left: 70%;  opacity: 0.04; transform: rotate(-18deg); }
+.faq-marks span:nth-child(15) { font-size: 85px;  top: 78%;  right: 25%; opacity: 0.06; transform: rotate(6deg); }
+.faq-marks span:nth-child(16) { font-size: 35px;  top: 85%;  left: 5%;   opacity: 0.04; transform: rotate(26deg); }
+.faq-marks span:nth-child(17) { font-size: 60px;  top: 88%;  left: 50%;  opacity: 0.05; transform: rotate(-8deg); }
+.faq-marks span:nth-child(18) { font-size: 95px;  top: 20%;  left: 80%;  opacity: 0.05; transform: rotate(11deg); }
+.faq-marks span:nth-child(19) { font-size: 40px;  top: 92%;  right: 5%;  opacity: 0.04; transform: rotate(-25deg); }
+.faq-marks span:nth-child(20) { font-size: 70px;  top: 38%;  left: 35%;  opacity: 0.05; transform: rotate(19deg); }

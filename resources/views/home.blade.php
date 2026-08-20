@@ -559,6 +559,12 @@
     </section>
 
     <section id="faq" class="faq-section">
+        <div class="faq-marks" aria-hidden="true">
+            <span>?</span><span>?</span><span>?</span><span>?</span><span>?</span>
+            <span>?</span><span>?</span><span>?</span><span>?</span><span>?</span>
+            <span>?</span><span>?</span><span>?</span><span>?</span><span>?</span>
+            <span>?</span><span>?</span><span>?</span><span>?</span><span>?</span>
+        </div>
         <div class="container">
             <div class="section-header reveal">
                 <span class="section-subtitle">COMMON INQUIRIES</span>
