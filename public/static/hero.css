@@ -2,11 +2,24 @@
 .hero-section {
     min-height: 100vh;
     padding: 140px 0 80px 0;
-    background: #ffffff;
+    background: #e67026;
     position: relative;
     overflow: hidden;
     display: flex;
     align-items: flex-start;
+}
+
+/* --- GRID LINES OVERLAY --- */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* --- DECORATIVE CIRCLES --- */
@@ -22,48 +35,48 @@
     border-radius: 50%;
 }
 
-/* Large orange circle - top right */
+/* Large white circle - top right */
 .hc-1 {
     width: 320px;
     height: 320px;
-    background: rgba(230, 112, 38, 0.22);
+    background: rgba(255, 255, 255, 0.1);
     top: -60px;
     right: -80px;
 }
 
-/* Medium gray circle - bottom left */
+/* Medium darker orange circle - bottom left */
 .hc-2 {
     width: 200px;
     height: 200px;
-    background: rgba(113, 112, 116, 0.2);
+    background: rgba(0, 0, 0, 0.08);
     bottom: -40px;
     left: -50px;
 }
 
-/* Small orange ring - mid left */
+/* Small white ring - mid left */
 .hc-3 {
     width: 80px;
     height: 80px;
-    border: 3px solid rgba(230, 112, 38, 0.35);
+    border: 3px solid rgba(255, 255, 255, 0.25);
     background: transparent;
     top: 40%;
     left: 8%;
 }
 
-/* Tiny gray dot - top center */
+/* Tiny white dot - top center */
 .hc-4 {
     width: 14px;
     height: 14px;
-    background: rgba(113, 112, 116, 0.3);
+    background: rgba(255, 255, 255, 0.3);
     top: 20%;
     left: 45%;
 }
 
-/* Medium orange dot - bottom right */
+/* Medium white dot - bottom right */
 .hc-5 {
     width: 40px;
     height: 40px;
-    background: rgba(230, 112, 38, 0.28);
+    background: rgba(255, 255, 255, 0.2);
     bottom: 25%;
     right: 12%;
 }
@@ -125,9 +138,9 @@
 }
 
 .hero-badge {
-    background-color: #fff3eb;
-    color: var(--tdt-orange);
-    border: 1px solid rgba(230, 112, 38, 0.2);
+    background-color: rgba(255,255,255,0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.3);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.1em;
@@ -143,7 +156,7 @@
     line-height: 1.05;
     margin-bottom: 20px;
     letter-spacing: 0.01em;
-    color: var(--tdt-gray);
+    color: #ffffff;
 }
 
 @media (max-width: 991px) {
@@ -180,11 +193,11 @@
 }
 
 .hero-title .highlight {
-    color: var(--tdt-orange);
+    color: #ffffff;
 }
 
 .hero-desc {
-    color: var(--tdt-gray);
+    color: rgba(255,255,255,0.9);
     font-size: 15px;
     line-height: 1.8;
     margin-bottom: 35px;
@@ -202,14 +215,14 @@
 .hero-stats {
     display: flex;
     gap: 40px;
-    border-top: 1px solid rgba(113, 112, 116, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
     padding-top: 30px;
 }
 
 .stat-item h3 {
     font-family: var(--font-bebas);
     font-size: 32px;
-    color: var(--tdt-orange);
+    color: #ffffff;
     line-height: 1;
     margin-bottom: 4px;
 }
@@ -217,7 +230,7 @@
 .stat-item p {
     font-size: 10px;
     font-weight: 800;
-    color: var(--tdt-gray);
+    color: rgba(255,255,255,0.8);
     letter-spacing: 0.05em;
 }
 /* --- HERO RIGHT: REQUEST A QUOTE CARD --- */
