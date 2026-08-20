@@ -13,7 +13,7 @@
     inset: 0;
     background-image: radial-gradient(circle, #e67026 1.5px, transparent 1.5px);
     background-size: 18px 18px;
-    opacity: 0.08;
+    opacity: 0.12;
     pointer-events: none;
     z-index: 0;
 }
