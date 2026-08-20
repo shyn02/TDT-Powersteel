@@ -191,8 +191,6 @@
                 @endif
                 @endforeach
             </div>
-
-            <p class="blog-placeholder-note">Social highlights above are sample placeholders — swap in your real Instagram/Facebook post links once ready.</p>
         </div>
     </section>
 
