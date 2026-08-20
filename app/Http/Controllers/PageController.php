@@ -22,16 +22,14 @@ class PageController extends Controller
         // always matches what's actually calculable on the products pages.
         $calcExcludedSlugs = ['hardware', 'construction-materials'];
 
-        $calcProducts = Cache::remember('home_calc_products', 60, function () use ($calcExcludedSlugs) {
-            return Product::with('category')
-                ->where('is_active', true)
-                ->whereHas('category', function ($q) use ($calcExcludedSlugs) {
-                    $q->where('is_active', true)->whereNotIn('slug', $calcExcludedSlugs);
-                })
-                ->orderBy('name')
-                ->get()
-                ->groupBy(fn ($product) => $product->category->name);
-        });
+        $calcProducts = Product::with('category')
+            ->where('is_active', true)
+            ->whereHas('category', function ($q) use ($calcExcludedSlugs) {
+                $q->where('is_active', true)->whereNotIn('slug', $calcExcludedSlugs);
+            })
+            ->orderBy('name')
+            ->get()
+            ->groupBy(fn ($product) => $product->category->name);
 
         return view('home', compact('categories', 'calcProducts'));
     }
@@ -105,13 +103,8 @@ class PageController extends Controller
 
     public function categoryDetail(string $slug): View
     {
-        $category = Cache::remember("category_{$slug}", 60, function () use ($slug) {
-            return ProductCategory::where('slug', $slug)->where('is_active', true)->firstOrFail();
-        });
-
-        $products = Cache::remember("category_{$slug}_products", 60, function () use ($category) {
-            return Product::where('category_id', $category->id)->where('is_active', true)->orderBy('name')->get();
-        });
+        $category = ProductCategory::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $products = Product::where('category_id', $category->id)->where('is_active', true)->orderBy('name')->get();
 
         return view('category_detail', compact('category', 'products'));
     }
