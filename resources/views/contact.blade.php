@@ -49,7 +49,7 @@
                             <span class="info-icon">✉️</span>
                             <div>
                                 <h4>Email Address</h4>
-                                <p>sales@tdtpowersteel.com</p>
+                                <p>sales@tdtpowersteel.com.ph</p>
                             </div>
                         </div>
                     </div>

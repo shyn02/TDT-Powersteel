@@ -12,7 +12,7 @@
 
     <section class="page-banner blog-banner-video">
         <div class="blog-banner-video-wrap">
-            <video class="blog-banner-video-el" autoplay muted loop playsinline preload="none" loading="lazy" preload="none" loading="lazy" poster="/static/images/blog-banner-poster.jpg">
+            <video class="blog-banner-video-el" autoplay muted loop playsinline preload="none" loading="lazy" poster="/static/images/blog-banner-poster.jpg">
                 <source src="/static/videos/tdt-powersteel-blog-banner.mp4" type="video/mp4">
             </video>
             <div class="blog-banner-overlay"></div>
