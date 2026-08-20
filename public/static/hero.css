@@ -547,6 +547,22 @@
         color: #ffffff;
     }
 
+    /* On mobile, Refer a Project and View Catalogue get the dark TDT style
+       so they contrast with the orange Request a Quote primary button. */
+    .hero-actions .btn-dark,
+    .hero-actions .btn-outline-dark {
+        background-color: #111010;
+        color: #ffffff;
+        border-color: #111010;
+    }
+
+    .hero-actions .btn-dark:hover,
+    .hero-actions .btn-outline-dark:hover {
+        background-color: #e67026;
+        color: #ffffff;
+        border-color: #e67026;
+    }
+
     /* The card becomes a centered popup instead of an inline block.
        Specificity matches (and is later in the cascade than) the
        .slide-door-right.revealed rule above, so this wins even
