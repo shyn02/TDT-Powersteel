@@ -66,3 +66,71 @@
 .section-title span {
     color: var(--tdt-orange);
 }
+
+/* --- RIDDLER QUESTION MARK PATTERN --- */
+.faq-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.faq-section::before,
+.faq-section::after {
+    content: "????";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 120px;
+    font-weight: 400;
+    color: var(--tdt-orange);
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
+}
+
+.faq-section::before {
+    top: 40px;
+    left: -20px;
+    transform: rotate(-15deg);
+    content: "?????";
+}
+
+.faq-section::after {
+    bottom: 30px;
+    right: -10px;
+    transform: rotate(12deg);
+    content: "??????";
+}
+
+.faq-section .container {
+    position: relative;
+    z-index: 1;
+}
+
+.faq-accordion {
+    position: relative;
+}
+
+.faq-accordion::before,
+.faq-accordion::after {
+    content: "??";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 80px;
+    color: var(--tdt-orange);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: -1;
+    user-select: none;
+}
+
+.faq-accordion::before {
+    top: -60px;
+    left: -80px;
+    transform: rotate(20deg);
+}
+
+.faq-accordion::after {
+    bottom: -50px;
+    right: -60px;
+    transform: rotate(-18deg);
+}
