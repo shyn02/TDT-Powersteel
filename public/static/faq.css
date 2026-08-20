@@ -73,34 +73,6 @@
     overflow: hidden;
 }
 
-.faq-section::before,
-.faq-section::after {
-    content: "????";
-    position: absolute;
-    font-family: var(--font-bebas);
-    font-size: 120px;
-    font-weight: 400;
-    color: var(--tdt-orange);
-    opacity: 0.06;
-    pointer-events: none;
-    z-index: 0;
-    user-select: none;
-}
-
-.faq-section::before {
-    top: 40px;
-    left: -20px;
-    transform: rotate(-15deg);
-    content: "?????";
-}
-
-.faq-section::after {
-    bottom: 30px;
-    right: -10px;
-    transform: rotate(12deg);
-    content: "??????";
-}
-
 .faq-section .container {
     position: relative;
     z-index: 1;
@@ -110,27 +82,133 @@
     position: relative;
 }
 
-.faq-accordion::before,
+/* Scattered single "?" marks using pseudo-elements */
+.faq-section::before {
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 140px;
+    color: var(--tdt-orange);
+    opacity: 0.07;
+    pointer-events: none;
+    user-select: none;
+    top: 30px;
+    left: 40px;
+    transform: rotate(-18deg);
+}
+
+.faq-section::after {
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 100px;
+    color: var(--tdt-orange);
+    opacity: 0.06;
+    pointer-events: none;
+    user-select: none;
+    bottom: 50px;
+    right: 60px;
+    transform: rotate(14deg);
+}
+
+.faq-accordion::before {
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 90px;
+    color: var(--tdt-orange);
+    opacity: 0.05;
+    pointer-events: none;
+    user-select: none;
+    top: -40px;
+    left: -50px;
+    transform: rotate(22deg);
+}
+
 .faq-accordion::after {
-    content: "??";
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 110px;
+    color: var(--tdt-orange);
+    opacity: 0.06;
+    pointer-events: none;
+    user-select: none;
+    bottom: -30px;
+    right: -40px;
+    transform: rotate(-12deg);
+}
+
+.faq-item:nth-child(1)::before {
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 60px;
+    color: var(--tdt-orange);
+    opacity: 0.05;
+    pointer-events: none;
+    user-select: none;
+    top: -10px;
+    right: 80px;
+    transform: rotate(10deg);
+}
+
+.faq-item:nth-child(2)::before {
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 70px;
+    color: var(--tdt-orange);
+    opacity: 0.04;
+    pointer-events: none;
+    user-select: none;
+    bottom: 5px;
+    left: 100px;
+    transform: rotate(-20deg);
+}
+
+.faq-item:nth-child(3)::before {
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 55px;
+    color: var(--tdt-orange);
+    opacity: 0.05;
+    pointer-events: none;
+    user-select: none;
+    top: 50%;
+    right: -20px;
+    transform: rotate(25deg);
+}
+
+.faq-item:nth-child(4)::before {
+    content: "?";
     position: absolute;
     font-family: var(--font-bebas);
     font-size: 80px;
     color: var(--tdt-orange);
+    opacity: 0.04;
+    pointer-events: none;
+    user-select: none;
+    top: 20px;
+    left: -30px;
+    transform: rotate(-8deg);
+}
+
+.faq-item:nth-child(5)::before {
+    content: "?";
+    position: absolute;
+    font-family: var(--font-bebas);
+    font-size: 65px;
+    color: var(--tdt-orange);
     opacity: 0.05;
     pointer-events: none;
-    z-index: -1;
     user-select: none;
+    bottom: -5px;
+    right: 120px;
+    transform: rotate(16deg);
 }
 
-.faq-accordion::before {
-    top: -60px;
-    left: -80px;
-    transform: rotate(20deg);
-}
-
-.faq-accordion::after {
-    bottom: -50px;
-    right: -60px;
-    transform: rotate(-18deg);
+.faq-item {
+    position: relative;
 }
