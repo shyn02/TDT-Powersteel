@@ -7,8 +7,8 @@
     <section id="home" class="hero-section">
         <!-- Product slideshow background -->
         <div class="hero-slideshow" aria-hidden="true">
-            <img src="{{ asset('static/images/steelbeams.jpg') }}" alt="">
             <img src="{{ asset('static/images/steelbars.jpg') }}" alt="">
+            <img src="{{ asset('static/images/steelbeams.jpg') }}" alt="">
             <img src="{{ asset('static/images/Steel Plates Banner.jpg') }}" alt="">
             <img src="{{ asset('static/images/Sheet Piles Banner.jpg') }}" alt="">
             <img src="{{ asset('static/images/Roofing Banner.png') }}" alt="">
