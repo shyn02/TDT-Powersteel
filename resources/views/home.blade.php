@@ -8,31 +8,31 @@
         <!-- Product slideshow background -->
         <div class="hero-slideshow" aria-hidden="true">
             <div class="hero-slide active" data-product="Steel Bars">
-                <img src="{{ asset('static/images/steelbars.jpg') }}" alt="">
+                <img src="{{ asset('static/images/steelbars.jpg') }}" alt="PNS-certified steel bars available at TDT Powersteel">
                 <div class="hero-slide-label">Steel Bars</div>
             </div>
             <div class="hero-slide" data-product="Steel Beams">
-                <img src="{{ asset('static/images/steelbeams.jpg') }}" alt="">
+                <img src="{{ asset('static/images/steelbeams.jpg') }}" alt="Structural steel beams for construction projects">
                 <div class="hero-slide-label">Steel Beams</div>
             </div>
             <div class="hero-slide" data-product="Steel Plates">
-                <img src="{{ asset('static/images/Steel Plates Banner.jpg') }}" alt="">
+                <img src="{{ asset('static/images/Steel Plates Banner.jpg') }}" alt="Steel plates and sheets for industrial use">
                 <div class="hero-slide-label">Steel Plates</div>
             </div>
             <div class="hero-slide" data-product="Sheet Piles">
-                <img src="{{ asset('static/images/Sheet Piles Banner.jpg') }}" alt="">
+                <img src="{{ asset('static/images/Sheet Piles Banner.jpg') }}" alt="Steel sheet piles for foundation and retaining walls">
                 <div class="hero-slide-label">Sheet Piles</div>
             </div>
             <div class="hero-slide" data-product="Roofing">
-                <img src="{{ asset('static/images/Roofing Banner.png') }}" alt="">
+                <img src="{{ asset('static/images/Roofing Banner.png') }}" alt="Steel roofing materials and accessories">
                 <div class="hero-slide-label">Roofing</div>
             </div>
             <div class="hero-slide" data-product="Wire Mesh">
-                <img src="{{ asset('static/images/wiremesh banner.jpg') }}" alt="">
+                <img src="{{ asset('static/images/wiremesh banner.jpg') }}" alt="Steel wire mesh for concrete reinforcement">
                 <div class="hero-slide-label">Wire Mesh</div>
             </div>
             <div class="hero-slide" data-product="Angle Bar">
-                <img src="{{ asset('static/images/ss-angle-bar.png') }}" alt="">
+                <img src="{{ asset('static/images/ss-angle-bar.png') }}" alt="Steel angle bars for structural framing">
                 <div class="hero-slide-label">Angle Bar</div>
             </div>
         </div>
@@ -625,5 +625,57 @@
             </div>
         </div>
     </section>
+
+    @push('scripts')
+    <!-- JSON-LD: FAQPage -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Are your steel products PNS certified?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. All our deformed steel bars, structural beams, and pipes strictly comply with Philippine National Standards (PNS 49 for rebars) and undergo rigid quality inspection tests."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you offer nationwide delivery?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, we deliver nationwide. We have our own logistics fleet consisting of boom trucks, dropsides, and forwarders to ensure on-time delivery directly to your project site."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is there a minimum order requirement?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "For delivery orders, we require a minimum volume depending on the product type. However, for warehouse pickups here at Vicente Cruz St., Sampaloc, we do not impose any minimum order quantity."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How often do your steel prices change?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Steel prices fluctuate based on global market demands, raw material costs, and importation rates. We update our price list regularly. To get the most accurate and competitive pricing, you can request a formal quotation through our Get a Quote button."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is the standard lead time for deliveries?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "For Metro Manila and nearby provinces, delivery usually takes 1 to 3 business days upon payment confirmation and order finalization. For provincial deliveries outside Luzon, shipment schedule will depend on vessel availability and will be coordinated closely with our logistics team."
+                }
+            }
+        ]
+    }
+    </script>
+    @endpush
 
 @endsection

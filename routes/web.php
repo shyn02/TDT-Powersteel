@@ -14,6 +14,9 @@ Route::get('/privacy-policy/', [PageController::class, 'privacyPolicy'])->name('
 Route::get('/terms-and-conditions/', [PageController::class, 'termsAndConditions'])->name('terms_and_conditions');
 Route::get('/referral/', [PageController::class, 'referral'])->name('referral');
 
+// ---- SEO ----
+Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
+
 // ---- PRODUCT CATEGORY PAGES ----
 // One dynamic route serves every category by slug (admin-manageable).
 // Must stay BELOW the other /products/... routes above so it doesn't swallow them.

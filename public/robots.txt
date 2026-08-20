@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /filament/
+Disallow: /api/
+
+Sitemap: https://www.tdtpowersteel.com/sitemap.xml

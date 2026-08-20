@@ -10,12 +10,26 @@
     <meta name="description" content="@yield('description', 'Steel supplier in Sampaloc, Manila carrying PNS-certified steel bars, steel beams, steel plates, and steel pipes, with nationwide delivery. Request a free quote in minutes.')">
     <meta name="author" content="TDT Powersteel">
     <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.ico">
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.tdtpowersteel.com/">
+    <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('title', 'TDT Powersteel Corporation | Premium Steel Supplier')">
     <meta property="og:description" content="@yield('description', 'Premium quality construction solutions. Sourcing PNS-certified steel bars, columns, plates, and pipes with nationwide delivery.')">
-    <meta property="og:image" content="/static/images/social-share-preview.png">
+    <meta property="og:image" content="{{ secure_url('/static/images/social-share-preview.png') }}">
+    <meta property="og:image:alt" content="TDT Powersteel Corporation - Premium Steel Supplier">
+    <meta property="og:site_name" content="TDT Powersteel Corporation">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'TDT Powersteel Corporation | Premium Steel Supplier')">
+    <meta name="twitter:description" content="@yield('description', 'Premium quality construction solutions. Sourcing PNS-certified steel bars, columns, plates, and pipes with nationwide delivery.')">
+    <meta name="twitter:image" content="{{ secure_url('/static/images/social-share-preview.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +50,58 @@
     <link rel="stylesheet" href="/static/chatwidget.css">
     <link rel="stylesheet" href="/static/calculator.css">
     @stack('styles')
+
+    <!-- JSON-LD Structured Data: Organization + LocalBusiness -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "TDT Powersteel Corporation",
+        "description": "Premium steel supplier in the Philippines carrying PNS-certified steel bars, beams, plates, pipes, and more with nationwide delivery.",
+        "url": "https://www.tdtpowersteel.com",
+        "logo": "https://www.tdtpowersteel.com/static/images/logo.png",
+        "image": "https://www.tdtpowersteel.com/static/images/social-share-preview.png",
+        "telephone": "+62-2-8831-0000",
+        "email": "inquiry@tdtpowersteel.com.ph",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "1017 Vicente Cruz St., Sampaloc",
+            "addressLocality": "Manila",
+            "addressRegion": "Metro Manila",
+            "postalCode": "1008",
+            "addressCountry": "PH"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "14.6131",
+            "longitude": "120.9925"
+        },
+        "openingHoursSpecification": [
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+                "opens": "08:00",
+                "closes": "18:00"
+            },
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": "Friday",
+                "opens": "08:00",
+                "closes": "17:00"
+            }
+        ],
+        "sameAs": [
+            "https://www.facebook.com/share/1Bsz7WUitR/",
+            "https://www.instagram.com/tdtpowersteelinc/",
+            "https://youtube.com/@tdtpowersteelinc"
+        ],
+        "priceRange": "$$",
+        "areaServed": {
+            "@type": "Country",
+            "name": "Philippines"
+        }
+    }
+    </script>
 </head>
 <body>
 
