@@ -528,23 +528,22 @@
         text-align: center;
     }
 
-    .hero-actions .hero-quote-mobile-btn {
+    .hero-actions .btn-dark.hero-quote-mobile-btn,
+    .hero-actions button.hero-quote-mobile-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        /* Put it first in the stack — it's the primary action. */
         order: -1;
-        /* Solid orange fill so it stands out as the primary action,
-           unlike the white Refer a Project / View Catalogue buttons. */
-        background-color: #e67026;
-        color: #ffffff;
-        border-color: #e67026;
+        background-color: #e67026 !important;
+        color: #ffffff !important;
+        border-color: #e67026 !important;
     }
 
-    .hero-actions .hero-quote-mobile-btn:hover {
-        background-color: #e15716;
-        border-color: #e15716;
-        color: #ffffff;
+    .hero-actions .btn-dark.hero-quote-mobile-btn:hover,
+    .hero-actions button.hero-quote-mobile-btn:hover {
+        background-color: #e15716 !important;
+        border-color: #e15716 !important;
+        color: #ffffff !important;
     }
 
     /* On mobile, Refer a Project and View Catalogue get white bg + orange text
