@@ -223,11 +223,12 @@
     max-width: 550px;
 }
 
-/* Hero buttons - white text on orange bg */
+/* Hero buttons - orange filled on orange bg */
 .hero-actions .btn-dark,
 .hero-actions .btn-outline-dark {
+    background-color: #e67026;
     color: #ffffff;
-    border-color: #ffffff;
+    border-color: #e67026;
 }
 
 .hero-actions .btn-dark:hover,
