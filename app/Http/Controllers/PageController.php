@@ -6,34 +6,41 @@ use App\Models\BlogPost;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\SocialHighlight;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class PageController extends Controller
 {
     public function home(): View
     {
-        $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
+        $categories = Cache::remember('active_categories', 60, function () {
+            return ProductCategory::where('is_active', true)->orderBy('name')->get();
+        });
 
         // Same categories excluded from "CALCULATE WEIGHT" on the product listing
         // pages are excluded here too, so the homepage calculator's product list
         // always matches what's actually calculable on the products pages.
         $calcExcludedSlugs = ['hardware', 'construction-materials'];
 
-        $calcProducts = Product::with('category')
-            ->where('is_active', true)
-            ->whereHas('category', function ($q) use ($calcExcludedSlugs) {
-                $q->where('is_active', true)->whereNotIn('slug', $calcExcludedSlugs);
-            })
-            ->orderBy('name')
-            ->get()
-            ->groupBy(fn ($product) => $product->category->name);
+        $calcProducts = Cache::remember('home_calc_products', 60, function () use ($calcExcludedSlugs) {
+            return Product::with('category')
+                ->where('is_active', true)
+                ->whereHas('category', function ($q) use ($calcExcludedSlugs) {
+                    $q->where('is_active', true)->whereNotIn('slug', $calcExcludedSlugs);
+                })
+                ->orderBy('name')
+                ->get()
+                ->groupBy(fn ($product) => $product->category->name);
+        });
 
         return view('home', compact('categories', 'calcProducts'));
     }
 
     public function products(): View
     {
-        $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
+        $categories = Cache::remember('active_categories', 60, function () {
+            return ProductCategory::where('is_active', true)->orderBy('name')->get();
+        });
 
         return view('products', compact('categories'));
     }
@@ -50,10 +57,16 @@ class PageController extends Controller
 
     public function blog(): View
     {
-        $activePosts = BlogPost::where('is_active', true)->orderByDesc('published_date')->get();
+        $activePosts = Cache::remember('blog_active_posts', 60, function () {
+            return BlogPost::where('is_active', true)->orderByDesc('published_date')->get();
+        });
+
         $featured = $activePosts->firstWhere('is_featured', true) ?? $activePosts->first();
         $posts = $featured ? $activePosts->reject(fn ($p) => $p->id === $featured->id) : $activePosts;
-        $socialHighlights = SocialHighlight::where('is_active', true)->orderBy('order')->get();
+
+        $socialHighlights = Cache::remember('blog_social_highlights', 60, function () {
+            return SocialHighlight::where('is_active', true)->orderBy('order')->get();
+        });
 
         return view('blog', [
             'featured' => $featured,
@@ -92,8 +105,13 @@ class PageController extends Controller
 
     public function categoryDetail(string $slug): View
     {
-        $category = ProductCategory::where('slug', $slug)->where('is_active', true)->firstOrFail();
-        $products = Product::where('category_id', $category->id)->where('is_active', true)->orderBy('name')->get();
+        $category = Cache::remember("category_{$slug}", 60, function () use ($slug) {
+            return ProductCategory::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        });
+
+        $products = Cache::remember("category_{$slug}_products", 60, function () use ($category) {
+            return Product::where('category_id', $category->id)->where('is_active', true)->orderBy('name')->get();
+        });
 
         return view('category_detail', compact('category', 'products'));
     }
