@@ -547,13 +547,13 @@
         color: #ffffff;
     }
 
-    /* On mobile, Refer a Project and View Catalogue get the dark TDT style
+    /* On mobile, Refer a Project and View Catalogue get white style
        so they contrast with the orange Request a Quote primary button. */
     .hero-actions .btn-dark,
     .hero-actions .btn-outline-dark {
-        background-color: #111010;
-        color: #ffffff;
-        border-color: #111010;
+        background-color: #ffffff;
+        color: #111010;
+        border-color: #ffffff;
     }
 
     .hero-actions .btn-dark:hover,
