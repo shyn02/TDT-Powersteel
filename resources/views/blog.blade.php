@@ -12,7 +12,7 @@
 
     <section class="page-banner blog-banner-video">
         <div class="blog-banner-video-wrap">
-            <video class="blog-banner-video-el" autoplay muted loop playsinline poster="/static/images/blog-banner-poster.jpg">
+            <video class="blog-banner-video-el" autoplay muted loop playsinline preload="none" loading="lazy" preload="none" loading="lazy" poster="/static/images/blog-banner-poster.jpg">
                 <source src="/static/videos/tdt-powersteel-blog-banner.mp4" type="video/mp4">
             </video>
             <div class="blog-banner-overlay"></div>
@@ -88,7 +88,7 @@
                     <div class="blog-media social-embed-wrap{{ $item->video_file ? ' has-video' : '' }}">
                         <span class="blog-tag">{{ $item->tag_label }}</span>
                         @if ($item->video_file)
-                        <video class="social-profile-video" autoplay muted loop playsinline poster="/static/images/tdt-instagram-highlight-poster.jpg">
+                        <video class="social-profile-video" autoplay muted loop playsinline preload="none" loading="lazy" poster="/static/images/tdt-instagram-highlight-poster.jpg">
                             <source src="{{ asset('storage/' . $item->video_file) }}" type="video/mp4">
                         </video>
                         @else
@@ -108,7 +108,7 @@
                     <div class="blog-media social-embed-wrap{{ $item->video_file ? ' has-video' : '' }}">
                         <span class="blog-tag">{{ $item->tag_label }}</span>
                         @if ($item->video_file)
-                        <video class="social-profile-video" autoplay muted loop playsinline poster="/static/images/tdt-facebook-highlight-poster.jpg">
+                        <video class="social-profile-video" autoplay muted loop playsinline preload="none" loading="lazy" poster="/static/images/tdt-facebook-highlight-poster.jpg">
                             <source src="{{ asset('storage/' . $item->video_file) }}" type="video/mp4">
                         </video>
                         @else
@@ -146,7 +146,7 @@
                     <div class="blog-media social-embed-wrap social-profile-box social-profile-box-tiktok{{ $item->video_file ? ' has-video' : '' }}">
                         <span class="blog-tag">{{ $item->tag_label }}</span>
                         @if ($item->video_file)
-                        <video class="social-profile-video" autoplay muted loop playsinline poster="/static/images/tdt-tiktok-highlight-poster.jpg">
+                        <video class="social-profile-video" autoplay muted loop playsinline preload="none" loading="lazy" poster="/static/images/tdt-tiktok-highlight-poster.jpg">
                             <source src="{{ asset('storage/' . $item->video_file) }}" type="video/mp4">
                         </video>
                         @else
@@ -170,7 +170,7 @@
                     <div class="blog-media social-embed-wrap social-profile-box social-profile-box-youtube{{ $item->video_file ? ' has-video' : '' }}">
                         <span class="blog-tag">{{ $item->tag_label }}</span>
                         @if ($item->video_file)
-                        <video class="social-profile-video" autoplay muted loop playsinline poster="/static/images/tdt-youtube-highlight-poster.jpg">
+                        <video class="social-profile-video" autoplay muted loop playsinline preload="none" loading="lazy" poster="/static/images/tdt-youtube-highlight-poster.jpg">
                             <source src="{{ asset('storage/' . $item->video_file) }}" type="video/mp4">
                         </video>
                         @else

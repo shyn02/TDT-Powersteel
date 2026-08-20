@@ -112,7 +112,7 @@
                 <p>We take pride in our strong foundation, experienced team and continuous commitment to delivering the best steel solutions to our clients across the Philippines.</p>
             </div>
             <div class="built-video-panel reveal">
-                <video autoplay muted loop playsinline poster="/static/images/truck-bg.jpg">
+                <video autoplay muted loop playsinline preload="none" loading="lazy" poster="/static/images/truck-bg.jpg">
                     <source src="/static/videos/tdt-powersteel-introductory-video.mp4" type="video/mp4">
                 </video>
             </div>

@@ -327,9 +327,9 @@
     <button id="backToTopBtn" title="Go to top">↑</button>
 
     <!-- Main JavaScript file handles everything cleanly -->
-    <script src="/static/script.js"></script>
-    <script src="/static/chatwidget.js"></script>
-    <script src="/static/calculator.js"></script>
+    <script defer src="/static/script.js"></script>
+    <script defer src="/static/chatwidget.js"></script>
+    <script defer src="/static/calculator.js"></script>
     @stack('scripts')
 </body>
 </html>
