@@ -547,12 +547,12 @@
         color: #ffffff;
     }
 
-    /* On mobile, Refer a Project and View Catalogue get white style
-       so they contrast with the orange Request a Quote primary button. */
+    /* On mobile, Refer a Project and View Catalogue get white bg + orange text
+       so they contrast with the orange-filled Request a Quote primary button. */
     .hero-actions .btn-dark,
     .hero-actions .btn-outline-dark {
         background-color: #ffffff;
-        color: #111010;
+        color: #e67026;
         border-color: #ffffff;
     }
 
