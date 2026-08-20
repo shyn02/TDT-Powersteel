@@ -2,12 +2,47 @@
 .products-section {
     padding: 100px 0;
     background-color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Truss pattern accent - right side */
+.products-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100%;
+    background-image: url('/static/images/bg_accent_2_truss_pattern.png');
+    background-repeat: repeat-y;
+    background-position: right center;
+    background-size: 350px auto;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Left accent line */
+.products-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--tdt-orange), transparent);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .products-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 30px;
+    position: relative;
+    z-index: 1;
 }
 
 @media (min-width: 768px) {
@@ -184,6 +219,8 @@ a.product-card .product-spec {
     align-items: center;
     gap: 10px;
     width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 .carousel-arrow {
@@ -278,10 +315,12 @@ a.product-card .product-spec {
 /* --- CAROUSEL DOTS (mobile scroll indicator) ---
    Arrows are hidden below 640px in favor of native swipe, but that left
    no visual cue that the section scrolls sideways. Dots fill that gap:
-   hidden by default (desktop/tablet already show the arrows), shown
-   only in the same max-width: 639px range the arrows disappear in. */
+    hidden by default (desktop/tablet already show the arrows), shown
+    only in the same max-width: 639px range the arrows disappear in. */
 .carousel-dots {
     display: none;
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 639px) {
@@ -318,6 +357,8 @@ a.product-card .product-spec {
     gap: 16px;
     margin-top: 40px;
     width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 .view-all-btn {
