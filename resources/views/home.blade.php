@@ -127,13 +127,6 @@
                 </div>
             </div>
         </div>
-        <!-- Mouse scroll indicator -->
-        <div class="hero-scroll-indicator" aria-hidden="true">
-            <div class="mouse">
-                <div class="mouse-wheel"></div>
-            </div>
-            <span>Scroll Down</span>
-        </div>
     </section>
 
     <section id="products" class="products-section">
