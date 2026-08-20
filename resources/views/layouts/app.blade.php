@@ -54,8 +54,8 @@
     <!-- JSON-LD Structured Data: Organization + LocalBusiness -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
+        "@@context": "https://schema.org",
+        "@@type": "LocalBusiness",
         "name": "TDT Powersteel Corporation",
         "description": "Premium steel supplier in the Philippines carrying PNS-certified steel bars, beams, plates, pipes, and more with nationwide delivery.",
         "url": "https://www.tdtpowersteel.com",
@@ -64,7 +64,7 @@
         "telephone": "+62-2-8831-0000",
         "email": "inquiry@tdtpowersteel.com.ph",
         "address": {
-            "@type": "PostalAddress",
+            "@@type": "PostalAddress",
             "streetAddress": "1017 Vicente Cruz St., Sampaloc",
             "addressLocality": "Manila",
             "addressRegion": "Metro Manila",
@@ -72,19 +72,19 @@
             "addressCountry": "PH"
         },
         "geo": {
-            "@type": "GeoCoordinates",
+            "@@type": "GeoCoordinates",
             "latitude": "14.6131",
             "longitude": "120.9925"
         },
         "openingHoursSpecification": [
             {
-                "@type": "OpeningHoursSpecification",
+                "@@type": "OpeningHoursSpecification",
                 "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday"],
                 "opens": "08:00",
                 "closes": "18:00"
             },
             {
-                "@type": "OpeningHoursSpecification",
+                "@@type": "OpeningHoursSpecification",
                 "dayOfWeek": "Friday",
                 "opens": "08:00",
                 "closes": "17:00"

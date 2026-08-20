@@ -630,46 +630,46 @@
     <!-- JSON-LD: FAQPage -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
+        "@@context": "https://schema.org",
+        "@@type": "FAQPage",
         "mainEntity": [
             {
-                "@type": "Question",
+                "@@type": "Question",
                 "name": "Are your steel products PNS certified?",
                 "acceptedAnswer": {
-                    "@type": "Answer",
+                    "@@type": "Answer",
                     "text": "Yes. All our deformed steel bars, structural beams, and pipes strictly comply with Philippine National Standards (PNS 49 for rebars) and undergo rigid quality inspection tests."
                 }
             },
             {
-                "@type": "Question",
+                "@@type": "Question",
                 "name": "Do you offer nationwide delivery?",
                 "acceptedAnswer": {
-                    "@type": "Answer",
+                    "@@type": "Answer",
                     "text": "Yes, we deliver nationwide. We have our own logistics fleet consisting of boom trucks, dropsides, and forwarders to ensure on-time delivery directly to your project site."
                 }
             },
             {
-                "@type": "Question",
+                "@@type": "Question",
                 "name": "Is there a minimum order requirement?",
                 "acceptedAnswer": {
-                    "@type": "Answer",
+                    "@@type": "Answer",
                     "text": "For delivery orders, we require a minimum volume depending on the product type. However, for warehouse pickups here at Vicente Cruz St., Sampaloc, we do not impose any minimum order quantity."
                 }
             },
             {
-                "@type": "Question",
+                "@@type": "Question",
                 "name": "How often do your steel prices change?",
                 "acceptedAnswer": {
-                    "@type": "Answer",
+                    "@@type": "Answer",
                     "text": "Steel prices fluctuate based on global market demands, raw material costs, and importation rates. We update our price list regularly. To get the most accurate and competitive pricing, you can request a formal quotation through our Get a Quote button."
                 }
             },
             {
-                "@type": "Question",
+                "@@type": "Question",
                 "name": "What is the standard lead time for deliveries?",
                 "acceptedAnswer": {
-                    "@type": "Answer",
+                    "@@type": "Answer",
                     "text": "For Metro Manila and nearby provinces, delivery usually takes 1 to 3 business days upon payment confirmation and order finalization. For provincial deliveries outside Luzon, shipment schedule will depend on vessel availability and will be coordinated closely with our logistics team."
                 }
             }
