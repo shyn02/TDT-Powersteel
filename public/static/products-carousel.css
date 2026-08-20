@@ -333,7 +333,7 @@ a.product-card .product-spec {
 /* --- VIEW ALL BUTTON SECTION --- */
 .view-all-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     gap: 16px;
     margin-top: 40px;
