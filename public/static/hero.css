@@ -223,19 +223,19 @@
     max-width: 550px;
 }
 
-/* Hero buttons - orange filled on orange bg */
+/* Hero buttons - white bg + orange text */
 .hero-actions .btn-dark,
 .hero-actions .btn-outline-dark {
-    background-color: #e67026;
-    color: #ffffff;
-    border-color: #e67026;
+    background-color: #ffffff;
+    color: #e67026;
+    border-color: #ffffff;
 }
 
 .hero-actions .btn-dark:hover,
 .hero-actions .btn-outline-dark:hover {
-    background-color: #ffffff;
-    color: #e67026;
-    border-color: #ffffff;
+    background-color: #e67026;
+    color: #ffffff;
+    border-color: #e67026;
 }
 
 .hero-actions {
