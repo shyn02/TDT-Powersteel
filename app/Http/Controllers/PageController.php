@@ -122,7 +122,7 @@ class PageController extends Controller
             ]);
 
         $posts = BlogPost::where('is_active', true)
-            ->orderByDesc('published_at')
+            ->orderByDesc('published_date')
             ->get()
             ->map(fn ($p) => [
                 'loc' => "/blog/{$p->slug}/",
