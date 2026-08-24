@@ -49,6 +49,23 @@
     <link rel="stylesheet" href="/static/widgets.css">
     <link rel="stylesheet" href="/static/chatwidget.css">
     <link rel="stylesheet" href="/static/calculator.css">
+    <link rel="stylesheet" href="/static/preloader.css">
+    <script>
+    // Smart preloader: only shows if page takes > 500ms to load (slow internet)
+    (function(){
+        var t = setTimeout(function(){
+            if (document.readyState !== 'complete') {
+                var el = document.getElementById('page-preloader');
+                if (el) { el.classList.remove('is-hidden'); document.documentElement.classList.add('preloader-lock'); }
+                // mark that we showed due to slow load
+                window.__tdtPreloaderShown = true;
+                window.__tdtPreloaderShowAt = Date.now();
+            }
+        }, 500);
+        window.addEventListener('load', function(){ clearTimeout(t); });
+        window.addEventListener('pageshow', function(){ clearTimeout(t); });
+    })();
+    </script>
     @stack('styles')
 
     <!-- JSON-LD Structured Data: Organization + LocalBusiness -->
@@ -104,7 +121,14 @@
     </script>
 </head>
 <body>
-
+    <!-- Page Preloader: Smart - shows TDT logo + blurred BG only on slow loads / slow navigation -->
+    <div id="page-preloader" class="is-hidden" aria-hidden="true" aria-label="Loading">
+        <div class="preloader-inner">
+            <img src="/static/images/logo.png" alt="TDT Powersteel" class="preloader-logo" width="160" height="auto">
+            <div class="preloader-spinner" aria-hidden="true"></div>
+            <div class="preloader-text">LOADING</div>
+        </div>
+    </div>
 
     <div class="top-bar">
         <div class="container top-bar-flex">
@@ -337,6 +361,8 @@
     <!-- Back to top button -->
     <button id="backToTopBtn" title="Go to top">↑</button>
 
+    <!-- Preloader must run ASAP (no defer) -->
+    <script src="/static/preloader.js"></script>
     <!-- Main JavaScript file handles everything cleanly -->
     <script defer src="/static/script.js"></script>
     <script defer src="/static/chatwidget.js"></script>
