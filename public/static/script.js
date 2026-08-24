@@ -215,8 +215,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeSubProductDropdown() {
         const dropdown = document.getElementById('subProductDropdown');
         const trigger = document.getElementById('subProductTrigger');
+        const panel = document.getElementById('subProductPanel');
         if (dropdown) dropdown.classList.remove('open');
         if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        if (panel) {
+            panel.classList.remove('open');
+            // Move it back home so the DOM stays sane while closed.
+            if (dropdown && panel.parentElement !== dropdown) {
+                dropdown.appendChild(panel);
+            }
+        }
     }
 
     document.addEventListener('click', (e) => {
@@ -230,8 +238,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dropdown.classList.contains('open')) {
                 closeSubProductDropdown();
             } else {
+                // #subProductDropdown lives inside .modal-card, which has a
+                // persistent CSS transform for its open/close animation.
+                // A `transform` on any ancestor makes position:fixed children
+                // anchor to THAT ancestor instead of the real viewport, so
+                // the panel gets moved out to <body> while it's open.
+                document.body.appendChild(panel);
                 positionSubProductPanel(trigger, panel);
                 dropdown.classList.add('open');
+                panel.classList.add('open');
                 trigger.setAttribute('aria-expanded', 'true');
             }
             return;
@@ -255,7 +270,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
-            closeSubProductDropdown();
+            const panel = document.getElementById('subProductPanel');
+            if (!panel || !panel.contains(e.target)) {
+                closeSubProductDropdown();
+            }
         }
     });
 
@@ -283,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.remove('quote-modal-open');
         document.body.style.overflowY = ''; 
         if (quoteForm) quoteForm.reset();
+        closeSubProductDropdown();
         const sizeGroup = document.getElementById('sizeGroup');
         if (sizeGroup) sizeGroup.style.display = 'none';
         const qHowHeardOtherGroupEl = document.getElementById('qHowHeardOtherGroup');

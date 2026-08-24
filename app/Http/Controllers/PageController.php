@@ -101,7 +101,7 @@ class PageController extends Controller
         $baseUrl = 'https://www.tdtpowersteel.com';
         $now = now()->toAtomString();
 
-        $staticPages = [
+        $staticPages = collect([
             ['loc' => '/', 'priority' => '1.0', 'changefreq' => 'weekly'],
             ['loc' => '/products/', 'priority' => '0.9', 'changefreq' => 'weekly'],
             ['loc' => '/about/', 'priority' => '0.7', 'changefreq' => 'monthly'],
@@ -110,7 +110,7 @@ class PageController extends Controller
             ['loc' => '/privacy-policy/', 'priority' => '0.3', 'changefreq' => 'yearly'],
             ['loc' => '/terms-and-conditions/', 'priority' => '0.3', 'changefreq' => 'yearly'],
             ['loc' => '/referral/', 'priority' => '0.6', 'changefreq' => 'monthly'],
-        ];
+        ]);
 
         $categories = ProductCategory::where('is_active', true)
             ->orderBy('name')

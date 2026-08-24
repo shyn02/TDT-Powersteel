@@ -475,6 +475,15 @@
     display: block;
 }
 
+/* Fallback for dropdowns that get temporarily moved to <body> while open
+   (see script.js) to escape an ancestor with a CSS transform — a transform
+   on any ancestor turns position:fixed children into being positioned
+   relative to THAT ancestor instead of the real viewport, which is why
+   this is needed for dropdowns living inside an animated modal card. */
+.calc-dropdown-panel.open {
+    display: block;
+}
+
 .calc-dropdown-group-label {
     padding: 8px 14px 4px;
     font-size: 11px;
