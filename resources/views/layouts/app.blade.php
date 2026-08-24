@@ -121,12 +121,10 @@
     </script>
 </head>
 <body>
-    <!-- Page Preloader: Smart - shows TDT logo + blurred BG only on slow loads / slow navigation -->
+    <!-- Page Preloader: Smart - logo-loading only, no blurred background -->
     <div id="page-preloader" class="is-hidden" aria-hidden="true" aria-label="Loading">
         <div class="preloader-inner">
-            <img src="/static/images/logo.png" alt="TDT Powersteel" class="preloader-logo" width="160" height="auto">
-            <div class="preloader-spinner" aria-hidden="true"></div>
-            <div class="preloader-text">LOADING</div>
+            <img src="/static/images/logo-loading.png" alt="TDT Powersteel" class="preloader-logo" width="180" height="auto">
         </div>
     </div>
 
