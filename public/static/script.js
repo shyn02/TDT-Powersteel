@@ -295,6 +295,101 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    /* ---------- Custom "How Did You Hear About Us?" dropdown ---------- */
+    function closeQHowHeardDropdown() {
+        const dropdown = document.getElementById('qHowHeardDropdown');
+        const trigger = document.getElementById('qHowHeardTrigger');
+        const panel = document.getElementById('qHowHeardPanel');
+        if (dropdown) dropdown.classList.remove('open');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        if (panel) {
+            panel.classList.remove('open');
+            if (dropdown && panel.parentElement !== dropdown) {
+                dropdown.appendChild(panel);
+            }
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('qHowHeardDropdown');
+        if (!dropdown) return;
+
+        const trigger = e.target.closest('#qHowHeardTrigger');
+        if (trigger) {
+            e.stopPropagation();
+            const panel = document.getElementById('qHowHeardPanel');
+            if (dropdown.classList.contains('open')) {
+                closeQHowHeardDropdown();
+            } else {
+                // Same transformed-ancestor issue as the sub-product dropdown —
+                // portal to <body> while open so it positions against the
+                // real viewport instead of the animated .modal-card.
+                document.body.appendChild(panel);
+                positionSubProductPanel(trigger, panel);
+                dropdown.classList.add('open');
+                panel.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+            }
+            return;
+        }
+
+        const opt = e.target.closest('#qHowHeardPanel .calc-dropdown-option');
+        if (opt) {
+            const panel = document.getElementById('qHowHeardPanel');
+            const label = document.getElementById('qHowHeardLabel');
+            const hiddenInput = document.getElementById('qHowHeard');
+            panel.querySelectorAll('.calc-dropdown-option.selected').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            const value = opt.getAttribute('data-value');
+            if (label) label.textContent = opt.textContent;
+            if (hiddenInput) hiddenInput.value = value;
+            closeQHowHeardDropdown();
+
+            const qHowHeardOtherGroupEl = document.getElementById('qHowHeardOtherGroup');
+            const qHowHeardOtherInput = document.getElementById('qHowHeardOther');
+            const isOthers = value === 'others';
+            if (qHowHeardOtherGroupEl) qHowHeardOtherGroupEl.style.display = isOthers ? '' : 'none';
+            if (qHowHeardOtherInput && !isOthers) qHowHeardOtherInput.value = '';
+            return;
+        }
+
+        if (dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
+            const panel = document.getElementById('qHowHeardPanel');
+            if (!panel || !panel.contains(e.target)) {
+                closeQHowHeardDropdown();
+            }
+        }
+    });
+
+    function repositionOpenQHowHeardDropdown() {
+        const dropdown = document.getElementById('qHowHeardDropdown');
+        if (dropdown && dropdown.classList.contains('open')) {
+            positionSubProductPanel(document.getElementById('qHowHeardTrigger'), document.getElementById('qHowHeardPanel'));
+        }
+    }
+    window.addEventListener('resize', repositionOpenQHowHeardDropdown);
+    window.addEventListener('scroll', repositionOpenQHowHeardDropdown, true);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeQHowHeardDropdown();
+        const opt = e.target.closest && e.target.closest('.calc-dropdown-option');
+        if (opt && (e.key === 'Enter' || e.key === ' ') && opt.closest('#qHowHeardPanel')) {
+            e.preventDefault();
+            opt.click();
+        }
+    });
+
+    function resetQHowHeardDropdown() {
+        const dropdown = document.getElementById('qHowHeardDropdown');
+        if (!dropdown) return;
+        const label = document.getElementById('qHowHeardLabel');
+        const hiddenInput = document.getElementById('qHowHeard');
+        const panel = document.getElementById('qHowHeardPanel');
+        if (label) label.textContent = label.getAttribute('data-placeholder') || label.textContent;
+        if (hiddenInput) hiddenInput.value = '';
+        if (panel) panel.querySelectorAll('.calc-dropdown-option.selected').forEach(o => o.classList.remove('selected'));
+    }
+
     function closeModal() {
         if (!modal) return;
         modal.classList.remove('active');
@@ -302,6 +397,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflowY = ''; 
         if (quoteForm) quoteForm.reset();
         closeSubProductDropdown();
+        closeQHowHeardDropdown();
+        resetQHowHeardDropdown();
         const sizeGroup = document.getElementById('sizeGroup');
         if (sizeGroup) sizeGroup.style.display = 'none';
         const qHowHeardOtherGroupEl = document.getElementById('qHowHeardOtherGroup');
@@ -396,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cHowHeard && cHowHeardOtherGroup) {
         cHowHeard.addEventListener('change', function () {
             const isOthers = cHowHeard.value === 'others';
-            cHowHeardOtherGroup.style.display = isOthers ? 'block' : 'none';
+            cHowHeardOtherGroup.style.display = isOthers ? '' : 'none';
             if (cHowHeardOtherInput) {
                 cHowHeardOtherInput.required = isOthers;
                 if (!isOthers) cHowHeardOtherInput.value = '';
@@ -534,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (heroHowHeard && heroHowHeardOtherGroup) {
         heroHowHeard.addEventListener('change', function () {
             const isOthers = heroHowHeard.value === 'others';
-            heroHowHeardOtherGroup.style.display = isOthers ? 'block' : 'none';
+            heroHowHeardOtherGroup.style.display = isOthers ? '' : 'none';
             if (heroHowHeardOtherInput && !isOthers) {
                 heroHowHeardOtherInput.value = '';
             }
