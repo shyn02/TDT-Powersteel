@@ -1027,7 +1027,7 @@ footer {
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
 }
 
 .form-group label {
@@ -1041,13 +1041,13 @@ footer {
 .form-group input,
 .form-group textarea,
 .form-group select {
-    padding: 12px;
+    padding: 9px 12px;
     border: 1px solid rgba(113, 112, 116, 0.3);
     border-radius: 4px;
     font-family: var(--font-montserrat);
     font-size: 14px;
     background-color: #ffffff;
-    color: var(--tdt-gray);
+    color: var(--tdt-dark);
     outline: none;
     transition: border-color 0.3s;
 }
@@ -1086,7 +1086,9 @@ footer {
     background-color: #ffffff;
     width: 90%;
     max-width: 500px;
-    padding: 40px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px 32px;
     border-radius: 4px;
     position: relative;
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
@@ -1099,16 +1101,31 @@ footer {
     transform: translateY(0);
 }
 
+/* Custom scrollbar so it matches the site's orange branding
+   instead of the default gray browser scrollbar */
+.modal-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-card::-webkit-scrollbar-thumb {
+    background-color: var(--tdt-orange);
+    border-radius: 4px;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 14px;
 }
 
 .modal-header h2 {
     font-family: var(--font-bebas);
-    font-size: 36px;
+    font-size: 28px;
     color: var(--tdt-gray);
     letter-spacing: 0.02em;
 }
@@ -1129,7 +1146,7 @@ footer {
 #quoteForm {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
 }
 
 #quoteForm input[readonly] {
