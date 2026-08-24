@@ -147,21 +147,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function populateSubProducts(categoryName) {
-        const subProductSelect = document.getElementById('subProductSelect');
-        if (!subProductSelect) return;
+        const hiddenInput = document.getElementById('subProductSelect');
+        const panel = document.getElementById('subProductPanel');
+        const label = document.getElementById('subProductLabel');
+        if (!hiddenInput || !panel || !label) return;
 
-        subProductSelect.innerHTML = '';
+        panel.innerHTML = '';
         const list = getProductList(categoryName);
 
-        list.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.name;
-            option.textContent = item.name;
-            subProductSelect.appendChild(option);
+        list.forEach((item, i) => {
+            const opt = document.createElement('div');
+            opt.className = 'calc-dropdown-option' + (i === 0 ? ' selected' : '');
+            opt.setAttribute('role', 'option');
+            opt.setAttribute('tabindex', '0');
+            opt.setAttribute('data-value', item.name);
+            opt.textContent = item.name;
+            panel.appendChild(opt);
         });
 
+        // Mirror the old <select>'s default behaviour: the first item is
+        // selected automatically as soon as the list is populated.
+        const firstName = list.length ? list[0].name : '';
+        hiddenInput.value = firstName;
+        label.textContent = firstName || label.getAttribute('data-placeholder');
+
         // Prime the size dropdown for whichever product ends up selected first
-        populateSizes(categoryName, subProductSelect.value);
+        populateSizes(categoryName, firstName);
     }
 
     function openModalWithProduct(productName) {
@@ -179,13 +190,92 @@ document.addEventListener('DOMContentLoaded', function() {
         subProductsDataReady.then(() => populateSubProducts(categoryName));
     }
 
-    const subProductSelectEl = document.getElementById('subProductSelect');
-    if (subProductSelectEl) {
-        subProductSelectEl.addEventListener('change', () => {
-            const categoryName = selectedProductInput.dataset.category || selectedProductInput.value;
-            populateSizes(categoryName, subProductSelectEl.value);
-        });
+    /* ---------- Custom "Specific Steel Product / Size" dropdown ---------- */
+    function positionSubProductPanel(trigger, panel) {
+        const rect = trigger.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - rect.bottom - 12;
+        const spaceAbove = rect.top - 12;
+        const openUpward = spaceBelow < 180 && spaceAbove > spaceBelow;
+        const maxHeight = Math.max(140, Math.min(320, openUpward ? spaceAbove : spaceBelow));
+
+        panel.style.left = rect.left + 'px';
+        panel.style.width = rect.width + 'px';
+        panel.style.maxHeight = maxHeight + 'px';
+
+        if (openUpward) {
+            panel.style.top = 'auto';
+            panel.style.bottom = (viewportHeight - rect.top + 6) + 'px';
+        } else {
+            panel.style.bottom = 'auto';
+            panel.style.top = (rect.bottom + 6) + 'px';
+        }
     }
+
+    function closeSubProductDropdown() {
+        const dropdown = document.getElementById('subProductDropdown');
+        const trigger = document.getElementById('subProductTrigger');
+        if (dropdown) dropdown.classList.remove('open');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('subProductDropdown');
+        if (!dropdown) return;
+
+        const trigger = e.target.closest('#subProductTrigger');
+        if (trigger) {
+            e.stopPropagation();
+            const panel = document.getElementById('subProductPanel');
+            if (dropdown.classList.contains('open')) {
+                closeSubProductDropdown();
+            } else {
+                positionSubProductPanel(trigger, panel);
+                dropdown.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+            }
+            return;
+        }
+
+        const opt = e.target.closest('#subProductPanel .calc-dropdown-option');
+        if (opt) {
+            const panel = document.getElementById('subProductPanel');
+            const label = document.getElementById('subProductLabel');
+            const hiddenInput = document.getElementById('subProductSelect');
+            panel.querySelectorAll('.calc-dropdown-option.selected').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            const value = opt.getAttribute('data-value');
+            if (label) label.textContent = opt.textContent;
+            if (hiddenInput) hiddenInput.value = value;
+            closeSubProductDropdown();
+
+            const categoryName = selectedProductInput.dataset.category || selectedProductInput.value;
+            populateSizes(categoryName, value);
+            return;
+        }
+
+        if (dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
+            closeSubProductDropdown();
+        }
+    });
+
+    function repositionOpenSubProductDropdown() {
+        const dropdown = document.getElementById('subProductDropdown');
+        if (dropdown && dropdown.classList.contains('open')) {
+            positionSubProductPanel(document.getElementById('subProductTrigger'), document.getElementById('subProductPanel'));
+        }
+    }
+    window.addEventListener('resize', repositionOpenSubProductDropdown);
+    window.addEventListener('scroll', repositionOpenSubProductDropdown, true);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSubProductDropdown();
+        const opt = e.target.closest && e.target.closest('.calc-dropdown-option');
+        if (opt && (e.key === 'Enter' || e.key === ' ') && opt.closest('#subProductPanel')) {
+            e.preventDefault();
+            opt.click();
+        }
+    });
 
     function closeModal() {
         if (!modal) return;

@@ -267,9 +267,14 @@
                 
                 <div class="form-group" id="subProductGroup">
                     <label for="subProductSelect">Specific Steel Product / Size</label>
-                    <select name="subProduct" id="subProductSelect" style="cursor: pointer;">
-                        <option value="">-- Select Size / Specification --</option>
-                    </select>
+                    <div class="calc-dropdown" id="subProductDropdown">
+                        <button type="button" class="calc-dropdown-trigger" id="subProductTrigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="subProductLabel" data-placeholder="-- Select Size / Specification --">-- Select Size / Specification --</span>
+                            <i class="fa-solid fa-chevron-down calc-dropdown-arrow"></i>
+                        </button>
+                        <div class="calc-dropdown-panel" id="subProductPanel" role="listbox" tabindex="-1"></div>
+                        <input type="hidden" name="subProduct" id="subProductSelect" value="">
+                    </div>
                 </div>
 
                 <div class="form-group">
