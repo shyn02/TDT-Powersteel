@@ -303,16 +303,22 @@
                 </div>
                 <div class="form-group">
                     <label for="qHowHeard">How Did You Hear About Us?</label>
-                    <select id="qHowHeard" name="qHowHeard">
-                        <option value="">-- Select an option --</option>
-                        <option value="website">Website / Google Search</option>
-                        <option value="social_media">Social Media (Facebook/Instagram)</option>
-                        <option value="referral">Referral (Friend/Colleague)</option>
-                        <option value="existing_client">Existing Client</option>
-                        <option value="trade_show">Trade Show / Event</option>
-                        <option value="sales_rep">Sales Representative</option>
-                        <option value="others">Others</option>
-                    </select>
+                    <div class="calc-dropdown" id="qHowHeardDropdown">
+                        <button type="button" class="calc-dropdown-trigger" id="qHowHeardTrigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="qHowHeardLabel" data-placeholder="-- Select an option --">-- Select an option --</span>
+                            <i class="fa-solid fa-chevron-down calc-dropdown-arrow"></i>
+                        </button>
+                        <div class="calc-dropdown-panel" id="qHowHeardPanel" role="listbox" tabindex="-1">
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="website">Website / Google Search</div>
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="social_media">Social Media (Facebook/Instagram)</div>
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="referral">Referral (Friend/Colleague)</div>
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="existing_client">Existing Client</div>
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="trade_show">Trade Show / Event</div>
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="sales_rep">Sales Representative</div>
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="others">Others</div>
+                        </div>
+                        <input type="hidden" id="qHowHeard" name="qHowHeard" value="">
+                    </div>
                 </div>
                 <div class="form-group" id="qHowHeardOtherGroup" style="display:none;">
                     <label for="qHowHeardOther">Please Specify</label>
