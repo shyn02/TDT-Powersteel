@@ -48,11 +48,12 @@ class ProductForm
                             ->columnSpanFull(),
                         FileUpload::make('image')
                             ->image()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
                             ->disk('public')
                             ->directory('products')
                             ->imageEditor()
                             ->maxSize(5120)
-                            ->helperText('Max 5MB. Large phone photos should be resized/compressed first.'),
+                            ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),
                     ]),
 
                 Section::make('Request a Quote popup')

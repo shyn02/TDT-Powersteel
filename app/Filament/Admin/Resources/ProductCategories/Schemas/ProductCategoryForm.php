@@ -43,18 +43,20 @@ class ProductCategoryForm
                         FileUpload::make('image')
                             ->label('Tile image')
                             ->image()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
                             ->disk('public')
                             ->directory('categories')
                             ->imageEditor()
                             ->maxSize(5120)
-                            ->helperText('Max 5MB. Large phone photos should be resized/compressed first.'),
+                            ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),
                         FileUpload::make('banner_image')
                             ->image()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
                             ->disk('public')
                             ->directory('categories')
                             ->imageEditor()
                             ->maxSize(5120)
-                            ->helperText('Max 5MB. Large phone photos should be resized/compressed first.'),
+                            ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),
                     ]),
 
                 Section::make('Category page text')

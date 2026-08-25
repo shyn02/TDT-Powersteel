@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Global security headers for every web response (CSP, HSTS, etc.)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Only the genuinely public, anonymous-visitor endpoints are CSRF
         // exempt (quote modal, contact/referral forms, and the public chat
         // widget). These are plain fetch() POSTs from visitors who may not
