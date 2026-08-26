@@ -136,7 +136,7 @@ class Settings extends Page implements HasSchemas
                                     ->schema([
                                         Placeholder::make('dev_james')
                                             ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">James Laurza</span>'))
-                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Lead Developer</span><br><span style="font-size:12px;color:#717074;">Project Lead & Backend</span>')),
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Full Stack</span>')),
 
                                         Placeholder::make('dev_angelo')
                                             ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Angelo Tsin</span>'))
