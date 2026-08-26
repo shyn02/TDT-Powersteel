@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages\Auth;
 
 use App\Models\SiteSettings;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\Radio;
 use Filament\Schemas\Components\Component;
@@ -69,7 +70,7 @@ class Login extends BaseLogin
         return true;
     }
 
-    public function authenticate(): mixed
+    public function authenticate(): ?LoginResponse
     {
         $settings = SiteSettings::current();
         $maxAttempts = (int) ($settings->max_login_attempts ?? 5);
