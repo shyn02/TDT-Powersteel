@@ -124,7 +124,7 @@
     <!-- Page Preloader: Smart - logo-loading only, no blurred background -->
     <div id="page-preloader" class="is-hidden" aria-hidden="true" aria-label="Loading">
         <div class="preloader-inner">
-            <img src="/static/images/logo-loading.png" alt="TDT Powersteel" class="preloader-logo" width="180" height="auto">
+            <img src="/static/images/logo-loading.png" alt="TDT Powersteel" class="preloader-logo" width="260" height="auto">
         </div>
     </div>
 

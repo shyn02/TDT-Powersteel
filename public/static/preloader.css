@@ -32,9 +32,9 @@
 }
 
 .preloader-logo {
-    width: 190px;
+    width: 260px;
     height: auto;
-    max-width: 52vw;
+    max-width: 70vw;
     display: block;
     animation: preloader-pulse 1.5s ease-in-out infinite;
     filter: drop-shadow(0 2px 8px rgba(17, 16, 16, 0.06));
