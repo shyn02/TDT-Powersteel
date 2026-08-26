@@ -1,12 +1,13 @@
 import { NeatGradient } from "https://esm.sh/@firecms/neat@1.0.2";
 
 const config = {
+    // TDT theme: orange / white / gray - terno sa website
     colors: [
-        { color: '#FFBF00', enabled: true },
-        { color: '#FF9700', enabled: true },
-        { color: '#FFE400', enabled: true },
-        { color: '#FFAE00', enabled: true },
-        { color: '#FFD100', enabled: true },
+        { color: '#E67026', enabled: true }, // TDT orange primary
+        { color: '#FF8C42', enabled: true }, // lighter orange
+        { color: '#FFFFFF', enabled: true }, // white
+        { color: '#D6D6D8', enabled: true }, // light gray
+        { color: '#717074', enabled: true }, // TDT gray
         { color: '#FF9A9E', enabled: false },
     ],
     speed: 2.5,
@@ -28,7 +29,7 @@ const config = {
     wireframe: false,
     antialias: false,
     colorBlending: 8,
-    backgroundColor: '#003FFF',
+    backgroundColor: '#F9FAFB',
     backgroundAlpha: 1,
     grainScale: 0,
     grainSparsity: 0,
