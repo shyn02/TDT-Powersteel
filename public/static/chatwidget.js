@@ -426,6 +426,13 @@
                 handleUserSend();
             }
         });
+
+        // Auto-open chat panel immediately so client sees it without clicking
+        if (!panelOpen) {
+            setTimeout(function () {
+                if (!panelOpen) togglePanel(launcher, panel);
+            }, 600);
+        }
     }
 
     if (document.readyState === "loading") {
