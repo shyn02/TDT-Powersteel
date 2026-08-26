@@ -170,7 +170,10 @@ class ChatController extends Controller
                 return ['session' => $session];
             });
         } catch (\Throwable $e) {
-            return response()->json(['status' => 'error', 'message' => "Unexpected error: {$e->getMessage()}"], 500);
+            report($e);
+            $id = (string) \Illuminate\Support\Str::uuid();
+            \Illuminate\Support\Facades\Log::error('Chat claim failed', ['error_id' => $id, 'exception' => $e]);
+            return response()->json(['status' => 'error', 'message' => 'The request could not be completed.', 'error_id' => $id], 500);
         }
 
         if (isset($result['error'])) {

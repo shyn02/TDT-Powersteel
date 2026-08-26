@@ -316,7 +316,10 @@ class Settings extends Page implements HasSchemas
                             ? Notification::make()->title('Database check: OK, no issues found.')->success()->send()
                             : Notification::make()->title('Database check: issues found')->body(implode('; ', $issues))->danger()->send();
                     } catch (\Throwable $e) {
-                        Notification::make()->title('Database check unavailable')->body($e->getMessage())->warning()->send();
+                        report($e);
+                        $id = (string) \Illuminate\Support\Str::uuid();
+                        \Illuminate\Support\Facades\Log::error('Database check failed', ['error_id' => $id, 'exception' => $e]);
+                        Notification::make()->title('Database check unavailable')->body("An error occurred. Reference: {$id}")->warning()->send();
                     }
                 }),
 
@@ -341,7 +344,10 @@ class Settings extends Page implements HasSchemas
                         ActivityLog::log(Auth::user(), 'Optimized database tables');
                         Notification::make()->title('Database tables optimized successfully')->success()->send();
                     } catch (\Throwable $e) {
-                        Notification::make()->title('Optimize unavailable')->body($e->getMessage())->warning()->send();
+                        report($e);
+                        $id = (string) \Illuminate\Support\Str::uuid();
+                        \Illuminate\Support\Facades\Log::error('Optimize tables failed', ['error_id' => $id, 'exception' => $e]);
+                        Notification::make()->title('Optimize unavailable')->body("An error occurred. Reference: {$id}")->warning()->send();
                     }
                 }),
 

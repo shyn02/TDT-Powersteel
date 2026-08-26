@@ -3,30 +3,29 @@
 namespace App\Support;
 
 /**
- * Minimal allow-list HTML sanitizer.
+ * Allow-list HTML sanitizer using DOMDocument (parser-based).
  *
- * Context: BlogPost::body (and similar rich-text fields) is rendered on
- * the public site with Blade's raw {!! !!} output, so admins can format
- * posts with real HTML instead of being limited to escaped plain text.
- * That means anyone who can write to that field — including a
- * lower-privileged staff account, or an attacker who compromises one —
- * can otherwise inject arbitrary <script>, event handlers, or
- * javascript: URLs that execute in every visitor's browser (stored XSS).
- *
- * This is a pragmatic allow-list filter, not a full HTML parser like
- * league/html-sanitizer or mews/purifier. Prefer swapping to one of
- * those (`composer require league/html-sanitizer`) when the environment
- * has Packagist access — this class is a dependency-free stopgap.
+ * Context: BlogPost::body is rendered raw in blog_detail.blade.php:37.
+ * Previous implementation used strip_tags + regex which is bypassable via
+ * control chars, entity encoding, and parser differentials (CWE-79, CWE-1333).
+ * This version uses PHP's DOMDocument as a real HTML parser, matching the
+ * audit's recommendation for a maintained parser-based sanitizer.
+ * For production, prefer swapping to league/html-sanitizer when network
+ * allows (`composer require league/html-sanitizer`) — this remains a
+ * dependency-free but parser-based stopgap that is significantly stronger
+ * than regex.
  */
 class HtmlSanitizer
 {
-    /** Tags allowed to remain in the output (everything else is stripped). */
-    private const ALLOWED_TAGS = '<p><br><b><strong><i><em><u><ul><ol><li>'
-        . '<a><img><h1><h2><h3><h4><h5><h6><blockquote><span><div>'
-        . '<table><thead><tbody><tr><td><th><hr>';
+    private const ALLOWED_TAGS = [
+        'p','br','b','strong','i','em','u','ul','ol','li',
+        'a','img','h1','h2','h3','h4','h5','h6','blockquote','span','div',
+        'table','thead','tbody','tr','td','th','hr',
+    ];
 
-    /** Attributes allowed on any surviving tag. */
     private const ALLOWED_ATTRIBUTES = ['href', 'src', 'alt', 'title', 'class', 'target', 'rel'];
+
+    private const DANGEROUS_TAGS = ['script','style','iframe','object','embed','form','svg','math','link','meta','base','template'];
 
     public static function clean(?string $html): ?string
     {
@@ -34,63 +33,126 @@ class HtmlSanitizer
             return $html;
         }
 
-        // 1. Drop tags that aren't in the allow-list entirely (script,
-        // style, iframe, form, object, svg, etc.), including their content
-        // for the genuinely dangerous ones.
-        $html = preg_replace('/<(script|style|iframe|object|embed|form|svg)\b[^>]*>.*?<\/\1>/is', '', $html) ?? $html;
-        $html = strip_tags($html, self::ALLOWED_TAGS);
+        // Remove dangerous tags with their content early (defense in depth)
+        $html = preg_replace('/<(script|style|iframe|object|embed|form|svg|math)\b[^>]*>.*?<\/\1>/is', '', $html) ?? $html;
 
-        // 2. Strip any attribute not on the allow-list, including all
-        // on* event handlers (onclick, onerror, onload, ...).
-        $html = preg_replace_callback('/<([a-z0-9]+)([^>]*)>/i', function (array $m) {
-            [, $tag, $attrString] = $m;
+        libxml_use_internal_errors(true);
+        $doc = new \DOMDocument('1.0', 'UTF-8');
+        // Wrap in div to handle fragments
+        $wrapped = '<div id="__tdt_wrap">'. $html .'</div>';
+        // Use HTML_NOIMPLIED if available, but handle fallback
+        $options = LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOCDATA | LIBXML_NONET;
+        // Prevent XXE
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $wrapped, $options);
+        libxml_clear_errors();
 
-            $cleanAttrs = '';
-            if (preg_match_all('/([a-zA-Z-]+)\s*=\s*"([^"]*)"|([a-zA-Z-]+)\s*=\s*\'([^\']*)\'/', $attrString, $attrs, PREG_SET_ORDER)) {
-                foreach ($attrs as $attr) {
-                    $name = strtolower($attr[1] !== '' ? $attr[1] : $attr[3]);
-                    $value = $attr[1] !== '' ? $attr[2] : $attr[4];
+        $wrap = $doc->getElementById('__tdt_wrap');
+        if (! $wrap) {
+            return '';
+        }
 
-                    if (str_starts_with($name, 'on')) {
-                        continue; // event handlers
+        // Collect all elements to process (reverse to safely remove)
+        $all = [];
+        $xpath = new \DOMXPath($doc);
+        foreach ($xpath->query('//*') as $node) {
+            $all[] = $node;
+        }
+
+        foreach (array_reverse($all) as $el) {
+            if (! $el instanceof \DOMElement) continue;
+            if ($el->getAttribute('id') === '__tdt_wrap') continue;
+
+            $tag = strtolower($el->tagName);
+
+            // Remove dangerous tags entirely
+            if (in_array($tag, self::DANGEROUS_TAGS, true)) {
+                $el->parentNode?->removeChild($el);
+                continue;
+            }
+
+            // Strip disallowed tags but keep their text content (unwrap)
+            if (! in_array($tag, self::ALLOWED_TAGS, true)) {
+                // Unwrap: move children to parent
+                $parent = $el->parentNode;
+                if ($parent) {
+                    while ($el->firstChild) {
+                        $parent->insertBefore($el->firstChild, $el);
                     }
-                    if (! in_array($name, self::ALLOWED_ATTRIBUTES, true)) {
-                        continue;
-                    }
-                    if (in_array($name, ['href', 'src'], true) && self::isDangerousUrl($value)) {
-                        continue;
-                    }
+                    $parent->removeChild($el);
+                }
+                continue;
+            }
 
-                    $cleanAttrs .= ' '.$name.'="'.htmlspecialchars($value, ENT_QUOTES).'"';
+            // Clean attributes for allowed tags
+            // Collect to remove first
+            $toRemove = [];
+            foreach (iterator_to_array($el->attributes) as $attr) {
+                $name = strtolower($attr->name);
+                $value = $attr->value;
+
+                if (str_starts_with($name, 'on')) {
+                    $toRemove[] = $name;
+                    continue;
+                }
+                if (! in_array($name, self::ALLOWED_ATTRIBUTES, true)) {
+                    $toRemove[] = $name;
+                    continue;
+                }
+                if (in_array($name, ['href', 'src'], true) && self::isDangerousUrl($value)) {
+                    $toRemove[] = $name;
+                    continue;
+                }
+                // Normalize and re-set to prevent entity tricks
+                $el->setAttribute($name, htmlspecialchars_decode($value, ENT_QUOTES));
+            }
+            foreach ($toRemove as $n) {
+                $el->removeAttribute($n);
+            }
+
+            // Force safe rel/target for external links
+            if ($tag === 'a' && $el->hasAttribute('href')) {
+                $href = $el->getAttribute('href');
+                if (preg_match('#^https?://#i', $href)) {
+                    $el->setAttribute('rel', 'noopener noreferrer');
+                    if (! $el->hasAttribute('target')) {
+                        $el->setAttribute('target', '_blank');
+                    }
                 }
             }
 
-            return '<'.$tag.$cleanAttrs.'>';
-        }, $html) ?? $html;
+            // Ensure img has alt
+            if ($tag === 'img' && ! $el->hasAttribute('alt')) {
+                $el->setAttribute('alt', '');
+            }
+        }
 
-        return $html;
+        // Serialize innerHTML of wrapper
+        $out = '';
+        foreach ($wrap->childNodes as $child) {
+            $out .= $doc->saveHTML($child);
+        }
+
+        return $out;
     }
 
     private static function isDangerousUrl(string $value): bool
     {
         $value = strtolower(trim($value));
-        // Remove whitespace/control chars that can be used to obfuscate (e.g. " java\tscript:")
         $value = preg_replace('/\s+/', '', $value) ?? $value;
+        // Decode HTML entities that could hide javascript:
+        $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $value = strtolower($value);
 
         if (str_starts_with($value, 'javascript:') || str_starts_with($value, 'vbscript:') || str_starts_with($value, 'data:')) {
-            // Allow only safe data:image/* for raster images (jpeg/png/webp/gif). Block svg/xml/html which can carry script.
             if (str_starts_with($value, 'data:')) {
-                // Allow data:image/jpeg, png, webp, gif, avif with base64
                 $safeData = preg_match('#^data:image/(jpeg|jpg|png|webp|gif|avif);base64,#', $value);
                 if ($safeData) {
                     return false;
                 }
-                return true; // all other data: URLs are dangerous (svg+xml, text/html, application/xhtml, etc.)
+                return true;
             }
             return true;
         }
-
-        // Also block if url contains javascript: anywhere after encoding
         return false;
     }
 }

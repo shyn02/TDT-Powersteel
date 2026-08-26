@@ -16,18 +16,42 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin account — position must be 'admin' to see Products,
-        // Categories, Users, and the Settings/Data Management pages
-        // (see App\Models\User::isAdminPosition()).
-        $admin = User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@tdtpowersteel.test',
-        ]);
+        // SECURITY: Never seed a privileged admin with the factory's known
+        // default password ('password') into a reachable database (SEC-03).
+        // In production this seeder now FAILS CLOSED unless explicit
+        // bootstrap credentials are provided via env/secret manager.
+        // For local/dev, set BOOTSTRAP_ADMIN_PASSWORD in .env or allow
+        // non-production without it. Never commit a real password.
+        $bootstrapEmail = env('BOOTSTRAP_ADMIN_EMAIL', 'admin@tdtpowersteel.test');
+        $bootstrapPassword = env('BOOTSTRAP_ADMIN_PASSWORD');
 
-        UserProfile::create([
-            'user_id' => $admin->id,
-            'position' => 'admin',
-            'contact_number' => null,
-        ]);
+        if (app()->environment('production') && blank($bootstrapPassword)) {
+            throw new \RuntimeException(
+                'Refusing to seed admin in production without BOOTSTRAP_ADMIN_PASSWORD. '.
+                'Set a strong bootstrap password via secret manager/env and re-run.'
+            );
+        }
+
+        // In production, use the provided strong password; in local/dev
+        // fall back to factory default only when explicitly not in production.
+        $adminAttrs = [
+            'name' => 'Admin User',
+            'email' => $bootstrapEmail,
+        ];
+        if (! blank($bootstrapPassword)) {
+            $adminAttrs['password'] = \Illuminate\Support\Facades\Hash::make($bootstrapPassword);
+        }
+
+        $admin = User::factory()->create($adminAttrs);
+
+        UserProfile::updateOrCreate(
+            ['user_id' => $admin->id],
+            ['position' => 'admin', 'contact_number' => null]
+        );
+
+        // Force password rotation notice on first login if using bootstrap
+        if (! blank($bootstrapPassword) && app()->environment('production')) {
+            $this->command?->warn('Admin seeded with bootstrap password - force rotation on first login.');
+        }
     }
 }
