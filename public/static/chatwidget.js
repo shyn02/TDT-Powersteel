@@ -320,13 +320,6 @@
         autosizeInput(input);
 
         if (mode === "human") {
-            // Double check outside bubble like Messenger/Viber
-            const sent = document.createElement("div");
-            sent.className = "tdt-sent-label";
-            sent.innerHTML = "✓✓ Sent";
-            sent.style.cssText = "font-size:10px;color:#4FC3F7;text-align:right;margin:2px 14px 0 0;font-style:italic;letter-spacing:0.02em;";
-            // insert right after the user row, outside bubble
-            userRow.parentNode.insertBefore(sent, userRow.nextSibling);
             sendToBackend({
                 type: "message",
                 sessionId: getSessionId(),
