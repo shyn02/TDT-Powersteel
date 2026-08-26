@@ -1,4 +1,4 @@
-import { NeatGradient } from "https://esm.sh/@firecms/neat@1.0.10";
+import { NeatGradient } from "https://esm.sh/@firecms/neat@1.0.2";
 
 const config = {
     colors: [
@@ -110,21 +110,25 @@ const config = {
 
 function init() {
     const el = document.getElementById("gradient");
-    if (!el) return;
+    if (!el) {
+        console.warn("NeatGradient: #gradient not found");
+        return;
+    }
+    console.log("NeatGradient: init", el);
     try {
         const gradient = new NeatGradient({ ref: el, ...config });
+        console.log("NeatGradient: created", gradient);
         window.addEventListener("scroll", () => {
             gradient.yOffset = window.scrollY * 0.08;
         }, { passive: true });
-        // Resize handler - neat handles automatically but ensure visible
         window.addEventListener("resize", () => {
             if (el) el.style.width = '100%';
         });
         window.__tdtGradient = gradient;
     } catch (e) {
         console.error("NeatGradient failed:", e);
-        // fallback: solid color if WebGL fails
         el.style.background = config.backgroundColor;
+        el.style.opacity = "1";
     }
 }
 

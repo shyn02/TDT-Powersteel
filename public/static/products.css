@@ -107,7 +107,7 @@
 .category-section {
     position: relative;
     padding: 90px 0;
-    background-color: #fdfdfd;
+    background: transparent;
     overflow: hidden;
     isolation: isolate;
 }
@@ -119,8 +119,10 @@
     width: 100%;
     height: 100%;
     z-index: 0;
-    opacity: 0.92;
+    opacity: 1;
     pointer-events: none;
+    display: block;
+    background: #003FFF;
 }
 
 .category-section .container {
