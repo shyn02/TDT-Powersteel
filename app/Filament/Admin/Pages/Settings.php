@@ -136,19 +136,19 @@ class Settings extends Page implements HasSchemas
                                     ->schema([
                                         Placeholder::make('dev_james')
                                             ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">James Laurza</span>'))
-                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Full Stack</span>')),
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span>')),
 
                                         Placeholder::make('dev_angelo')
                                             ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Angelo Tsin</span>'))
-                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Frontend & UI/UX</span>')),
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span>')),
 
                                         Placeholder::make('dev_dhustin')
-                                            ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Dhustin Peñarubi</span>'))
-                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Backend & Data</span>')),
+                                            ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Dhustin Peñarubia</span>'))
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span>')),
 
                                         Placeholder::make('dev_shayne')
                                             ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Shayne Anne Gadia</span>'))
-                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Design & Content</span>')),
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span>')),
                                     ]),
 
                                 Placeholder::make('devs_footer')
