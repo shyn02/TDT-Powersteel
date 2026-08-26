@@ -35,10 +35,22 @@
     function getSessionId() {
         let id = sessionStorage.getItem(SS_KEYS.session);
         if (!id) {
-            id = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+            // SEC-05: use cryptographically secure random (256-bit, 64 hex chars)
+            if (window.crypto && window.crypto.getRandomValues) {
+                const bytes = new Uint8Array(32);
+                window.crypto.getRandomValues(bytes);
+                id = Array.from(bytes, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+            } else {
+                id = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+            }
             sessionStorage.setItem(SS_KEYS.session, id);
         }
         return id;
+    }
+
+    function rotateSessionId(newId) {
+        if (!newId || typeof newId !== "string") return;
+        sessionStorage.setItem(SS_KEYS.session, newId);
     }
 
     function loadTranscript() {
@@ -220,6 +232,14 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
+            if (res.ok) {
+                try {
+                    const data = await res.clone().json();
+                    if (data && data.newSessionId) {
+                        rotateSessionId(data.newSessionId);
+                    }
+                } catch (e) {}
+            }
             return res.ok;
         } catch (err) {
             console.error("[TDT chat] Could not reach the chat server:", err);

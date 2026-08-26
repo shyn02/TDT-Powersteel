@@ -26,35 +26,23 @@ class QuoteController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
 
-        // Basic anti-abuse guardrails: this endpoint is public/anonymous
-        // and previously had zero validation, so a bot could post
-        // arbitrarily long strings into every text column (DB bloat) or
-        // garbage into email fields. Cap every incoming string field and
-        // check the format of the ones that look like an email address —
-        // without hardcoding the exact field names, since the four forms
-        // below share this one endpoint with different field sets.
-        $lengthRules = [];
-        foreach ($request->keys() as $field) {
-            $lengthRules[$field] = ['nullable', 'string', 'max:2000'];
-        }
-        if ($lengthRules) {
-            $request->validate($lengthRules);
-        }
-
-        foreach (['clientContact', 'cEmail', 'ref_email', 'referrer_email', 'email'] as $emailField) {
-            if ($request->filled($emailField)) {
-                $value = $request->input($emailField);
-                // clientContact is a combined "email OR phone" field, so
-                // only enforce the email format when it actually looks
-                // like one (contains an "@").
-                if ($emailField !== 'clientContact' || str_contains($value, '@')) {
-                    $request->validate([$emailField => ['email:rfc']]);
-                }
-            }
-        }
-
         // ---- Case 1: quoteForm modal (embedded on Home, Products, and every category page) ----
         if ($request->hasAny(['clientName', 'clientContact', 'estimatedQty'])) {
+            $request->validate([
+                'clientName' => ['required', 'string', 'max:150'],
+                'clientCompany' => ['nullable', 'string', 'max:150'],
+                'clientEmail' => ['nullable', 'email:rfc', 'max:255'],
+                'clientContact' => ['nullable', 'string', 'max:50'],
+                'clientAddress' => ['nullable', 'string', 'max:255'],
+                'estimatedQty' => ['required', 'string', 'max:150'],
+                'qHowHeard' => ['nullable', 'string', 'max:100'],
+                'qHowHeardOther' => ['nullable', 'string', 'max:100'],
+                'subProduct' => ['nullable', 'string', 'max:200'],
+                'sizeSpec' => ['nullable', 'string', 'max:100'],
+                'productCategory' => ['nullable', 'string', 'max:100'],
+                'sourcePage' => ['nullable', 'in:home,product'],
+                'website' => ['nullable', 'string', 'max:100'],
+            ]);
             $fullName = trim((string) $request->input('clientName', ''));
             $companyName = trim((string) $request->input('clientCompany', ''));
             $email = trim((string) $request->input('clientEmail', ''));
@@ -102,6 +90,19 @@ class QuoteController extends Controller
 
         // ---- Case 2: directContactForm (Contact page) -> ContactMessage, kept separate from QuoteRequest ----
         if ($request->hasAny(['cName', 'cEmail', 'cPhone'])) {
+            $request->validate([
+                'cName' => ['required', 'string', 'max:150'],
+                'cCompany' => ['nullable', 'string', 'max:150'],
+                'cEmail' => ['nullable', 'email:rfc', 'max:255'],
+                'cPhone' => ['nullable', 'string', 'max:50'],
+                'cLandline' => ['nullable', 'string', 'max:50'],
+                'cAddress' => ['nullable', 'string', 'max:255'],
+                'cHowHeard' => ['nullable', 'string', 'max:100'],
+                'cHowHeardOther' => ['nullable', 'string', 'max:100'],
+                'cSubject' => ['nullable', 'string', 'max:200'],
+                'cMessage' => ['nullable', 'string', 'max:2000'],
+                'website' => ['nullable', 'string', 'max:100'],
+            ]);
             $howHeard = trim((string) $request->input('cHowHeard', ''));
             $howHeardOther = trim((string) $request->input('cHowHeardOther', ''));
             $howHeardLabel = ($howHeard === 'others' && $howHeardOther !== '') ? $howHeardOther : $howHeard;
@@ -128,6 +129,19 @@ class QuoteController extends Controller
 
         // ---- Case 3: Referral form (Referral page) -> Referral ----
         if ($request->hasAny(['ref_fullname', 'ref_email', 'ref_contact_person', 'ref_referred_company'])) {
+            $request->validate([
+                'ref_fullname' => ['required', 'string', 'max:200'],
+                'ref_company' => ['nullable', 'string', 'max:200'],
+                'ref_phone' => ['nullable', 'string', 'max:50'],
+                'ref_email' => ['nullable', 'email:rfc', 'max:255'],
+                'ref_contact_person' => ['required', 'string', 'max:200'],
+                'ref_referred_company' => ['required', 'string', 'max:200'],
+                'ref_project_type' => ['required', 'string', 'max:100'],
+                'ref_project_scale' => ['required', 'string', 'max:100'],
+                'ref_region' => ['required', 'string', 'max:150'],
+                'ref_remarks' => ['nullable', 'string', 'max:2000'],
+                'website' => ['nullable', 'string', 'max:100'],
+            ]);
             Referral::create([
                 'referrer_name' => trim((string) $request->input('ref_fullname', $request->input('referrer_name', ''))) ?: 'Guest',
                 'referrer_company' => trim((string) $request->input('ref_company', $request->input('referrer_company', ''))) ?: null,
@@ -148,6 +162,17 @@ class QuoteController extends Controller
 
         // ---- Case 4: heroQuoteForm (Home page hero card) -> QuoteRequest ----
         if ($request->hasAny(['name', 'email', 'mobile'])) {
+            $request->validate([
+                'name' => ['required', 'string', 'max:150'],
+                'company' => ['nullable', 'string', 'max:150'],
+                'email' => ['nullable', 'email:rfc', 'max:255'],
+                'mobile' => ['nullable', 'string', 'max:50'],
+                'address' => ['nullable', 'string', 'max:255'],
+                'howHeard' => ['nullable', 'string', 'max:100'],
+                'howHeardOther' => ['nullable', 'string', 'max:100'],
+                'remarks' => ['nullable', 'string', 'max:150'],
+                'website' => ['nullable', 'string', 'max:100'],
+            ]);
             $howHeard = trim((string) $request->input('howHeard', ''));
             $howHeardOther = trim((string) $request->input('howHeardOther', ''));
             $howHeardLabel = ($howHeard === 'others' && $howHeardOther !== '') ? $howHeardOther : $howHeard;

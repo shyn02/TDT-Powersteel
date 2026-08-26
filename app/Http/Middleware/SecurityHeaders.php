@@ -37,6 +37,7 @@ class SecurityHeaders
             "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://esm.sh https://cdn.jsdelivr.net https://www.google.com",
             "frame-src 'self' https://www.google.com https://maps.google.com https://google.com",
             "frame-ancestors 'none'",
+            "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
         ]);

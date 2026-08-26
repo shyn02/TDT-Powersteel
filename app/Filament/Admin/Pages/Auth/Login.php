@@ -2,11 +2,13 @@
 
 namespace App\Filament\Admin\Pages\Auth;
 
+use App\Models\SiteSettings;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\Radio;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -65,6 +67,30 @@ class Login extends BaseLogin
         }
 
         return true;
+    }
+
+    public function authenticate(): mixed
+    {
+        $settings = SiteSettings::current();
+        $maxAttempts = (int) ($settings->max_login_attempts ?? 5);
+        $lockoutMinutes = (int) ($settings->lockout_minutes ?? 15);
+        $key = strtolower($this->data['email'] ?? '') . '|' . request()->ip();
+
+        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+            $seconds = RateLimiter::availableIn($key);
+            throw ValidationException::withMessages([
+                'data.email' => "Too many login attempts. Please try again in {$seconds} seconds (lockout: {$lockoutMinutes} min).",
+            ]);
+        }
+
+        try {
+            $result = parent::authenticate();
+            RateLimiter::clear($key);
+            return $result;
+        } catch (ValidationException $e) {
+            RateLimiter::hit($key, $lockoutMinutes * 60);
+            throw $e;
+        }
     }
 
     protected function throwFailureValidationException(): never

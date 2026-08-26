@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Users\Schemas;
 
+use App\Models\SiteSettings;
 use App\Models\UserProfile;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -9,6 +10,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Password;
 
 class UserForm
 {
@@ -31,7 +33,16 @@ class UserForm
                             ->revealable()
                             ->required(fn (string $operation) => $operation === 'create')
                             ->dehydrated(fn (?string $state) => filled($state))
-                            ->helperText('Leave blank to keep the current password.'),
+                            ->rule(function () {
+                                $settings = SiteSettings::current();
+                                if ($settings->require_strong_passwords) {
+                                    return Password::min(12)->mixedCase()->letters()->numbers()->symbols()->uncompromised();
+                                }
+                                return Password::min(8);
+                            })
+                            ->helperText(fn () => SiteSettings::current()->require_strong_passwords
+                                ? 'Strong passwords required: min 12 chars, mixed case, numbers, symbols.'
+                                : 'Leave blank to keep the current password. Enable strong passwords in Settings > Security.'),
                         Toggle::make('is_active')
                             ->label('Active')
                             ->default(true)

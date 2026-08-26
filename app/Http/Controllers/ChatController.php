@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
 use App\Models\SystemSettings;
@@ -27,6 +28,14 @@ class ChatController extends Controller
 
     protected function postMessage(Request $request): JsonResponse
     {
+        // SEC-06: explicit validation matching DB limits (session_token 64, page 150, message text 2000)
+        $request->validate([
+            'sessionId' => ['required', 'string', 'max:64'],
+            'type' => ['nullable', 'string', 'in:message,handoff_requested', 'max:32'],
+            'text' => ['nullable', 'string', 'max:2000'],
+            'page' => ['nullable', 'string', 'max:150'],
+        ]);
+
         $sessionId = trim((string) $request->input('sessionId', ''));
         $type = (string) $request->input('type', '');
         $text = trim((string) $request->input('text', ''));
@@ -34,6 +43,18 @@ class ChatController extends Controller
 
         if ($sessionId === '') {
             return response()->json(['status' => 'error', 'message' => 'Missing sessionId'], 400);
+        }
+
+        // SEC-05: if client token is low-entropy (legacy sess_...), generate high-entropy server token and migrate
+        $isLowEntropy = str_starts_with($sessionId, 'sess_') || strlen($sessionId) < 32 || ! preg_match('/^[a-f0-9]{32,64}$/i', $sessionId);
+        $needsRotation = false;
+        if ($isLowEntropy) {
+            // Try to find existing low-entropy session first; if not found, we will rotate to high-entropy for new session
+            $existing = ChatSession::where('session_token', $sessionId)->first();
+            if (! $existing) {
+                $needsRotation = true;
+                $sessionId = bin2hex(random_bytes(32)); // 64 hex chars, 256-bit entropy
+            }
         }
 
         $session = ChatSession::firstOrCreate(
@@ -68,11 +89,19 @@ class ChatController extends Controller
         $session->last_message_at = now();
         $session->save();
 
-        return response()->json(['status' => 'ok']);
+        $payload = ['status' => 'ok'];
+        if ($needsRotation) {
+            $payload['newSessionId'] = $sessionId;
+        }
+        return response()->json($payload);
     }
 
     protected function pollMessages(Request $request): JsonResponse
     {
+        $request->validate([
+            'sessionId' => ['required', 'string', 'max:64'],
+            'after' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
+        ]);
         $sessionId = trim((string) $request->query('sessionId', ''));
         $afterId = (int) $request->query('after', 0);
 
@@ -166,6 +195,7 @@ class ChatController extends Controller
                 $session->assigned_to = $rep->id;
                 $session->status = 'active';
                 $session->save();
+                try { ActivityLog::log($rep, "Claimed chat session #{$session->id}"); } catch (\Throwable $e) {}
 
                 return ['session' => $session];
             });
