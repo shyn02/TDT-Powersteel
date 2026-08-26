@@ -28,7 +28,7 @@
         </div>
     </section>
 
-    <section class="page-section">
+    <section class="page-section blog-main-section">
         <div class="container">
 
             <div class="blog-eyebrow-row">
