@@ -323,19 +323,32 @@
     cursor: not-allowed;
 }
 
-/* --- Mobile --- */
+/* --- Mobile: compact so it doesn't cover the whole screen --- */
 @media (max-width: 480px) {
     .tdt-chat-panel {
         right: 12px;
-        left: 12px;
-        width: auto;
-        bottom: 88px;
-        height: calc(100vh - 160px);
+        left: auto;
+        width: calc(100vw - 24px);
+        max-width: 320px;
+        bottom: 76px;
+        height: 420px;
+        max-height: 58vh;
     }
 
     .tdt-chat-launcher {
         right: 16px;
         bottom: 16px;
+        width: 54px;
+        height: 54px;
+        font-size: 20px;
+    }
+
+    .tdt-chat-body {
+        padding: 12px;
+    }
+
+    .tdt-chat-header {
+        padding: 10px 12px;
     }
 }
 
