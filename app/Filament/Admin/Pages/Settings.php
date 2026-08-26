@@ -124,6 +124,37 @@ class Settings extends Page implements HasSchemas
                                     ->rows(2)
                                     ->columnSpanFull(),
                             ]),
+
+                        Tab::make('Meet the Devs')
+                            ->icon('heroicon-o-users')
+                            ->schema([
+                                Placeholder::make('devs_intro')
+                                    ->label('')
+                                    ->content(new \Illuminate\Support\HtmlString('<div style="text-align:center;padding:8px 0 12px;"><div style="font-weight:800;font-size:15px;letter-spacing:0.04em;color:#111010;">TDT Powersteel Dev Team</div><div style="font-size:12px;color:#717074;margin-top:4px;">Built with passion — thank you for supporting our work!</div></div>')),
+
+                                Grid::make(2)
+                                    ->schema([
+                                        Placeholder::make('dev_james')
+                                            ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">James Laurza</span>'))
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Lead Developer</span><br><span style="font-size:12px;color:#717074;">Project Lead & Backend</span>')),
+
+                                        Placeholder::make('dev_angelo')
+                                            ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Angelo Tsin</span>'))
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Frontend & UI/UX</span>')),
+
+                                        Placeholder::make('dev_dhustin')
+                                            ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Dhustin Peñarubi</span>'))
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Backend & Data</span>')),
+
+                                        Placeholder::make('dev_shayne')
+                                            ->label(new \Illuminate\Support\HtmlString('<span style="font-weight:700;">Shayne Anne Gadia</span>'))
+                                            ->content(new \Illuminate\Support\HtmlString('<span style="color:#E67026;font-weight:600;">Developer</span><br><span style="font-size:12px;color:#717074;">Design & Content</span>')),
+                                    ]),
+
+                                Placeholder::make('devs_footer')
+                                    ->label('')
+                                    ->content(new \Illuminate\Support\HtmlString('<div style="text-align:center;margin-top:10px;padding-top:12px;border-top:1px solid rgba(113,112,116,0.12);font-size:11px;color:#A6A6A8;letter-spacing:0.06em;">© 2026 TDT Powersteel Corporation — Crafted by the Dev Team</div>')),
+                            ]),
                     ])
                     ->columnSpanFull(),
             ]);
