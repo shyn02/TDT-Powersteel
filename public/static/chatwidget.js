@@ -87,6 +87,33 @@
         try { sessionStorage.setItem(SS_KEYS.lastAgentMsgId, String(id)); } catch (err) { }
     }
 
+    // Badge: show unread agent messages count on launcher button
+    const SS_UNREAD = "tdt_chat_unread";
+    function getUnreadCount() {
+        return parseInt(sessionStorage.getItem(SS_UNREAD) || "0", 10) || 0;
+    }
+    function updateBadge(count) {
+        const badge = document.querySelector(".tdt-chat-launcher .tdt-badge");
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = count > 9 ? "9+" : String(count);
+            badge.style.display = "flex";
+        } else {
+            badge.textContent = "";
+            badge.style.display = "none";
+        }
+    }
+    function setUnreadCount(n) {
+        try { sessionStorage.setItem(SS_UNREAD, String(n)); } catch (e) {}
+        updateBadge(n);
+    }
+    function incUnread(delta) {
+        setUnreadCount(getUnreadCount() + delta);
+    }
+    function clearUnread() {
+        setUnreadCount(0);
+    }
+
     // Scripted bot FAQ
     const BOT_MENU = [
         {
@@ -258,12 +285,19 @@
                 const res = await fetch(url);
                 if (!res.ok) return;
                 const data = await res.json();
-                (data.messages || []).forEach(function (m) {
-                    addMessage(body, "agent", m.text, false, m.agentName);
-                    lastAgentMsgId = Math.max(lastAgentMsgId, m.id);
-                    persistLastAgentMsgId(lastAgentMsgId);
-                    updateHeaderStatus("Chatting with an agent", true);
-                });
+                const msgs = data.messages || [];
+                if (msgs.length) {
+                    msgs.forEach(function (m) {
+                        addMessage(body, "agent", m.text, false, m.agentName);
+                        lastAgentMsgId = Math.max(lastAgentMsgId, m.id);
+                        persistLastAgentMsgId(lastAgentMsgId);
+                        updateHeaderStatus("Chatting with an agent", true);
+                    });
+                    // If panel is closed, show badge with unread count
+                    if (!panelOpen) {
+                        incUnread(msgs.length);
+                    }
+                }
             } catch (err) {
                 console.error("[TDT chat] Polling error:", err);
             }
@@ -352,6 +386,9 @@
         panel.classList.toggle("is-open", panelOpen);
         launcher.setAttribute("aria-label", panelOpen ? "Close quick chat" : "Open quick chat");
         persistPanelOpen(panelOpen);
+        if (panelOpen) {
+            clearUnread();
+        }
 
         if (panelOpen && !hasGreeted) {
             hasGreeted = true;
@@ -395,6 +432,9 @@
             launcher.classList.add("is-open");
             panel.classList.add("is-open");
             launcher.setAttribute("aria-label", "Close quick chat");
+            clearUnread();
+        } else {
+            updateBadge(getUnreadCount());
         }
     }
 
