@@ -78,7 +78,7 @@
 .blog-main-section {
     position: relative;
     background-image:
-        linear-gradient(rgba(255,255,255,0.88), rgba(255,255,255,0.88)),
+        linear-gradient(rgba(255,255,255,0.80), rgba(255,255,255,0.80)),
         url('/static/images/background1.jpg');
     background-size: cover;
     background-position: center;
