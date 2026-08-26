@@ -103,14 +103,42 @@
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
 }
 
-/* --- PRODUCTS: CATEGORY GRID --- */
+/* --- PRODUCTS: CATEGORY GRID + NEAT GRADIENT BG --- */
 .category-section {
+    position: relative;
     padding: 90px 0;
     background-color: #fdfdfd;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* NeatGradient canvas sits behind the grid */
+#gradient {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.92;
+    pointer-events: none;
+}
+
+.category-section .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fallback grid overlay on top of gradient for texture */
+.category-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image:
         linear-gradient(rgba(113, 112, 116, 0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(113, 112, 116, 0.04) 1px, transparent 1px);
     background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .category-grid {

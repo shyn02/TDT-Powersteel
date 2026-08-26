@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="/static/products.css">
 @endpush
 
+@push('scripts')
+<script type="module" src="/static/neat-gradient.js"></script>
+@endpush
+
 @section('title', 'Steel Products | TDT Powersteel Corporation')
 @section('description', 'Browse our full range of steel products: PNS-certified deformed bars, structural beams, plates, pipes, wire mesh, and hardware. Nationwide delivery in the Philippines.')
 
@@ -24,6 +28,7 @@
     </section>
 
     <section class="category-section">
+        <canvas id="gradient" aria-hidden="true"></canvas>
         <div class="container">
             <div class="category-grid">
                 @foreach ($categories as $category)
