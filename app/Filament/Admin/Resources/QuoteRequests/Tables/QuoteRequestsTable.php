@@ -3,6 +3,9 @@
 namespace App\Filament\Admin\Resources\QuoteRequests\Tables;
 
 use App\Filament\Exports\QuoteRequestExporter;
+use App\Models\ActivityLog;
+use App\Models\QuoteRequest;
+use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -10,12 +13,14 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class QuoteRequestsTable
 {
@@ -85,6 +90,26 @@ class QuoteRequestsTable
             ])
             ->headerActions([
                 ExportAction::make()->exporter(QuoteRequestExporter::class),
+
+                Action::make('clear_all_data')
+                    ->label('Clear All Data')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Clear all Quote Requests?')
+                    ->modalDescription('This will permanently delete ALL quote requests (home / product / quote). This cannot be undone. Please export first if you need a backup.')
+                    ->modalSubmitActionLabel('Yes, clear all')
+                    ->visible(fn () => auth()->user()?->isAdminPosition() ?? false)
+                    ->action(function () {
+                        $count = QuoteRequest::count();
+                        if ($count === 0) {
+                            Notification::make()->title('No quote requests to clear.')->warning()->send();
+                            return;
+                        }
+                        QuoteRequest::query()->delete();
+                        ActivityLog::log(Auth::user(), "Cleared all Quote Requests ({$count} records) via Quote Requests page");
+                        Notification::make()->title("Successfully cleared {$count} quote request(s).")->success()->send();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

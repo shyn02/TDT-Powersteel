@@ -59,7 +59,7 @@ class DataManagement extends Page implements HasSchemas
         return [
             'contact' => ['label' => 'Contact Us Submissions', 'query' => fn ($cutoff) => QuoteRequest::query()->where('source', 'contact')->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
             'referral' => ['label' => 'Referral Submissions', 'query' => fn ($cutoff) => Referral::query()->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
-            'quote' => ['label' => 'Request-a-Quote Submissions', 'query' => fn ($cutoff) => QuoteRequest::query()->where('source', 'quote')->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
+            'quote' => ['label' => 'Request-a-Quote Submissions (home / product / quote)', 'query' => fn ($cutoff) => QuoteRequest::query()->whereIn('source', ['quote', 'home', 'product'])->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
             'quickchat' => ['label' => 'Quick Chat Conversations (active and closed)', 'query' => fn ($cutoff) => ChatSession::query()->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
             'activitylog' => ['label' => 'Activity Log Entries', 'query' => fn ($cutoff) => ActivityLog::query()->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
         ];
@@ -111,7 +111,7 @@ class DataManagement extends Page implements HasSchemas
     {
         $now = now();
 
-        $quoteRequests = QuoteRequest::query()->where('source', 'quote')->with(['category', 'product'])->get()
+        $quoteRequests = QuoteRequest::query()->whereIn('source', ['quote', 'home', 'product'])->with(['category', 'product'])->get()
             ->map(fn ($q) => $q->only(['id', 'full_name', 'company_name', 'email', 'phone', 'address', 'how_heard', 'estimated_qty', 'status', 'created_at']) + [
                 'category' => $q->category?->name,
                 'product' => $q->product?->name,
