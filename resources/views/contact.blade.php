@@ -22,7 +22,7 @@
         </div>
     </section>
 
-    <section class="page-section">
+    <section class="page-section contact-main-section">
         <div class="container">
             <div class="contact-grid">
                 <div class="contact-left-col">

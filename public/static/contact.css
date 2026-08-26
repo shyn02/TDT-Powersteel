@@ -92,6 +92,17 @@
 .page-banner .breadcrumb span {
     color: var(--tdt-orange) !important;
 }
+.contact-main-section {
+    position: relative;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.70), rgba(255,255,255,0.70)),
+        url('/static/images/background2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
 .contact-section {
     padding: 100px 0;
     background-color: #ffffff;
