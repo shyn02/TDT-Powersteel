@@ -20,6 +20,12 @@ class QuoteController extends Controller
      */
     public function submit(Request $request): JsonResponse
     {
+        // Honeypot anti-spam: hidden field "website" should stay empty for humans.
+        // Bots that fill it are silently treated as success to avoid revealing the trap.
+        if (trim((string) $request->input('website', '')) !== '') {
+            return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
+        }
+
         // Basic anti-abuse guardrails: this endpoint is public/anonymous
         // and previously had zero validation, so a bot could post
         // arbitrarily long strings into every text column (DB bloat) or

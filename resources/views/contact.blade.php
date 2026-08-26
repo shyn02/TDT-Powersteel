@@ -146,6 +146,10 @@
                     <p class="panel-desc">Send us your inquiries directly and our representative will get back to you shortly.</p>
                     <form class="direct-contact-form" id="directContactForm">
                         @csrf
+                        <div style="position:absolute;left:-5000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+                            <label for="contact_website_hp">Leave this field empty</label>
+                            <input type="text" name="website" id="contact_website_hp" tabindex="-1" autocomplete="off">
+                        </div>
                         <div class="form-row-2">
                             <div class="form-group">
                                 <label for="cName">Full Name *</label>

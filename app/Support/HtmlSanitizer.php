@@ -74,9 +74,23 @@ class HtmlSanitizer
     private static function isDangerousUrl(string $value): bool
     {
         $value = strtolower(trim($value));
+        // Remove whitespace/control chars that can be used to obfuscate (e.g. " java\tscript:")
+        $value = preg_replace('/\s+/', '', $value) ?? $value;
 
-        return str_starts_with($value, 'javascript:')
-            || str_starts_with($value, 'data:text/html')
-            || str_starts_with($value, 'vbscript:');
+        if (str_starts_with($value, 'javascript:') || str_starts_with($value, 'vbscript:') || str_starts_with($value, 'data:')) {
+            // Allow only safe data:image/* for raster images (jpeg/png/webp/gif). Block svg/xml/html which can carry script.
+            if (str_starts_with($value, 'data:')) {
+                // Allow data:image/jpeg, png, webp, gif, avif with base64
+                $safeData = preg_match('#^data:image/(jpeg|jpg|png|webp|gif|avif);base64,#', $value);
+                if ($safeData) {
+                    return false;
+                }
+                return true; // all other data: URLs are dangerous (svg+xml, text/html, application/xhtml, etc.)
+            }
+            return true;
+        }
+
+        // Also block if url contains javascript: anywhere after encoding
+        return false;
     }
 }

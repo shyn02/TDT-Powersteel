@@ -89,6 +89,10 @@
             
                     <form class="hero-quote-form" id="heroQuoteForm" method="POST">
                         @csrf
+                        <div style="position:absolute;left:-5000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+                            <label for="hero_website_hp">Leave this field empty</label>
+                            <input type="text" name="website" id="hero_website_hp" tabindex="-1" autocomplete="off">
+                        </div>
                         <div class="form-group-hero">
                             <input type="text" id="heroName" name="name" required placeholder="Full Name*">
                         </div>

@@ -282,6 +282,11 @@
             </div>
             <form id="quoteForm">
                 <input type="hidden" name="sourcePage" value="home">
+                <!-- Honeypot: bots fill this, humans don't -->
+                <div style="position:absolute;left:-5000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+                    <label for="quote_website_hp">Leave this field empty</label>
+                    <input type="text" name="website" id="quote_website_hp" tabindex="-1" autocomplete="off">
+                </div>
                 <div class="form-group">
                     <label for="selectedProduct">Steel Category</label>
                     <input type="text" name="productCategory" id="selectedProduct" readonly>

@@ -55,6 +55,10 @@
             <div class="referral-form-card">
                 <form id="referralForm">
                     @csrf
+                    <div style="position:absolute;left:-5000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+                        <label for="ref_website_hp">Leave this field empty</label>
+                        <input type="text" name="website" id="ref_website_hp" tabindex="-1" autocomplete="off">
+                    </div>
 
                     <div class="referral-fieldset">
                         <div class="referral-fieldset-title"><i class="fas fa-user"></i> Your Information</div>
