@@ -113,7 +113,7 @@
 
     const GREETING = "Hi! 👋 Welcome to TDT Powersteel. I'm the quick-chat assistant — pick a topic below, or type your question.";
     const HUMAN_HANDOFF_MSG = "Okay, connecting you to a member of our team now. Please leave your message and a customer service representative will reply as soon as they're available.";
-    const HUMAN_QUEUED_MSG = "Thanks! Your message has been sent to our team.";
+    // Removed verbose queued msg, now shows check like Messenger/Viber (see handleUserSend)
 
     let mode = "bot";
     let panelOpen = false;
@@ -315,18 +315,24 @@
         const text = input.value.trim();
         if (!text) return;
 
-        addMessage(body, "user", text);
+        const userRow = addMessage(body, "user", text);
         input.value = "";
         autosizeInput(input);
 
         if (mode === "human") {
+            // Messenger/Viber style single check = sent (instead of verbose system message)
+            const check = document.createElement("span");
+            check.className = "tdt-check";
+            check.innerHTML = " ✓";
+            check.style.cssText = "font-size:11px;color:#8a8a8a;margin-left:4px;";
+            const bubble = userRow.querySelector(".tdt-bubble");
+            if (bubble) bubble.appendChild(check);
             sendToBackend({
                 type: "message",
                 sessionId: getSessionId(),
                 text: text,
                 page: location.pathname.replace(/^\/|\.html$/g, "") || "home"
             });
-            addMessage(body, "system", HUMAN_QUEUED_MSG);
             return;
         }
 
