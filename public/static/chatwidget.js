@@ -320,13 +320,13 @@
         autosizeInput(input);
 
         if (mode === "human") {
-            // Messenger/Viber style single check = sent (instead of verbose system message)
-            const check = document.createElement("span");
-            check.className = "tdt-check";
-            check.innerHTML = " ✓";
-            check.style.cssText = "font-size:11px;color:#8a8a8a;margin-left:4px;";
-            const bubble = userRow.querySelector(".tdt-bubble");
-            if (bubble) bubble.appendChild(check);
+            // Small Sent check outside bubble like Messenger/Viber (not inside chat history)
+            const sent = document.createElement("div");
+            sent.className = "tdt-sent-label";
+            sent.innerHTML = "✓ Sent";
+            sent.style.cssText = "font-size:10px;color:#9a9a9a;text-align:right;margin:2px 14px 0 0;font-style:italic;letter-spacing:0.02em;";
+            // insert right after the user row, outside bubble
+            userRow.parentNode.insertBefore(sent, userRow.nextSibling);
             sendToBackend({
                 type: "message",
                 sessionId: getSessionId(),
