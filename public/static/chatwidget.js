@@ -320,11 +320,11 @@
         autosizeInput(input);
 
         if (mode === "human") {
-            // Small Sent check outside bubble like Messenger/Viber (not inside chat history)
+            // Double check outside bubble like Messenger/Viber
             const sent = document.createElement("div");
             sent.className = "tdt-sent-label";
-            sent.innerHTML = "✓ Sent";
-            sent.style.cssText = "font-size:10px;color:#9a9a9a;text-align:right;margin:2px 14px 0 0;font-style:italic;letter-spacing:0.02em;";
+            sent.innerHTML = "✓✓ Sent";
+            sent.style.cssText = "font-size:10px;color:#4FC3F7;text-align:right;margin:2px 14px 0 0;font-style:italic;letter-spacing:0.02em;";
             // insert right after the user row, outside bubble
             userRow.parentNode.insertBefore(sent, userRow.nextSibling);
             sendToBackend({
@@ -433,11 +433,13 @@
             }
         });
 
-        // Auto-open chat panel immediately so client sees it without clicking
-        if (!panelOpen) {
+        // Auto-open only on home page and only on first entry to website (new tab/session)
+        const isHomePage = location.pathname === "/" || location.pathname === "/index" || location.pathname === "";
+        const isFirstEntry = !sessionStorage.getItem(SS_KEYS.hasGreeted) && !sessionStorage.getItem(SS_KEYS.panelOpen);
+        if (!panelOpen && isHomePage && isFirstEntry) {
             setTimeout(function () {
                 if (!panelOpen) togglePanel(launcher, panel);
-            }, 600);
+            }, 700);
         }
     }
 
