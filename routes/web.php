@@ -3,6 +3,7 @@
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Admin\NavBadgeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -46,3 +47,10 @@ Route::get('/api/chats/unassigned/', [ChatController::class, 'unassignedQueue'])
     ->middleware('auth');
 Route::post('/api/chats/{sessionId}/claim/', [ChatController::class, 'claim'])->name('claim_chat')
     ->middleware('auth');
+
+// Admin sidebar live badge counts (Quote Requests / Referrals / Contact
+// Messages / Live Chat) — same visibility as the badges themselves
+// (any logged-in staff member), throttled since it's polled repeatedly.
+Route::get('/admin/api/nav-counts', [NavBadgeController::class, 'index'])
+    ->name('admin.nav_counts')
+    ->middleware(['auth', 'throttle:30,1']);

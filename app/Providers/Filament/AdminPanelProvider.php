@@ -19,6 +19,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Support\HtmlString;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -32,6 +33,17 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 'body.start',
                 fn () => '<link rel="stylesheet" href="' . asset('static/admin_custom.css') . '?v=' . filemtime(public_path('static/admin_custom.css')) . '">',
+            )
+            // NOTE: the hook name Filament's own layout actually checks
+            // for is the PanelsRenderHook::BODY_START constant
+            // ('panels::body.start'), not the plain string 'body.start'
+            // used above — so that CSS `<link>` was never being output
+            // anywhere. Kept as-is to avoid changing existing visual
+            // behavior in this change; register new hooks with the
+            // constant, like the one below, so they actually fire.
+            ->renderHook(
+                PanelsRenderHook::SCRIPTS_AFTER,
+                fn () => '<script src="' . asset('static/admin_live_badges.js') . '?v=' . filemtime(public_path('static/admin_live_badges.js')) . '"></script>',
             )
             ->colors([
                 'primary' => Color::Amber,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\ChatMessages;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\ChatMessages\Pages\CreateChatMessage;
 use App\Filament\Admin\Resources\ChatMessages\Pages\EditChatMessage;
 use App\Filament\Admin\Resources\ChatMessages\Pages\ListChatMessages;
@@ -16,21 +17,21 @@ use Filament\Tables\Table;
 
 class ChatMessageResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = ChatMessage::class;
+
+    // Keep hidden from sidebar (original behavior) but still enforce AdminOnlyResource gates for direct URLs
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'message';
 
     protected static ?string $navigationLabel = 'Chat Messages';
-
-    // Superseded by the Messenger-style thread on Live Chat
-    // (ChatSessionResource) — kept registered for artisan/debugging but
-    // hidden from the sidebar to avoid two competing chat entries.
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
-    }
 
     public static function form(Schema $schema): Schema
     {

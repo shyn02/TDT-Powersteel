@@ -11,6 +11,7 @@ class ChatSession extends Model
     protected $fillable = [
         'session_token', 'client_name', 'page', 'is_active', 'created_at',
         'last_message_at', 'assigned_to', 'status', 'is_priority',
+        'token_version', 'revoked_at', 'expires_at',
     ];
 
     protected $casts = [
@@ -18,6 +19,8 @@ class ChatSession extends Model
         'is_priority' => 'boolean',
         'created_at' => 'datetime',
         'last_message_at' => 'datetime',
+        'revoked_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function assignedRep()

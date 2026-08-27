@@ -12,59 +12,76 @@ use Illuminate\Support\Facades\DB;
 
 class ChatController extends Controller
 {
-    /**
-     * Port of Django's chat_messages_api — same URL handles both
-     * directions (POST to send/handoff, GET to poll for staff replies),
-     * matching CHAT_API_ENDPOINT usage in static/chatwidget.js.
-     */
     public function messages(Request $request): JsonResponse
     {
         if ($request->isMethod('post')) {
             return $this->postMessage($request);
         }
-
         return $this->pollMessages($request);
+    }
+
+    protected function hashToken(string $raw): string
+    {
+        return hash_hmac('sha256', $raw, config('app.key'));
+    }
+
+    protected function findSessionByToken(string $raw): ?ChatSession
+    {
+        // Try hashed first (new), then raw for legacy backward compat
+        $hash = $this->hashToken($raw);
+        $session = ChatSession::where('session_token', $hash)->first();
+        if ($session) return $session;
+        // Legacy fallback: raw token stored before hashing
+        return ChatSession::where('session_token', $raw)->first();
     }
 
     protected function postMessage(Request $request): JsonResponse
     {
-        // SEC-06: explicit validation matching DB limits (session_token 64, page 150, message text 2000)
         $request->validate([
-            'sessionId' => ['required', 'string', 'max:64'],
+            'sessionId' => ['required', 'string', 'max:128'],
             'type' => ['nullable', 'string', 'in:message,handoff_requested', 'max:32'],
             'text' => ['nullable', 'string', 'max:2000'],
             'page' => ['nullable', 'string', 'max:150'],
         ]);
 
-        $sessionId = trim((string) $request->input('sessionId', ''));
+        $rawId = trim((string) $request->input('sessionId', ''));
         $type = (string) $request->input('type', '');
         $text = trim((string) $request->input('text', ''));
         $page = trim((string) $request->input('page', ''));
 
-        if ($sessionId === '') {
+        if ($rawId === '') {
             return response()->json(['status' => 'error', 'message' => 'Missing sessionId'], 400);
         }
 
-        // SEC-05: if client token is low-entropy (legacy sess_...), generate high-entropy server token and migrate
-        $isLowEntropy = str_starts_with($sessionId, 'sess_') || strlen($sessionId) < 32 || ! preg_match('/^[a-f0-9]{32,64}$/i', $sessionId);
+        // SEC-05/SEC-01: Normalize legacy low-entropy tokens to high-entropy server-generated
+        $isLowEntropy = str_starts_with($rawId, 'sess_') || strlen($rawId) < 32 || ! preg_match('/^[a-f0-9]{32,128}$/i', $rawId);
         $needsRotation = false;
+        $effectiveRaw = $rawId;
         if ($isLowEntropy) {
-            // Try to find existing low-entropy session first; if not found, we will rotate to high-entropy for new session
-            $existing = ChatSession::where('session_token', $sessionId)->first();
+            $existing = $this->findSessionByToken($rawId);
             if (! $existing) {
                 $needsRotation = true;
-                $sessionId = bin2hex(random_bytes(32)); // 64 hex chars, 256-bit entropy
+                $effectiveRaw = bin2hex(random_bytes(32));
             }
         }
 
+        $hash = $this->hashToken($effectiveRaw);
         $session = ChatSession::firstOrCreate(
-            ['session_token' => $sessionId],
+            ['session_token' => $hash],
             [
                 'client_name' => $page !== '' ? "Visitor ({$page})" : 'Website Visitor',
                 'page' => $page,
+                'token_version' => 2,
+                'expires_at' => now()->addHours(24),
             ]
         );
 
+        // Revoked/legacy check - immediately reject if revoked
+        if ($session->revoked_at) {
+            return response()->json(['status' => 'error', 'message' => 'Session expired'], 401);
+        }
+
+        // If we rotated, ensure token hash is stored (firstOrCreate already did)
         if (! $session->wasRecentlyCreated && $page !== '' && ! $session->page) {
             $session->page = $page;
         }
@@ -91,7 +108,7 @@ class ChatController extends Controller
 
         $payload = ['status' => 'ok'];
         if ($needsRotation) {
-            $payload['newSessionId'] = $sessionId;
+            $payload['newSessionId'] = $effectiveRaw;
         }
         return response()->json($payload);
     }
@@ -99,14 +116,18 @@ class ChatController extends Controller
     protected function pollMessages(Request $request): JsonResponse
     {
         $request->validate([
-            'sessionId' => ['required', 'string', 'max:64'],
+            'sessionId' => ['required', 'string', 'max:128'],
             'after' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
         ]);
-        $sessionId = trim((string) $request->query('sessionId', ''));
+        $rawId = trim((string) $request->query('sessionId', ''));
         $afterId = (int) $request->query('after', 0);
 
         $messages = [];
-        $session = ChatSession::where('session_token', $sessionId)->first();
+        $session = $this->findSessionByToken($rawId);
+
+        if ($session && $session->revoked_at) {
+            return response()->json(['status' => 'error', 'message' => 'Session revoked'], 401);
+        }
 
         if ($session) {
             $rows = $session->messages()
@@ -128,12 +149,11 @@ class ChatController extends Controller
         return response()->json(['messages' => $messages]);
     }
 
-    /**
-     * Port of Django's unassigned_chat_queue — the shared "Chat Pool" a
-     * Sales Rep pulls from. Oldest-first (FIFO).
-     */
     public function unassignedQueue(Request $request): JsonResponse
     {
+        // Policy check via Gate (admin/sales/manager/support)
+        $this->authorize('viewAny', ChatSession::class);
+
         $sessions = ChatSession::where('status', 'unassigned')
             ->where('is_active', true)
             ->orderBy('created_at')
@@ -141,7 +161,6 @@ class ChatController extends Controller
 
         $chats = $sessions->map(fn (ChatSession $session) => [
             'id' => $session->id,
-            'sessionToken' => $session->session_token,
             'clientName' => $session->client_name,
             'page' => $session->page,
             'createdAt' => $session->created_at?->toIso8601String(),
@@ -152,14 +171,9 @@ class ChatController extends Controller
         return response()->json(['status' => 'ok', 'count' => $chats->count(), 'chats' => $chats]);
     }
 
-    /**
-     * Port of Django's claim_chat — locks the target session row (and the
-     * rep's active-chat count) inside a single DB transaction so two reps
-     * racing to claim the same chat can't both succeed, and rejects the
-     * claim once the rep hits the Admin-configured capacity limit.
-     */
     public function claim(Request $request, int $sessionId): JsonResponse
     {
+        $this->authorize('update', ChatSession::class);
         $rep = $request->user();
 
         try {
@@ -217,7 +231,6 @@ class ChatController extends Controller
             'message' => 'Chat claimed successfully.',
             'chat' => [
                 'id' => $session->id,
-                'sessionToken' => $session->session_token,
                 'clientName' => $session->client_name,
                 'status' => $session->status,
                 'assignedTo' => $rep->name,

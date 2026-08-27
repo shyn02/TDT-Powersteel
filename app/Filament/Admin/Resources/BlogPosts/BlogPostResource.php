@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\BlogPosts;
 
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Filament\Admin\Resources\BlogPosts\Pages\CreateBlogPost;
 use App\Filament\Admin\Resources\BlogPosts\Pages\EditBlogPost;
 use App\Filament\Admin\Resources\BlogPosts\Pages\ListBlogPosts;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class BlogPostResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = BlogPost::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content Management';

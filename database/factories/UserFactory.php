@@ -28,9 +28,19 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            // SEC-03: No hard-coded default credential. Each factory instance gets a random password.
+            // For tests needing a known password, use ->state(['password' => Hash::make('your-password')]) or UserFactory::withKnownPassword().
+            'password' => static::$password ??= Hash::make(Str::random(32)),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * For tests that need a known password (e.g., login tests), use this state.
+     */
+    public function withKnownPassword(string $plain = 'password'): static
+    {
+        return $this->state(fn (array $attrs) => ['password' => Hash::make($plain)]);
     }
 
     /**

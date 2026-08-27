@@ -33,13 +33,17 @@ class DatabaseSeeder extends Seeder
         }
 
         // In production, use the provided strong password; in local/dev
-        // fall back to factory default only when explicitly not in production.
+        // generate a random one and display it (never hard-code 'password').
         $adminAttrs = [
             'name' => 'Admin User',
             'email' => $bootstrapEmail,
         ];
+        $generatedPlain = null;
         if (! blank($bootstrapPassword)) {
             $adminAttrs['password'] = \Illuminate\Support\Facades\Hash::make($bootstrapPassword);
+        } elseif (! app()->environment('production')) {
+            $generatedPlain = \Illuminate\Support\Str::random(16);
+            $adminAttrs['password'] = \Illuminate\Support\Facades\Hash::make($generatedPlain);
         }
 
         $admin = User::factory()->create($adminAttrs);
