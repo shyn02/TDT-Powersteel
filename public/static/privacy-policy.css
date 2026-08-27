@@ -1,29 +1,54 @@
 /* --- PRIVACY POLICY / LEGAL CONTENT --- */
 
-/* Scoped banner override — only applies here, not the other 14 pages
-   sharing .page-banner (Contact, Products, product category pages). */
+/* Scoped banner override — uses privacy.jpg as background with dark overlay */
 .page-banner.privacy-banner {
-    background-color: #f5f4f2;
-    background-image:
-        linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+    position: relative;
+    background-image: url('images/privacy.jpg');
+    background-size: cover;
+    background-position: center 35%;
+    background-repeat: no-repeat;
+    padding: 110px 0 90px;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(113, 112, 116, 0.1);
 }
 
-.page-banner.privacy-banner .page-banner-title {
-    color: var(--tdt-gray);
+.page-banner.privacy-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(20, 20, 20, 0.72) 0%, rgba(20, 20, 20, 0.82) 100%);
+    z-index: 1;
+}
+
+.page-banner.privacy-banner .container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.page-banner.privacy-banner .section-subtitle {
+    color: var(--tdt-orange) !important;
+}
+
+.page-banner.privacy-banner .page-banner-title,
+.page-banner.privacy-banner .page-banner-title span {
+    color: #ffffff !important;
 }
 
 .page-banner.privacy-banner .breadcrumb a {
-    color: var(--tdt-gray);
+    color: rgba(255, 255, 255, 0.7) !important;
 }
 
-/* products.css's generic .page-banner rules (text-align: left on
-   .container, max-width without margin:auto on the title, and
-   justify-content: flex-start on the breadcrumb) win by specificity
-   on any page that doesn't scope its own override — this page never
-   had one. Same fix as contact.css / blog.css. */
-.page-banner.privacy-banner .container {
-    text-align: center;
+.page-banner.privacy-banner .breadcrumb a:hover {
+    color: var(--tdt-orange) !important;
+}
+
+.page-banner.privacy-banner .breadcrumb span {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.page-banner.privacy-banner .breadcrumb span.current {
+    color: var(--tdt-orange) !important;
 }
 
 .page-banner.privacy-banner .page-banner-title {
