@@ -12,6 +12,7 @@ use App\Models\Referral;
 use App\Models\SiteSettings;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
@@ -49,12 +50,32 @@ class Settings extends Page implements HasSchemas
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->isAdminPosition() ?? false;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user?->isAdminPosition() ?? false;
     }
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->isAdminPosition() ?? false;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user?->isAdminPosition() ?? false;
+    }
+
+    /**
+     * ActivityLog::log() expects our App\Models\User specifically, while
+     * Auth::user()/auth()->user() are typed generically as Authenticatable
+     * by Laravel — this centralizes the (safe, always-correct-at-runtime)
+     * cast in one place instead of repeating a docblock at every call site.
+     */
+    protected function currentUser(): ?\App\Models\User
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user;
     }
 
     public function mount(): void
@@ -218,9 +239,9 @@ class Settings extends Page implements HasSchemas
 
         if (($data['maintenance_mode'] ?? false) !== $wasMaintenance) {
             $state = ($data['maintenance_mode'] ?? false) ? 'ON' : 'OFF';
-            ActivityLog::log(Auth::user(), "Turned Maintenance Mode {$state}");
+            ActivityLog::log($this->currentUser(), "Turned Maintenance Mode {$state}");
         } else {
-            ActivityLog::log(Auth::user(), 'Updated settings');
+            ActivityLog::log($this->currentUser(), 'Updated settings');
         }
 
         Notification::make()->title('Settings saved')->success()->send();
@@ -262,102 +283,112 @@ class Settings extends Page implements HasSchemas
                 ->label('Save Settings')
                 ->action('save'),
 
-            Action::make('exportFullDatabase')
-                ->label('Export Full Database')
-                ->icon('heroicon-o-circle-stack')
-                ->action(fn () => $this->exportDatabase(dataOnly: false)),
+            // The six actions below are maintenance/export tools rather than
+            // everyday actions, and as separate top-level buttons they don't
+            // wrap — the row just overflows past the edge of the screen on a
+            // normal browser width. Grouping them into one dropdown keeps the
+            // header to two buttons total, which always fits.
+            ActionGroup::make([
+                Action::make('exportFullDatabase')
+                    ->label('Export Full Database')
+                    ->icon('heroicon-o-circle-stack')
+                    ->action(fn () => $this->exportDatabase(dataOnly: false)),
 
-            Action::make('exportDataOnly')
-                ->label('Export Data Only')
-                ->icon('heroicon-o-table-cells')
-                ->action(fn () => $this->exportDatabase(dataOnly: true)),
+                Action::make('exportDataOnly')
+                    ->label('Export Data Only')
+                    ->icon('heroicon-o-table-cells')
+                    ->action(fn () => $this->exportDatabase(dataOnly: true)),
 
-            Action::make('clearCache')
-                ->label('Clear Cache')
-                ->icon('heroicon-o-trash')
-                ->requiresConfirmation()
-                ->action(function () {
-                    Artisan::call('cache:clear');
-                    ActivityLog::log(Auth::user(), 'Cleared server cache');
-                    Notification::make()->title('Cache cleared successfully')->success()->send();
-                }),
+                Action::make('clearCache')
+                    ->label('Clear Cache')
+                    ->icon('heroicon-o-trash')
+                    ->requiresConfirmation()
+                    ->action(function () {
+                        Artisan::call('cache:clear');
+                        ActivityLog::log($this->currentUser(), 'Cleared server cache');
+                        Notification::make()->title('Cache cleared successfully')->success()->send();
+                    }),
 
-            Action::make('checkDatabase')
-                ->label('Check Database')
-                ->icon('heroicon-o-shield-check')
-                ->action(function () {
-                    try {
-                        $driver = DB::connection()->getDriverName();
-                        $issues = [];
+                Action::make('checkDatabase')
+                    ->label('Check Database')
+                    ->icon('heroicon-o-shield-check')
+                    ->action(function () {
+                        try {
+                            $driver = DB::connection()->getDriverName();
+                            $issues = [];
 
-                        if ($driver === 'sqlite') {
-                            // Direct equivalent of Django's PRAGMA integrity_check.
-                            $result = DB::select('PRAGMA integrity_check');
-                            $message = $result[0]->integrity_check ?? 'unknown';
-                            if ($message !== 'ok') {
-                                $issues[] = $message;
-                            }
-                        } else {
-                            foreach ($this->listTables() as $table) {
-                                $safe = $this->safeTableName($table);
-                                $result = DB::select("CHECK TABLE `{$safe}`");
-                                foreach ($result as $row) {
-                                    if (($row->Msg_text ?? 'OK') !== 'OK') {
-                                        $issues[] = "{$table}: {$row->Msg_text}";
+                            if ($driver === 'sqlite') {
+                                // Direct equivalent of Django's PRAGMA integrity_check.
+                                $result = DB::select('PRAGMA integrity_check');
+                                $message = $result[0]->integrity_check ?? 'unknown';
+                                if ($message !== 'ok') {
+                                    $issues[] = $message;
+                                }
+                            } else {
+                                foreach ($this->listTables() as $table) {
+                                    $safe = $this->safeTableName($table);
+                                    $result = DB::select("CHECK TABLE `{$safe}`");
+                                    foreach ($result as $row) {
+                                        if (($row->Msg_text ?? 'OK') !== 'OK') {
+                                            $issues[] = "{$table}: {$row->Msg_text}";
+                                        }
                                     }
                                 }
                             }
+
+                            $ok = empty($issues);
+                            ActivityLog::log($this->currentUser(), 'Ran database integrity check ('.($ok ? 'OK' : 'ISSUES FOUND').')');
+
+                            $ok
+                                ? Notification::make()->title('Database check: OK, no issues found.')->success()->send()
+                                : Notification::make()->title('Database check: issues found')->body(implode('; ', $issues))->danger()->send();
+                        } catch (\Throwable $e) {
+                            report($e);
+                            $id = (string) \Illuminate\Support\Str::uuid();
+                            \Illuminate\Support\Facades\Log::error('Database check failed', ['error_id' => $id, 'exception' => $e]);
+                            Notification::make()->title('Database check unavailable')->body("An error occurred. Reference: {$id}")->warning()->send();
                         }
+                    }),
 
-                        $ok = empty($issues);
-                        ActivityLog::log(Auth::user(), 'Ran database integrity check ('.($ok ? 'OK' : 'ISSUES FOUND').')');
+                Action::make('optimizeTables')
+                    ->label('Optimize Tables')
+                    ->icon('heroicon-o-wrench')
+                    ->requiresConfirmation()
+                    ->action(function () {
+                        try {
+                            $driver = DB::connection()->getDriverName();
 
-                        $ok
-                            ? Notification::make()->title('Database check: OK, no issues found.')->success()->send()
-                            : Notification::make()->title('Database check: issues found')->body(implode('; ', $issues))->danger()->send();
-                    } catch (\Throwable $e) {
-                        report($e);
-                        $id = (string) \Illuminate\Support\Str::uuid();
-                        \Illuminate\Support\Facades\Log::error('Database check failed', ['error_id' => $id, 'exception' => $e]);
-                        Notification::make()->title('Database check unavailable')->body("An error occurred. Reference: {$id}")->warning()->send();
-                    }
-                }),
-
-            Action::make('optimizeTables')
-                ->label('Optimize Tables')
-                ->icon('heroicon-o-wrench')
-                ->requiresConfirmation()
-                ->action(function () {
-                    try {
-                        $driver = DB::connection()->getDriverName();
-
-                        if ($driver === 'sqlite') {
-                            // SQLite's direct equivalent — Django ran this exact command.
-                            DB::statement('VACUUM');
-                        } else {
-                            foreach ($this->listTables() as $table) {
-                                $safe = $this->safeTableName($table);
-                                DB::statement("OPTIMIZE TABLE `{$safe}`");
+                            if ($driver === 'sqlite') {
+                                // SQLite's direct equivalent — Django ran this exact command.
+                                DB::statement('VACUUM');
+                            } else {
+                                foreach ($this->listTables() as $table) {
+                                    $safe = $this->safeTableName($table);
+                                    DB::statement("OPTIMIZE TABLE `{$safe}`");
+                                }
                             }
+
+                            ActivityLog::log($this->currentUser(), 'Optimized database tables');
+                            Notification::make()->title('Database tables optimized successfully')->success()->send();
+                        } catch (\Throwable $e) {
+                            report($e);
+                            $id = (string) \Illuminate\Support\Str::uuid();
+                            \Illuminate\Support\Facades\Log::error('Optimize tables failed', ['error_id' => $id, 'exception' => $e]);
+                            Notification::make()->title('Optimize unavailable')->body("An error occurred. Reference: {$id}")->warning()->send();
                         }
+                    }),
 
-                        ActivityLog::log(Auth::user(), 'Optimized database tables');
-                        Notification::make()->title('Database tables optimized successfully')->success()->send();
-                    } catch (\Throwable $e) {
-                        report($e);
-                        $id = (string) \Illuminate\Support\Str::uuid();
-                        \Illuminate\Support\Facades\Log::error('Optimize tables failed', ['error_id' => $id, 'exception' => $e]);
-                        Notification::make()->title('Optimize unavailable')->body("An error occurred. Reference: {$id}")->warning()->send();
-                    }
-                }),
-
-            Action::make('refreshSystemInfo')
-                ->label('Refresh System Info')
-                ->icon('heroicon-o-arrow-path')
-                ->action(function () {
-                    ActivityLog::log(Auth::user(), 'Refreshed System Info');
-                    Notification::make()->title('System Info refreshed successfully')->success()->send();
-                }),
+                Action::make('refreshSystemInfo')
+                    ->label('Refresh System Info')
+                    ->icon('heroicon-o-arrow-path')
+                    ->action(function () {
+                        ActivityLog::log($this->currentUser(), 'Refreshed System Info');
+                        Notification::make()->title('System Info refreshed successfully')->success()->send();
+                    }),
+            ])
+                ->label('Database & Tools')
+                ->icon('heroicon-o-cog-6-tooth')
+                ->button(),
         ];
     }
 
@@ -395,7 +426,7 @@ class Settings extends Page implements HasSchemas
             $sql .= "\n";
         }
 
-        ActivityLog::log(Auth::user(), 'Exported '.($dataOnly ? 'data-only' : 'full').' database (.sql)');
+        ActivityLog::log($this->currentUser(), 'Exported '.($dataOnly ? 'data-only' : 'full').' database (.sql)');
 
         $filename = 'tdt_powersteel_'.($dataOnly ? 'data' : 'full').'_'.now()->format('Ymd_His').'.sql';
 
