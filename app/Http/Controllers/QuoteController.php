@@ -20,10 +20,23 @@ class QuoteController extends Controller
      */
     public function submit(Request $request): JsonResponse
     {
+        // SEC-07: Layered abuse controls — payload size guard (10KB) before validation
+        if (strlen(json_encode($request->all())) > 10240) {
+            return response()->json(['status' => 'error', 'message' => 'Payload too large.'], 413);
+        }
+
         // Honeypot anti-spam: hidden field "website" should stay empty for humans.
         // Bots that fill it are silently treated as success to avoid revealing the trap.
         if (trim((string) $request->input('website', '')) !== '') {
+            try { \Illuminate\Support\Facades\Log::warning('Honeypot triggered on submit-quote', ['ip' => $request->ip(), 'ua' => $request->userAgent()]); } catch (\Throwable $e) {}
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
+        }
+
+        // SEC-07: Duplicate/replay detection — reject rapid duplicate submissions from same email/phone within 60s
+        $clientIp = $request->ip();
+        $dupKey = 'submit_quote_dup_' . md5($clientIp . '|' . json_encode($request->only(['clientEmail','cEmail','ref_email','email','clientContact','cPhone','ref_phone','mobile'])));
+        if (\Illuminate\Support\Facades\Cache::has($dupKey)) {
+            return response()->json(['status' => 'error', 'message' => 'Please wait a moment before submitting again.'], 429);
         }
 
         // ---- Case 1: quoteForm modal (embedded on Home, Products, and every category page) ----
@@ -84,6 +97,7 @@ class QuoteController extends Controller
                 'source' => $sourcePage,
                 'created_at' => now(),
             ]);
+            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
 
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
@@ -123,6 +137,7 @@ class QuoteController extends Controller
                 'status' => 'unread',
                 'created_at' => now(),
             ]);
+            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
 
             return response()->json(['status' => 'success', 'message' => 'Your message has been received!']);
         }
@@ -156,6 +171,7 @@ class QuoteController extends Controller
                 'status' => 'new',
                 'created_at' => now(),
             ]);
+            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
 
             return response()->json(['status' => 'success', 'message' => 'Thank you! Your referral has been received and recorded in the system.']);
         }
@@ -193,6 +209,7 @@ class QuoteController extends Controller
                 'source' => 'home',
                 'created_at' => now(),
             ]);
+            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
 
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }

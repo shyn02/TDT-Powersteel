@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\SocialHighlights\Pages\ListSocialHighlights;
 use App\Filament\Admin\Resources\SocialHighlights\Schemas\SocialHighlightForm;
 use App\Filament\Admin\Resources\SocialHighlights\Schemas\SocialHighlightInfolist;
 use App\Filament\Admin\Resources\SocialHighlights\Tables\SocialHighlightsTable;
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Models\SocialHighlight;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,6 +18,8 @@ use Filament\Tables\Table;
 
 class SocialHighlightResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = SocialHighlight::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content Management';

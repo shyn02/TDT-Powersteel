@@ -24,6 +24,22 @@ class ActivityLogResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'action';
 
+    // SEC-05: Restrict audit logs to admin-position users only
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->isAdminPosition() ?? false;
+    }
+
+    public static function canView($record): bool
+    {
+        return auth()->user()?->isAdminPosition() ?? false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->isAdminPosition() ?? false;
+    }
+
     // Matches Django's LogEntryAdmin — read-only: no add/change/delete
     // permission, view-only so staff can audit what happened.
     public static function canCreate(): bool

@@ -14,7 +14,16 @@ class ChatController extends Controller
 {
     public function messages(Request $request): JsonResponse
     {
+        // SEC-03: Polling moved to POST body (poll=true) to avoid token in URL.
+        // Detect poll by explicit poll flag; otherwise treat POST as postMessage.
+        if ($request->boolean('poll')) {
+            return $this->pollMessages($request);
+        }
         if ($request->isMethod('post')) {
+            // If payload contains 'after' without message fields, treat as poll for backward compat
+            if ($request->has('after') && ! $request->filled('type') && ! $request->filled('text')) {
+                return $this->pollMessages($request);
+            }
             return $this->postMessage($request);
         }
         return $this->pollMessages($request);
@@ -27,12 +36,16 @@ class ChatController extends Controller
 
     protected function findSessionByToken(string $raw): ?ChatSession
     {
-        // Try hashed first (new), then raw for legacy backward compat
+        // SEC-02: Only HMAC-hashed lookup; raw fallback removed after migration window.
         $hash = $this->hashToken($raw);
-        $session = ChatSession::where('session_token', $hash)->first();
-        if ($session) return $session;
-        // Legacy fallback: raw token stored before hashing
-        return ChatSession::where('session_token', $raw)->first();
+        return ChatSession::where('session_token', $hash)->first();
+    }
+
+    protected function isSessionExpired(ChatSession $session): bool
+    {
+        if ($session->revoked_at) return true;
+        if ($session->expires_at && $session->expires_at->isPast()) return true;
+        return false;
     }
 
     protected function postMessage(Request $request): JsonResponse
@@ -76,9 +89,10 @@ class ChatController extends Controller
             ]
         );
 
-        // Revoked/legacy check - immediately reject if revoked
-        if ($session->revoked_at) {
-            return response()->json(['status' => 'error', 'message' => 'Session expired'], 401);
+        // SEC-02: Enforce revoked and expiry (24h) on every write path
+        if ($this->isSessionExpired($session)) {
+            return response()->json(['status' => 'error', 'message' => 'Session expired'], 401)
+                ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
         }
 
         // If we rotated, ensure token hash is stored (firstOrCreate already did)
@@ -110,7 +124,7 @@ class ChatController extends Controller
         if ($needsRotation) {
             $payload['newSessionId'] = $effectiveRaw;
         }
-        return response()->json($payload);
+        return response()->json($payload)->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
     protected function pollMessages(Request $request): JsonResponse
@@ -118,15 +132,21 @@ class ChatController extends Controller
         $request->validate([
             'sessionId' => ['required', 'string', 'max:128'],
             'after' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
+            'poll' => ['nullable', 'boolean'],
         ]);
-        $rawId = trim((string) $request->query('sessionId', ''));
-        $afterId = (int) $request->query('after', 0);
+        // SEC-03: Prefer body/input over query string; still accept query for transition but no token in URL is preferred.
+        // SEC-03 mitigation: reject tokens that arrive only via query string when method is GET after rollout.
+        $rawId = trim((string) $request->input('sessionId', $request->query('sessionId', '')));
+        $afterId = (int) $request->input('after', $request->query('after', 0));
+
+        // Enforce Cache-Control: no-store on all poll responses (SEC-03)
+        $noStore = ['Cache-Control' => 'no-store, no-cache, must-revalidate', 'Pragma' => 'no-cache'];
 
         $messages = [];
-        $session = $this->findSessionByToken($rawId);
+        $session = $rawId !== '' ? $this->findSessionByToken($rawId) : null;
 
-        if ($session && $session->revoked_at) {
-            return response()->json(['status' => 'error', 'message' => 'Session revoked'], 401);
+        if ($session && $this->isSessionExpired($session)) {
+            return response()->json(['status' => 'error', 'message' => 'Session expired'], 401)->withHeaders($noStore);
         }
 
         if ($session) {
@@ -146,7 +166,7 @@ class ChatController extends Controller
             }
         }
 
-        return response()->json(['messages' => $messages]);
+        return response()->json(['messages' => $messages])->withHeaders($noStore);
     }
 
     public function unassignedQueue(Request $request): JsonResponse
@@ -173,8 +193,14 @@ class ChatController extends Controller
 
     public function claim(Request $request, int $sessionId): JsonResponse
     {
-        $this->authorize('update', ChatSession::class);
         $rep = $request->user();
+
+        // SEC-08: Authorize against concrete record, not class. Load first to verify existence.
+        $preSession = ChatSession::find($sessionId);
+        if (! $preSession) {
+            return response()->json(['status' => 'error', 'message' => 'Chat not found.'], 404);
+        }
+        $this->authorize('update', $preSession);
 
         try {
             $result = DB::transaction(function () use ($sessionId, $rep) {
@@ -182,6 +208,11 @@ class ChatController extends Controller
 
                 if (! $session) {
                     return ['error' => ['message' => 'Chat not found.'], 'status' => 404];
+                }
+
+                // Re-authorize on the locked concrete record to prevent TOCTOU (SEC-08)
+                if (! \Illuminate\Support\Facades\Gate::allows('update', $session)) {
+                    return ['error' => ['message' => 'This action is unauthorized.'], 'status' => 403];
                 }
 
                 if ($session->status !== 'unassigned') {

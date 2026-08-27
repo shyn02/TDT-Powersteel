@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\Projects\Pages\EditProject;
 use App\Filament\Admin\Resources\Projects\Pages\ListProjects;
 use App\Filament\Admin\Resources\Projects\Schemas\ProjectForm;
 use App\Filament\Admin\Resources\Projects\Tables\ProjectsTable;
+use App\Filament\Admin\Concerns\AdminOnlyResource;
 use App\Models\Project;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ProjectResource extends Resource
 {
+    use AdminOnlyResource;
+
     protected static ?string $model = Project::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content Management';

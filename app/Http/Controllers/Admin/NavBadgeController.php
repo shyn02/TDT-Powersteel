@@ -7,7 +7,12 @@ use App\Filament\Admin\Resources\ContactMessages\ContactMessageResource;
 use App\Filament\Admin\Resources\QuoteRequests\QuoteRequestResource;
 use App\Filament\Admin\Resources\Referrals\ReferralResource;
 use App\Http\Controllers\Controller;
+use App\Models\ChatSession;
+use App\Models\ContactMessage;
+use App\Models\QuoteRequest;
+use App\Models\Referral;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Powers the admin sidebar's "no manual refresh needed" badge counts.
@@ -22,16 +27,30 @@ use Illuminate\Http\JsonResponse;
  * Reuses each resource's own getNavigationBadge() rather than
  * re-writing the counting query here, so this can never silently drift
  * out of sync with what the sidebar itself would show on a real reload.
+ *
+ * SEC-09: Gates each badge by the underlying policy (viewAny) so a user
+ * who cannot view a resource does not learn its count via this endpoint.
  */
 class NavBadgeController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json([
-            'chat-sessions' => (int) (ChatSessionResource::getNavigationBadge() ?? 0),
-            'contact-messages' => (int) (ContactMessageResource::getNavigationBadge() ?? 0),
-            'quote-requests' => (int) (QuoteRequestResource::getNavigationBadge() ?? 0),
-            'referrals' => (int) (ReferralResource::getNavigationBadge() ?? 0),
-        ]);
+        $data = [];
+
+        // SEC-09: Only return badges the current user is authorized to view
+        if (Gate::allows('viewAny', ChatSession::class)) {
+            $data['chat-sessions'] = (int) (ChatSessionResource::getNavigationBadge() ?? 0);
+        }
+        if (Gate::allows('viewAny', ContactMessage::class)) {
+            $data['contact-messages'] = (int) (ContactMessageResource::getNavigationBadge() ?? 0);
+        }
+        if (Gate::allows('viewAny', QuoteRequest::class)) {
+            $data['quote-requests'] = (int) (QuoteRequestResource::getNavigationBadge() ?? 0);
+        }
+        if (Gate::allows('viewAny', Referral::class)) {
+            $data['referrals'] = (int) (ReferralResource::getNavigationBadge() ?? 0);
+        }
+
+        return response()->json($data);
     }
 }

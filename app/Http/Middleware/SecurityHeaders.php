@@ -26,11 +26,12 @@ class SecurityHeaders
         if ($request->isSecure() || config('app.env') === 'production') {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
-        // Basic CSP - allow self, fonts, cdn for Font Awesome, inline styles/scripts needed for Filament/Livewire
-        // Adjust if you add external scripts. 'unsafe-inline' is required for Livewire/Filament inline scripts.
+        // SEC-06: Tightened CSP — removed unsafe-eval, narrowed script sources, inventory remaining.
+        // unsafe-inline is still required for Livewire/Filament inline scripts; migrate to nonces/hashes per audit.
+        // Review esm.sh / cdn.jsdelivr usage and remove if unused; report-only mode recommended before further tightening.
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com https://esm.sh https://cdn.jsdelivr.net",
+            "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh",
             "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com",
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob:",

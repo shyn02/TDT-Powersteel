@@ -23,7 +23,14 @@ class ChatSessionPolicy
     public function create(User $user): bool { return false; } // sessions created by visitors, not staff
     public function update(User $user, ChatSession $record): bool
     {
-        return $user->isAdminPosition() || ($record->assigned_to === $user->id && in_array($user->profile?->position, ['sales_rep','support','manager'], true));
+        if ($user->isAdminPosition()) return true;
+        $pos = $user->profile?->position;
+        // Allow eligible staff to claim an unassigned chat (SEC-08: explicit unassigned-claim rule)
+        if ($record->status === 'unassigned' && in_array($pos, ['sales_rep','support','manager'], true) && $user->is_active) {
+            return true;
+        }
+        // Allow assigned rep to update their own active chat
+        return $record->assigned_to === $user->id && in_array($pos, ['sales_rep','support','manager'], true);
     }
     public function delete(User $user, ChatSession $record): bool { return $user->isAdminPosition(); }
     public function deleteAny(User $user): bool { return $user->isAdminPosition(); }

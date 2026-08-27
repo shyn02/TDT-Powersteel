@@ -59,8 +59,17 @@ class AppServiceProvider extends ServiceProvider
         });
         Event::listen(Failed::class, function (Failed $event) {
             try {
-                $email = $event->credentials['email'] ?? 'unknown';
-                ActivityLog::log(null, "Login failed for {$email} from ".request()->ip());
+                // SEC-05: Redact PII — mask email and IP to reduce exposure in audit logs
+                $emailRaw = $event->credentials['email'] ?? 'unknown';
+                if (is_string($emailRaw) && str_contains($emailRaw, '@')) {
+                    [$local, $domain] = explode('@', $emailRaw, 2);
+                    $maskedEmail = substr($local, 0, 1) . '***@' . $domain;
+                } else {
+                    $maskedEmail = '***';
+                }
+                $ip = request()->ip() ?? 'unknown';
+                $maskedIp = preg_match('/^\d+\.\d+\.\d+\.\d+$/', $ip) ? preg_replace('/\.\d+$/', '.***', $ip) : '***';
+                ActivityLog::log(null, "Login failed for {$maskedEmail} from {$maskedIp}");
             } catch (\Throwable $e) {}
         });
         Gate::after(function ($user, $ability, $result, $arguments) {

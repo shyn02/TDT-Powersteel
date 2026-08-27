@@ -278,11 +278,12 @@
         if (pollTimer) return;
         pollTimer = setInterval(async function () {
             try {
-                const url =
-                    CHAT_API_ENDPOINT +
-                    "?sessionId=" + encodeURIComponent(getSessionId()) +
-                    "&after=" + lastAgentMsgId;
-                const res = await fetch(url);
+                // SEC-03: Send token in POST body, not GET query string (avoids URL/logs/history leakage)
+                const res = await fetch(CHAT_API_ENDPOINT, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sessionId: getSessionId(), after: lastAgentMsgId, poll: true })
+                });
                 if (!res.ok) return;
                 const data = await res.json();
                 const msgs = data.messages || [];

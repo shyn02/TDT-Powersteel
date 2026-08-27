@@ -37,6 +37,8 @@ Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])-
     ->middleware('throttle:60,1');
 
 // ---- LIVE CHAT ----
+// SEC-03: Polling now via POST body (poll=true) to avoid bearer token in URL/history/logs.
+// GET is retained briefly for rollout compat but controller now prefers POST body; remove GET after client rollout.
 Route::match(['get', 'post'], '/api/chat/messages', [ChatController::class, 'messages'])
     ->name('chat_messages_api')
     ->middleware('throttle:30,1');
