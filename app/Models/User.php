@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'is_active'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable(['name', 'email', 'password', 'is_active', 'mfa_secret', 'mfa_enabled', 'mfa_recovery_codes', 'mfa_verified_at'])]
+#[Hidden(['password', 'remember_token', 'mfa_secret', 'mfa_recovery_codes'])]
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
@@ -30,6 +30,10 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'mfa_secret' => 'encrypted',
+            'mfa_enabled' => 'boolean',
+            'mfa_recovery_codes' => 'encrypted:array',
+            'mfa_verified_at' => 'datetime',
         ];
     }
 
@@ -52,5 +56,28 @@ class User extends Authenticatable implements FilamentUser
     public function isAdminPosition(): bool
     {
         return $this->profile?->position === 'admin';
+    }
+
+    // SEC-04: MFA helpers
+    public function hasMfaEnabled(): bool
+    {
+        return (bool) $this->mfa_enabled && ! empty($this->mfa_secret);
+    }
+
+    public function verifyMfaCode(string $code): bool
+    {
+        if (! $this->hasMfaEnabled()) return false;
+        // Check recovery codes first (hashed comparison)
+        $codes = $this->mfa_recovery_codes ?? [];
+        foreach ($codes as $i => $hashed) {
+            if (password_verify($code, $hashed)) {
+                // Single-use: remove used code
+                unset($codes[$i]);
+                $this->mfa_recovery_codes = array_values($codes);
+                $this->save();
+                return true;
+            }
+        }
+        return \App\Services\TotpService::verify($this->mfa_secret, $code);
     }
 }

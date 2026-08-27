@@ -32,12 +32,29 @@ class QuoteController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
 
-        // SEC-07: Duplicate/replay detection — reject rapid duplicate submissions from same email/phone within 60s
+        // SEC-07: Duplicate/replay + time-check (bot submits <2s) + payload guard already above
         $clientIp = $request->ip();
+        // Minimum human interaction time: 2 seconds (forms that include form_started_at are checked server-side)
+        if ($request->filled('form_started_at')) {
+            $started = (int) $request->input('form_started_at');
+            $nowMs = (int) round(microtime(true) * 1000);
+            if ($started > 0 && ($nowMs - $started) < 2000) {
+                try { \Illuminate\Support\Facades\Log::warning('Rapid form submission (bot) blocked', ['ip' => $clientIp, 'elapsed_ms' => $nowMs - $started]); } catch (\Throwable $e) {}
+                // Silent success to not reveal trap
+                return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
+            }
+        }
+        // Per-IP rapid-fire guard (2s) even without form_started_at
+        $lastKey = 'submit_last_' . md5($clientIp);
+        $lastTs = \Illuminate\Support\Facades\Cache::get($lastKey);
+        if ($lastTs && (microtime(true) - $lastTs) < 2) {
+            return response()->json(['status' => 'error', 'message' => 'Please wait a moment before submitting again.'], 429);
+        }
         $dupKey = 'submit_quote_dup_' . md5($clientIp . '|' . json_encode($request->only(['clientEmail','cEmail','ref_email','email','clientContact','cPhone','ref_phone','mobile'])));
         if (\Illuminate\Support\Facades\Cache::has($dupKey)) {
             return response()->json(['status' => 'error', 'message' => 'Please wait a moment before submitting again.'], 429);
         }
+        \Illuminate\Support\Facades\Cache::put($lastKey, microtime(true), 60);
 
         // ---- Case 1: quoteForm modal (embedded on Home, Products, and every category page) ----
         if ($request->hasAny(['clientName', 'clientContact', 'estimatedQty'])) {

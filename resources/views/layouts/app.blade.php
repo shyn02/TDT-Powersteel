@@ -50,7 +50,7 @@
     <link rel="stylesheet" href="/static/chatwidget.css">
     <link rel="stylesheet" href="/static/calculator.css">
     <link rel="stylesheet" href="/static/preloader.css">
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
     // Smart preloader: only shows if page takes > 500ms to load (slow internet)
     (function(){
         var t = setTimeout(function(){
@@ -69,7 +69,7 @@
     @stack('styles')
 
     <!-- JSON-LD Structured Data: Organization + LocalBusiness -->
-    <script type="application/ld+json">
+    <script type="application/ld+json" nonce="{{ $cspNonce ?? '' }}">
     {
         "@@context": "https://schema.org",
         "@@type": "LocalBusiness",
@@ -282,6 +282,7 @@
             </div>
             <form id="quoteForm">
                 <input type="hidden" name="sourcePage" value="home">
+                <input type="hidden" name="form_started_at" id="quote_form_started_at" value="">
                 <!-- Honeypot: bots fill this, humans don't -->
                 <div style="position:absolute;left:-5000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
                     <label for="quote_website_hp">Leave this field empty</label>
@@ -364,6 +365,19 @@
     <!-- Back to top button -->
     <button id="backToTopBtn" title="Go to top">↑</button>
 
+    <!-- SEC-07: form_started_at for bot time-check -->
+    <script nonce="{{ $cspNonce ?? '' }}">
+    document.addEventListener('DOMContentLoaded', function(){
+        var el=document.getElementById('quote_form_started_at');
+        if(el) el.value=String(Date.now());
+        // Update on modal open as well
+        var modal=document.getElementById('quoteModal');
+        if(modal){
+            var obs=new MutationObserver(function(){ if(modal.classList.contains('is-open')){ if(el) el.value=String(Date.now()); }});
+            obs.observe(modal,{attributes:true,attributeFilter:['class']});
+        }
+    });
+    </script>
     <!-- Preloader must run ASAP (no defer) -->
     <script src="/static/preloader.js"></script>
     <!-- Main JavaScript file handles everything cleanly -->
