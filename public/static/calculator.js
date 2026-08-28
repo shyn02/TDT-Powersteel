@@ -931,7 +931,19 @@
 
     /* ---------- Resolve product name + category slug → type ---------- */
 
-    function resolveType(productName, categorySlug) {
+    /* explicitType: admin-assigned override from the product's
+       calculator_type field (Filament admin -> "Weight Calculator"
+       section). Takes priority over name/category auto-matching so
+       admin can fix mismatches without a code change. A value of
+       'none' means admin explicitly wants no calculator; the button
+       itself is already hidden server-side in that case (see
+       category_detail.blade.php), but resolveType still needs to
+       treat it as "no match" rather than passing it through to
+       TYPE_CONFIG (which has no 'none' entry). */
+    function resolveType(productName, categorySlug, explicitType) {
+        var explicit = (explicitType || '').toLowerCase().trim();
+        if (explicit && explicit !== 'none' && TYPE_CONFIG[explicit]) return explicit;
+
         var nameLower = (productName || '').toLowerCase().trim();
         if (PRODUCT_TYPE_MAP[nameLower]) return PRODUCT_TYPE_MAP[nameLower];
         var slugLower = (categorySlug || '').toLowerCase().trim();
@@ -1074,8 +1086,8 @@
         var currentType = null;
         var currentCalcFn = null;
 
-        function openCalcModal(productName, categorySlug) {
-            var type = resolveType(productName, categorySlug);
+        function openCalcModal(productName, categorySlug, explicitType) {
+            var type = resolveType(productName, categorySlug, explicitType);
             currentType = type;
 
             if (!type || !TYPE_CONFIG[type]) {
@@ -1110,7 +1122,8 @@
             btn.addEventListener('click', function () {
                 var name = btn.getAttribute('data-product-name') || '';
                 var slug = btn.getAttribute('data-category-slug') || '';
-                openCalcModal(name, slug);
+                var explicitType = btn.getAttribute('data-calc-type') || '';
+                openCalcModal(name, slug, explicitType);
             });
         });
 
@@ -1296,6 +1309,7 @@
         function selectHomeCalcProduct(optionEl) {
             var productName = optionEl.getAttribute('data-value');
             var categorySlug = optionEl.getAttribute('data-category-slug');
+            var explicitType = optionEl.getAttribute('data-calc-type') || '';
             homeCalcSelectedCategoryName = optionEl.getAttribute('data-category-name') || '';
 
             homeCalcDropdownPanel.querySelectorAll('.calc-dropdown-option.selected').forEach(function (o) {
@@ -1306,7 +1320,7 @@
             if (homeCalcHiddenInput) homeCalcHiddenInput.value = productName;
             closeHomeCalcDropdownPanel();
 
-            var type = resolveType(productName, categorySlug);
+            var type = resolveType(productName, categorySlug, explicitType);
             if (homeCalcResult) homeCalcResult.classList.remove('show');
             if (!type || !TYPE_CONFIG[type]) {
                 homeFormContainer.innerHTML = buildUnsupportedForm();

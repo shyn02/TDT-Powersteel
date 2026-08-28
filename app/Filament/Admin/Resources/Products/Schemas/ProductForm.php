@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
+use App\Models\Product;
 use App\Models\ProductCategory;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -62,6 +63,17 @@ class ProductForm
                             ->label('Sizes (one per line)')
                             ->helperText('Populates the size dropdown in the "Request a Quote" modal.')
                             ->rows(5)
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Weight Calculator')
+                    ->schema([
+                        Select::make('calculator_type')
+                            ->label('Calculator formula')
+                            ->options(['none' => '— No calculator (hide the button) —', ...Product::CALCULATOR_TYPES])
+                            ->native(false)
+                            ->placeholder('Auto-detect (by product name / category)')
+                            ->helperText('Leave blank to auto-match by product name or category, same as existing products. Pick a shape if the site shows "not available" for this product. Pick "No calculator" to hide the button entirely, even if its category normally shows one.')
                             ->columnSpanFull(),
                     ]),
             ]);

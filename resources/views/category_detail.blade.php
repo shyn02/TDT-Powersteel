@@ -71,8 +71,16 @@
                         <button class="btn-orange btn-quote-trigger" data-product="{{ $category->name }}">
                             <span class="btn-text">REQUEST A QUOTE</span>
                         </button>
-                        @if (!in_array($category->slug, ['hardware', 'construction-materials']))
-                        <button class="btn-calc-trigger" data-product-name="{{ $product->name }}" data-category-slug="{{ $category->slug }}">
+                        @php
+                            $calcType = $product->calculator_type;
+                            $categoryExcluded = in_array($category->slug, ['hardware', 'construction-materials']);
+                            // 'none' always hides the button, even for categories that
+                            // normally show it. A category-excluded product only shows
+                            // the button if admin explicitly picked a formula for it.
+                            $showCalcButton = $calcType === 'none' ? false : (!$categoryExcluded || $calcType);
+                        @endphp
+                        @if ($showCalcButton)
+                        <button class="btn-calc-trigger" data-product-name="{{ $product->name }}" data-category-slug="{{ $category->slug }}" data-calc-type="{{ $calcType }}">
                             <i class="fa-solid fa-calculator"></i> CALCULATE WEIGHT
                         </button>
                         @endif

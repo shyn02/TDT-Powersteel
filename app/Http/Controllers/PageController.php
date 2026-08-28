@@ -17,11 +17,20 @@ class PageController extends Controller
 
         $calcExcludedSlugs = ['hardware', 'construction-materials'];
 
+        // Same visibility rule as the per-product "CALCULATE WEIGHT" button
+        // on category pages: a product in an excluded category only shows
+        // here if admin explicitly assigned it a calculator formula, and
+        // 'none' always excludes it regardless of category.
         $calcProducts = Product::with('category')
             ->where('is_active', true)
-            ->whereHas('category', function ($q) use ($calcExcludedSlugs) {
-                $q->where('is_active', true)->whereNotIn('slug', $calcExcludedSlugs);
+            ->where(function ($q) use ($calcExcludedSlugs) {
+                $q->whereDoesntHave('category', fn ($c) => $c->whereIn('slug', $calcExcludedSlugs))
+                    ->orWhereNotNull('calculator_type');
             })
+            ->where(function ($q) {
+                $q->whereNull('calculator_type')->orWhere('calculator_type', '!=', 'none');
+            })
+            ->whereHas('category', fn ($q) => $q->where('is_active', true))
             ->orderBy('name')
             ->get()
             ->groupBy(fn ($product) => $product->category->name);

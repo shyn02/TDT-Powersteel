@@ -201,7 +201,7 @@
                             @foreach ($calcProducts as $categoryName => $products)
                             <div class="calc-dropdown-group-label">{{ $categoryName }}</div>
                             @foreach ($products as $product)
-                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="{{ $product->name }}" data-category-slug="{{ $product->category->slug }}" data-category-name="{{ $categoryName }}">{{ $product->name }}</div>
+                            <div class="calc-dropdown-option" role="option" tabindex="0" data-value="{{ $product->name }}" data-category-slug="{{ $product->category->slug }}" data-category-name="{{ $categoryName }}" data-calc-type="{{ $product->calculator_type }}">{{ $product->name }}</div>
                             @endforeach
                             @endforeach
                         </div>
