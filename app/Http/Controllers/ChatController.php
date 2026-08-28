@@ -14,19 +14,19 @@ class ChatController extends Controller
 {
     public function messages(Request $request): JsonResponse
     {
-        // SEC-03: Polling moved to POST body (poll=true) to avoid token in URL.
-        // Detect poll by explicit poll flag; otherwise treat POST as postMessage.
+        // SEC-03 FIXED (#1): Reject GET with bearer token — POST only.
+        if (! $request->isMethod('post')) {
+            return response()->json(['status' => 'error', 'message' => 'Use POST with body poll'], 405)
+                ->header('Allow', 'POST')
+                ->header('Cache-Control', 'no-store');
+        }
         if ($request->boolean('poll')) {
             return $this->pollMessages($request);
         }
-        if ($request->isMethod('post')) {
-            // If payload contains 'after' without message fields, treat as poll for backward compat
-            if ($request->has('after') && ! $request->filled('type') && ! $request->filled('text')) {
-                return $this->pollMessages($request);
-            }
-            return $this->postMessage($request);
+        if ($request->has('after') && ! $request->filled('type') && ! $request->filled('text')) {
+            return $this->pollMessages($request);
         }
-        return $this->pollMessages($request);
+        return $this->postMessage($request);
     }
 
     protected function hashToken(string $raw): string
@@ -66,16 +66,21 @@ class ChatController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Missing sessionId'], 400);
         }
 
-        // SEC-05/SEC-01: Normalize legacy low-entropy tokens to high-entropy server-generated
-        $isLowEntropy = str_starts_with($rawId, 'sess_') || strlen($rawId) < 32 || ! preg_match('/^[a-f0-9]{32,128}$/i', $rawId);
+        // SEC-02 FIXED (#2): Server-side credential generation — never trust client-selected token for new sessions.
+        // If token not found, generate server-side (64 hex, 256-bit) and force rotation. Client must use returned newSessionId.
+        $existing = $this->findSessionByToken($rawId);
         $needsRotation = false;
         $effectiveRaw = $rawId;
-        if ($isLowEntropy) {
-            $existing = $this->findSessionByToken($rawId);
-            if (! $existing) {
-                $needsRotation = true;
-                $effectiveRaw = bin2hex(random_bytes(32));
-            }
+        if (! $existing) {
+            // New session: ignore client-provided value, generate server-side
+            $needsRotation = true;
+            $effectiveRaw = bin2hex(random_bytes(32));
+        } elseif (str_starts_with($rawId, 'sess_') || strlen($rawId) < 32) {
+            // Legacy low-entropy still stored: rotate if somehow found (should have been revoked)
+            $needsRotation = true;
+            $effectiveRaw = bin2hex(random_bytes(32));
+            // Keep existing session but will create new hashed entry below
+            $existing = null;
         }
 
         $hash = $this->hashToken($effectiveRaw);
@@ -134,10 +139,13 @@ class ChatController extends Controller
             'after' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
             'poll' => ['nullable', 'boolean'],
         ]);
-        // SEC-03: Prefer body/input over query string; still accept query for transition but no token in URL is preferred.
-        // SEC-03 mitigation: reject tokens that arrive only via query string when method is GET after rollout.
-        $rawId = trim((string) $request->input('sessionId', $request->query('sessionId', '')));
-        $afterId = (int) $request->input('after', $request->query('after', 0));
+        // SEC-03 FIXED: Only body (POST JSON) — reject query-string bearer tokens
+        if ($request->query('sessionId') !== null || $request->query('after') !== null) {
+            return response()->json(['status' => 'error', 'message' => 'Use POST body, not query string'], 400)
+                ->header('Cache-Control', 'no-store');
+        }
+        $rawId = trim((string) $request->input('sessionId', ''));
+        $afterId = (int) $request->input('after', 0);
 
         // Enforce Cache-Control: no-store on all poll responses (SEC-03)
         $noStore = ['Cache-Control' => 'no-store, no-cache, must-revalidate', 'Pragma' => 'no-cache'];

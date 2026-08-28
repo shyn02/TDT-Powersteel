@@ -35,16 +35,15 @@ Route::get('/blog/{slug}/', [PageController::class, 'blogDetail'])->name('blog_d
 // write directly to the DB with no login and are a spam/flood target.
 Route::post('/api/submit-quote/', [QuoteController::class, 'submit'])
     ->name('submit_quote')
-    ->middleware('throttle:10,1');
+    ->middleware('throttle:5,1');
 Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])->name('quote_product_data')
     ->middleware('throttle:60,1');
 
 // ---- LIVE CHAT ----
-// SEC-03: Polling now via POST body (poll=true) to avoid bearer token in URL/history/logs.
-// GET is retained briefly for rollout compat but controller now prefers POST body; remove GET after client rollout.
-Route::match(['get', 'post'], '/api/chat/messages', [ChatController::class, 'messages'])
+// SEC-03 FIXED: POST only — GET with bearer token was removed to prevent URL/history/log leakage (audit #1).
+Route::post('/api/chat/messages', [ChatController::class, 'messages'])
     ->name('chat_messages_api')
-    ->middleware('throttle:30,1');
+    ->middleware('throttle:20,1');
 
 // Staff-only chat pool. Requires login -> NOT exempted from CSRF (see
 // bootstrap/app.php), unlike the two public routes above.

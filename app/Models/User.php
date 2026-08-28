@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'is_active', 'mfa_secret', 'mfa_enabled', 'mfa_recovery_codes', 'mfa_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'is_active', 'mfa_secret', 'mfa_enabled', 'mfa_recovery_codes', 'mfa_verified_at', 'password_expires_at', 'must_change_password'])]
 #[Hidden(['password', 'remember_token', 'mfa_secret', 'mfa_recovery_codes'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -34,6 +34,8 @@ class User extends Authenticatable implements FilamentUser
             'mfa_enabled' => 'boolean',
             'mfa_recovery_codes' => 'encrypted:array',
             'mfa_verified_at' => 'datetime',
+            'password_expires_at' => 'datetime',
+            'must_change_password' => 'boolean',
         ];
     }
 
@@ -79,5 +81,13 @@ class User extends Authenticatable implements FilamentUser
             }
         }
         return \App\Services\TotpService::verify($this->mfa_secret, $code);
+    }
+
+    // SEC-04: Temporary password expiry
+    public function isPasswordExpired(): bool
+    {
+        if ($this->must_change_password) return true;
+        if ($this->password_expires_at && $this->password_expires_at->isPast()) return true;
+        return false;
     }
 }
