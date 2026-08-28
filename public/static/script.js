@@ -79,6 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // PH mobile validation: 09XXXXXXXXX (11) or +639XXXXXXXXX (13)
+    function isValidPhMobile(v) {
+        const n = (v || '').replace(/[\s\-\(\)]/g, '');
+        return /^(\+63|0)9\d{9}$/.test(n);
+    }
+
     // ==========================================================
     // 2. MODAL FUNCTIONALITIES WITH ALL DYNAMIC SUB-PRODUCTS MAP
     // ==========================================================
@@ -451,6 +457,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const hasSize = sizeGroup && sizeGroup.style.display !== 'none' && sizeInput && sizeInput.value;
             const itemLabel = hasSize ? `${subItem} (${sizeInput.value})` : subItem;
 
+            // Client-side PH mobile check before submit
+            const phoneEl = document.getElementById('clientContact');
+            if (phoneEl && !isValidPhMobile(phoneEl.value)) {
+                showToast('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.');
+                return;
+            }
+
             if(submitBtn) {
                 submitBtn.classList.add('loading');
                 submitBtn.disabled = true;
@@ -464,11 +477,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
+                const data = await response.json().catch(() => null);
                 if (response.ok) {
                     showToast(`Thank you, ${client}! We have successfully received your quote request for "${itemLabel}".`);
                     closeModal();
                 } else {
-                    showToast('Failed to send. Please try again.');
+                    const msg = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : null) || 'Failed to send. Please check mobile number.';
+                    showToast(msg);
                 }
             } catch (error) {
                 console.error('Quote submit error:', error);
@@ -507,6 +522,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitBtn = document.getElementById('contactSubmitBtn');
             const nameInput = document.getElementById('cName');
             const name = nameInput ? nameInput.value : "Guest";
+            const phoneEl = document.getElementById('cPhone');
+            if (phoneEl && !isValidPhMobile(phoneEl.value)) {
+                showToast('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.');
+                return;
+            }
 
             if (submitBtn) {
                 submitBtn.classList.add('loading');
@@ -521,12 +541,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
+                const data = await response.json().catch(() => null);
                 if (response.ok) {
                     showToast(`Message sent! Thank you, ${name}. Our sales coordinator will get in touch with you as soon as possible.`);
                     directForm.reset();
                     if (cHowHeardOtherGroup) cHowHeardOtherGroup.style.display = 'none';
                 } else {
-                    showToast('Failed to send. Please try again.');
+                    const msg = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : null) || 'Failed to send. Please check mobile number.';
+                    showToast(msg);
                 }
             } catch (error) {
                 console.error('Contact submit error:', error);
@@ -551,6 +573,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitBtn = document.getElementById('referralSubmitBtn');
             const nameInput = document.getElementById('ref_fullname');
             const name = nameInput ? nameInput.value : 'there';
+            const phoneEl = document.getElementById('ref_phone') || document.querySelector('[name="ref_phone"]');
+            if (phoneEl && phoneEl.value && !isValidPhMobile(phoneEl.value)) {
+                showToast('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.');
+                return;
+            }
 
             if (submitBtn) {
                 submitBtn.classList.add('loading');
@@ -565,11 +592,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
+                const data = await response.json().catch(() => null);
                 if (response.ok) {
                     showToast(`Thank you, ${name}! Your referral has been received. Our team will follow up with the referred company shortly.`);
                     referralForm.reset();
                 } else {
-                    showToast('Failed to send. Please try again.');
+                    const msg = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : null) || 'Failed to send. Please check mobile number.';
+                    showToast(msg);
                 }
             } catch (error) {
                 console.error('Referral submit error:', error);
@@ -645,6 +674,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const nameInput = document.getElementById('heroName');
             const name = nameInput && nameInput.value.trim() !== "" ? nameInput.value.trim() : "Guest";
             const submitBtn = heroQuoteForm.querySelector('.btn-submit-hero');
+            const phoneEl = document.getElementById('heroMobile') || document.querySelector('[name="mobile"]');
+            if (phoneEl && !isValidPhMobile(phoneEl.value)) {
+                showToast('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.');
+                return;
+            }
 
             if (submitBtn) submitBtn.disabled = true;
 
@@ -656,13 +690,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
                 });
 
+                const data = await response.json().catch(() => null);
                 if (response.ok) {
                     showToast(`Thank you, ${name}! We have successfully received your quote request.`);
                     heroQuoteForm.reset();
                     if (heroHowHeardOtherGroup) heroHowHeardOtherGroup.style.display = 'none';
                     closeHeroQuoteOverlay();
                 } else {
-                    showToast('Failed to send. Please try again.');
+                    const msg = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : null) || 'Failed to send. Please check mobile number.';
+                    showToast(msg);
                 }
             } catch (error) {
                 console.error('Hero quote submit error:', error);
