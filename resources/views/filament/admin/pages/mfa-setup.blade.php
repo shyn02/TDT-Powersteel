@@ -12,38 +12,30 @@
 
         @if($secret)
             <div class="rounded-lg border p-6 bg-white space-y-4">
-                <h3 class="font-bold">Your TOTP Secret</h3>
-                <p class="text-sm text-gray-600">Scan this QR or enter the secret manually. Keep recovery codes offline.</p>
-                <div class="flex flex-col md:flex-row gap-6 items-start">
-                    <div>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($qrUrl) }}" alt="MFA QR" class="border rounded" width="200" height="200" />
-                    </div>
-                    <div class="space-y-2">
-                        <div>
-                            <label class="text-xs font-semibold text-gray-500">SECRET</label>
-                            <div class="font-mono bg-gray-50 p-2 rounded border text-sm break-all">{{ $secret }}</div>
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-gray-500">QR URL</label>
-                            <div class="text-xs break-all text-gray-500">{{ $qrUrl }}</div>
-                        </div>
+                <h3 class="font-bold">Scan QR to Enroll</h3>
+                <p class="text-sm text-gray-600">Open Google Authenticator or Authy → Scan QR → Enter the 6-digit code below via <strong>Verify & Enable MFA</strong>.</p>
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($qrUrl) }}" alt="MFA QR" class="border rounded bg-white p-2" width="200" height="200" />
+                    <div class="text-sm text-gray-600 space-y-3">
+                        <p>Can't scan? <details class="inline"><summary class="cursor-pointer text-orange-600 underline">Show secret</summary><span class="font-mono bg-gray-50 p-1 rounded border text-xs break-all">{{ $secret }}</span></details></p>
                         @if(!empty($recoveryPlain))
-                            <div>
-                                <label class="text-xs font-semibold text-gray-500">RECOVERY CODES (single-use, store securely)</label>
-                                <ul class="font-mono text-sm bg-gray-50 p-2 rounded border space-y-1">
+                            <details class="rounded border bg-amber-50 p-3">
+                                <summary class="cursor-pointer text-sm font-semibold">Show recovery codes (single-use)</summary>
+                                <ul class="font-mono text-xs mt-2 space-y-1">
                                     @foreach($recoveryPlain as $c)<li>{{ $c }}</li>@endforeach
                                 </ul>
-                            </div>
+                                <p class="text-xs text-amber-700 mt-2">Save these offline — each can be used once if you lose your phone.</p>
+                            </details>
                         @endif
                     </div>
                 </div>
             </div>
+        @else
+            @if(!$hasMfa)
+                <div class="rounded-lg border border-dashed p-6 bg-white text-center text-sm text-gray-500">
+                    Click <strong>Generate Secret & QR</strong> above to start enrollment.
+                </div>
+            @endif
         @endif
-
-        {{ $this->form }}
-
-        <div class="text-xs text-gray-500">
-            Need help? Run <code>php artisan mfa:setup {{ $user->email }}</code> or <code>make:break-glass</code> for recovery. MFA challenge will be required after password if enabled.
-        </div>
     </div>
 </x-filament-panels::page>
