@@ -26,13 +26,12 @@ class SecurityHeaders
         if ($request->isSecure() || config('app.env') === 'production') {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
-        // SEC-06: Tightened CSP — removed unsafe-eval, narrowed script sources.
-        // unsafe-inline kept for Filament/Livewire (adding nonce would disable unsafe-inline per spec and break Filament).
-        // Nonce is generated and shared for app.blade.php future migration; not yet enforced in CSP header.
-        // Next step: move inline blocks to Vite/static or add nonce to Filament, then drop unsafe-inline and enforce Report-Only first.
+        // SEC-06: CSP — unsafe-eval is REQUIRED for Filament/Livewire/Alpine (eval of x-data expressions).
+        // Removing it breaks admin completely (Alpine Expression Error). Audit's "remove unsafe-eval" is deferred until Filament no longer needs it.
+        // Tightened: narrowed script sources to actually used origins, kept unsafe-inline + unsafe-eval for Filament.
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh",
             "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com",
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob:",
