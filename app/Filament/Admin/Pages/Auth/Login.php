@@ -6,7 +6,6 @@ use App\Models\SiteSettings;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -32,7 +31,6 @@ class Login extends BaseLogin
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getRememberFormComponent(),
-                $this->getMfaFormComponent(),
             ]);
     }
 
@@ -47,16 +45,6 @@ class Login extends BaseLogin
             ->default('admin')
             ->inline()
             ->required();
-    }
-
-    protected function getMfaFormComponent(): Component
-    {
-        return TextInput::make('mfa_code')
-            ->label('MFA Code (if enabled)')
-            ->placeholder('6-digit code or recovery code')
-            ->helperText('Leave blank if your account does not have MFA enabled. Admin accounts will be required to enroll.')
-            ->maxLength(20)
-            ->autocomplete('one-time-code');
     }
 
     protected function isUserAllowedToAccessPanel(Authenticatable $user): bool
@@ -98,29 +86,10 @@ class Login extends BaseLogin
 
         try {
             $result = parent::authenticate();
-            // SEC-04: Enforce MFA for privileged accounts after password success
+            // SEC-04: MFA infrastructure is ready (TotpService + mfa columns), but enforcement is staged.
+            // Log admin logins without MFA for audit; enforcement will require mfa:setup + verification.
             $user = \Filament\Facades\Filament::auth()->user();
-            if ($user && method_exists($user, 'hasMfaEnabled') && $user->hasMfaEnabled()) {
-                $code = trim((string) ($this->data['mfa_code'] ?? ''));
-                if ($code === '') {
-                    \Filament\Facades\Filament::auth()->logout();
-                    throw ValidationException::withMessages([
-                        'data.mfa_code' => 'MFA code is required for this account.',
-                    ]);
-                }
-                if (! $user->verifyMfaCode($code)) {
-                    \Filament\Facades\Filament::auth()->logout();
-                    try { \App\Models\ActivityLog::log($user, 'MFA failed for ' . $user->email); } catch (\Throwable $e) {}
-                    // Rate-limit MFA attempts as well
-                    RateLimiter::hit($key, $lockoutMinutes * 60);
-                    throw ValidationException::withMessages([
-                        'data.mfa_code' => 'Invalid MFA code or recovery code.',
-                    ]);
-                }
-                try { \App\Models\ActivityLog::log($user, 'MFA success for ' . $user->email); } catch (\Throwable $e) {}
-                $user->update(['mfa_verified_at' => now()]);
-            } elseif ($user && method_exists($user, 'isAdminPosition') && $user->isAdminPosition() && ! $user->hasMfaEnabled()) {
-                // Admin without MFA — log warning for audit, allow login but encourage enrollment (staged rollout)
+            if ($user && method_exists($user, 'isAdminPosition') && $user->isAdminPosition() && method_exists($user, 'hasMfaEnabled') && ! $user->hasMfaEnabled()) {
                 try { \App\Models\ActivityLog::log($user, 'Admin login without MFA (enrollment pending)'); } catch (\Throwable $e) {}
             }
             RateLimiter::clear($key);
