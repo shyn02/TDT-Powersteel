@@ -354,13 +354,17 @@
         input.value = "";
         autosizeInput(input);
 
+        // Always forward whatever the visitor typed to the backend — a
+        // message sitting in the input box should never silently vanish
+        // just because they haven't explicitly asked for a human agent yet.
+        sendToBackend({
+            type: "message",
+            sessionId: getSessionId(),
+            text: text,
+            page: location.pathname.replace(/^\/|\.html$/g, "") || "home"
+        });
+
         if (mode === "human") {
-            sendToBackend({
-                type: "message",
-                sessionId: getSessionId(),
-                text: text,
-                page: location.pathname.replace(/^\/|\.html$/g, "") || "home"
-            });
             return;
         }
 

@@ -373,7 +373,7 @@
         // Update on modal open as well
         var modal=document.getElementById('quoteModal');
         if(modal){
-            var obs=new MutationObserver(function(){ if(modal.classList.contains('is-open')){ if(el) el.value=String(Date.now()); }});
+            var obs=new MutationObserver(function(){ if(modal.classList.contains('active')){ if(el) el.value=String(Date.now()); }});
             obs.observe(modal,{attributes:true,attributeFilter:['class']});
         }
     });
