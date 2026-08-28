@@ -34,7 +34,7 @@ class SecurityHeaders
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh",
             "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com",
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:",
-            "img-src 'self' data: https: blob:",
+            "img-src 'self' data: https: blob: https://api.qrserver.com",
             "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://esm.sh https://cdn.jsdelivr.net https://www.google.com",
             "frame-src 'self' https://www.google.com https://maps.google.com https://google.com",
             "frame-ancestors 'none'",
