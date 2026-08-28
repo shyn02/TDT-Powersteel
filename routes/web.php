@@ -6,6 +6,9 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Admin\NavBadgeController;
 use Illuminate\Support\Facades\Route;
 
+// Fix for Livewire unauthenticated redirects: Laravel default expects route('login') but Filament uses admin/login
+Route::get('/login', fn () => redirect('/admin/login'))->name('login');
+
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/products/', [PageController::class, 'products'])->name('products');
 Route::get('/about/', [PageController::class, 'about'])->name('about');
