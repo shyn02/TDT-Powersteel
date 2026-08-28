@@ -54,10 +54,10 @@
         'square bar':              'square_bar',
         'angle bar':               'angle_bar',
         'channel bar':             'beam',
-        'i-bar':                   'beam',
-        'i-beam':                  'beam',
-        't-bar':                   'beam',
-        'z-bar':                   'beam',
+        'i-bar':                   'i_beam',
+        'i-beam':                  'i_beam',
+        't-bar':                   't_bar',
+        'z-bar':                   'z_bar',
         'wide flange':             'beam',
         'sheet pile':              'sheet_pile',
         'cold rolled shafting':    'round_bar',
@@ -107,37 +107,59 @@
     };
 
     /* ---------- Beam / Purlin / Sheet-Pile size presets ---------- */
-    var BEAM_SIZES = [
-        { label: 'I-Beam 4"',    weight: 7.78 },
-        { label: 'I-Beam 6"',    weight: 14.9 },
-        { label: 'I-Beam 8"',    weight: 18.4 },
-        { label: 'I-Beam 10"',   weight: 25.4 },
-        { label: 'I-Beam 12"',   weight: 31.1 },
-        { label: 'Channel 3"',   weight: 4.30 },
-        { label: 'Channel 4"',   weight: 5.83 },
-        { label: 'Channel 5"',   weight: 7.13 },
-        { label: 'Channel 6"',   weight: 8.53 },
-        { label: 'Channel 8"',   weight: 11.5 },
-        { label: 'T-Bar 3x3',    weight: 5.42 },
-        { label: 'T-Bar 4x4',    weight: 7.22 },
-        { label: 'Z-Bar',        weight: 6.80 },
+    /* NOTE: I-Beam, T-Bar and Z-Bar have no preset list here — the 2026
+       catalogue lists "N/A" (I-Bar p.22) or gives no dimension/weight table
+       at all (T-Bar p.18, Z-Bar p.20), so there's no official size table to
+       pick from for any of them. They each use their own dimension-input
+       form instead (buildIBeamForm/calcIBeam, buildTBarForm/calcTBar,
+       buildZBarForm/calcZBar below) — same approach as Flat Bar/Angle Bar —
+       the person enters the actual cross-section dimensions and the weight
+       is computed directly, no lookup table needed. */
+
+    /* TDT Powersteel's actual Channel Bar spec, per the 2026 catalogue
+       (p.24): C4x5.4 — 4" depth, 2" flange, 0.184" web, 5.4 lbs/ft
+       (self-consistent with the catalogue's own 20'/40' length weights:
+       5.4 x 20 = 108 lbs, 5.4 x 40 = 216 lbs). Converted to kg/m. */
+    var CHANNEL_SIZES = [
+        { label: 'C4x5.4',   weight: 8.04 },
     ];
 
-    var PURLIN_SIZES = [
-        { label: 'C-Purlin 2x3x0.60',  weight: 0.60 },
-        { label: 'C-Purlin 2x4x0.60',  weight: 0.72 },
-        { label: 'C-Purlin 2x6x0.60',  weight: 0.96 },
-        { label: 'C-Purlin 3x4x0.60',  weight: 0.84 },
-        { label: 'C-Purlin 3x6x0.60',  weight: 1.08 },
-        { label: 'C-Purlin 3x8x0.60',  weight: 1.32 },
-        { label: 'C-Purlin 3x10x0.60', weight: 1.56 },
-        { label: 'C-Purlin 4x8x0.60',  weight: 1.44 },
-        { label: 'C-Purlin 4x10x0.60', weight: 1.68 },
-        { label: 'Z-Purlin 2x6x0.60',  weight: 0.96 },
-        { label: 'Z-Purlin 3x6x0.60',  weight: 1.08 },
-        { label: 'Z-Purlin 3x8x0.60',  weight: 1.32 },
-        { label: 'Z-Purlin 4x8x0.60',  weight: 1.44 },
+    /* TDT Powersteel's actual Wide Flange (W-Beam) product line, per the
+       2026 product catalogue (p.26): ASTM A-36 / A572-50, 20'(6M) & 40'(12M)
+       lengths, weight per ft. of 13.0 / 16.0 / 19.0 lbs — converted to kg/m
+       (lb/ft * 1.488164) to match the calculator's kg/m convention. */
+    var WIDE_FLANGE_SIZES = [
+        { label: 'W4x4 x 13#',  weight: 19.35 },
+        { label: 'W5x5 x 16#',  weight: 23.81 },
+        { label: 'W5x5 x 19#',  weight: 28.28 },
     ];
+
+    /* Fallback used only when a "beam"-family product name doesn't match any
+       known group below (e.g. a new product added via the admin panel that
+       PRODUCT_TYPE_MAP/CATEGORY_TYPE_MAP resolves to 'beam' but that this
+       list doesn't recognize by name yet) — show everything rather than
+       silently hide sizes. */
+    var ALL_BEAM_SIZES = CHANNEL_SIZES.concat(WIDE_FLANGE_SIZES);
+
+    var BEAM_SIZE_GROUPS = [
+        { match: ['wide flange', 'w-beam', 'wbeam'],           sizes: WIDE_FLANGE_SIZES },
+        { match: ['channel'],                                  sizes: CHANNEL_SIZES },
+    ];
+
+    function resolveBeamSizes(productName) {
+        var n = (productName || '').toLowerCase();
+        for (var i = 0; i < BEAM_SIZE_GROUPS.length; i++) {
+            var group = BEAM_SIZE_GROUPS[i];
+            for (var j = 0; j < group.match.length; j++) {
+                if (n.indexOf(group.match[j]) !== -1) return group.sizes;
+            }
+        }
+        return ALL_BEAM_SIZES;
+    }
+
+    /* Holds whichever size list is currently shown in the beam form, so
+       calcBeam() reads from the same list the dropdown was built from. */
+    var currentBeamSizes = ALL_BEAM_SIZES;
 
     var SHEET_PILE_TYPES = [
         { label: 'Type 2 (400mm, 48 kg/m)',  weightPerM: 48 },
@@ -389,8 +411,9 @@
         '</div>';
     }
 
-    function buildBeamForm() {
-        var labels = BEAM_SIZES.map(function (s) { return s.label + ' (' + s.weight + ' kg/m)'; });
+    function buildBeamForm(productName) {
+        currentBeamSizes = resolveBeamSizes(productName);
+        var labels = currentBeamSizes.map(function (s) { return s.label + ' (' + s.weight + ' kg/m)'; });
         return '<div class="form-group">' +
             '<label>Size</label>' +
             buildSizeDropdownMarkup(labels, '-- Select Size --') +
@@ -411,13 +434,186 @@
         '</div>';
     }
 
-    function buildPurlinForm() {
-        var labels = PURLIN_SIZES.map(function (s) { return s.label + ' (' + s.weight + ' kg/m)'; });
-        return '<div class="form-group">' +
-            '<label>Size</label>' +
-            buildSizeDropdownMarkup(labels, '-- Select Size --') +
+    /* I-Beam has no catalogue size table (see NOTE above), so instead of a
+       preset dropdown it asks for the actual cross-section dimensions and
+       computes the weight directly — same pattern as Flat Bar/Angle Bar. */
+    function buildIBeamForm() {
+        return '<div class="form-row three-col">' +
+            '<div class="form-group">' +
+                '<label>Depth (d)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcDepth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcDepth') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Flange Width (bf)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcFlangeWidth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcFlangeWidth') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Flange Thickness (tf)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcFlangeThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcFlangeThickness') +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="form-row three-col">' +
+            '<div class="form-group">' +
+                '<label>Web Thickness (tw)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcWebThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcWebThickness') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Length</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Quantity</label>' +
+                '<input type="number" id="calcQty" placeholder="e.g. 5" min="1" value="1">' +
+                '<div class="unit-hint">pcs</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    /* T-Bar has no catalogue dimension table (see NOTE above) — it's a
+       simple T cross-section: one horizontal flange + one vertical stem,
+       both the same thickness (the catalogue only ever lists T-Bar as a
+       single uniform-thickness stock shape). */
+    function buildTBarForm() {
+        return '<div class="form-row three-col">' +
+            '<div class="form-group">' +
+                '<label>Flange Width (b)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcFlangeWidth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcFlangeWidth') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Height (h)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcDepth" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcDepth') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Thickness (t)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
+            '</div>' +
         '</div>' +
         '<div class="form-row">' +
+            '<div class="form-group">' +
+                '<label>Length</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Quantity</label>' +
+                '<input type="number" id="calcQty" placeholder="e.g. 10" min="1" value="1">' +
+                '<div class="unit-hint">pcs</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    /* Z-Bar has no catalogue dimension table either (see NOTE above) — it's
+       a bent two-leg (angle-style) profile per the catalogue photo/desc, so
+       it uses the same leg-A / leg-B / thickness geometry as Angle Bar. */
+    function buildZBarForm() {
+        return '<div class="form-row three-col">' +
+            '<div class="form-group">' +
+                '<label>Leg A</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLegA" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcLegA') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Leg B</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLegB" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcLegB') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Thickness</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="' + dimPlaceholder() + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="form-row">' +
+            '<div class="form-group">' +
+                '<label>Length</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLength" placeholder="' + lenPlaceholder() + '" min="0.01" step="any">' +
+                    lenUnitSelect('calcLength') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Quantity</label>' +
+                '<input type="number" id="calcQty" placeholder="e.g. 10" min="1" value="1">' +
+                '<div class="unit-hint">pcs</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    /* C-Purlin / Z-Purlin dimension-input form, per the 2026 catalogue
+       (p.37 C-Purlin, p.39 Z-Purlin): A = web/depth, B = flange width,
+       C = lip length, T = wall thickness. C-Purlin: A 30-80mm, B 35-80mm,
+       C 10-25mm, T 1.5-3mm. Z-Purlin: A 120-300mm, B 35-80mm, C 10-25mm,
+       T 1.5-3mm. Placeholders below show the matching catalogue range so
+       the previous hardcoded "0.60" (mm) thickness preset — which fell
+       outside the catalogue's 1.5-3mm range — is no longer possible; the
+       person now enters real dimensions instead of picking a fixed size. */
+    function buildPurlinForm(productName) {
+        var isZ = (productName || '').toLowerCase().indexOf('z-purlin') !== -1 ||
+                  (productName || '').toLowerCase().indexOf('z purlin') !== -1;
+        var aHint = isZ ? 'e.g. 120-300mm' : 'e.g. 30-80mm';
+        return '<div class="form-row three-col">' +
+            '<div class="form-group">' +
+                '<label>Depth / Web (A)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcDepth" placeholder="' + aHint + '" min="0.1" step="any">' +
+                    dimUnitSelect('calcDepth') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Flange Width (B)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcFlangeWidth" placeholder="e.g. 35-80mm" min="0.1" step="any">' +
+                    dimUnitSelect('calcFlangeWidth') +
+                '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+                '<label>Lip (C)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcLip" placeholder="e.g. 10-25mm" min="0" step="any">' +
+                    dimUnitSelect('calcLip') +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="form-row three-col">' +
+            '<div class="form-group">' +
+                '<label>Thickness (T)</label>' +
+                '<div class="calc-input-row">' +
+                    '<input type="number" id="calcThickness" placeholder="e.g. 1.5-3mm" min="0.1" step="any">' +
+                    dimUnitSelect('calcThickness') +
+                '</div>' +
+            '</div>' +
             '<div class="form-group">' +
                 '<label>Length</label>' +
                 '<div class="calc-input-row">' +
@@ -612,19 +808,74 @@
         var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = positiveQty();
         if (idx === '' || !isPositive(L)) return null;
-        var unitW = BEAM_SIZES[parseInt(idx)].weight;
+        var unitW = currentBeamSizes[parseInt(idx)].weight;
         var perPc = unitW * L;
         return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
     }
 
-    function calcPurlin() {
-        var idx = document.getElementById('calcSize').value;
+    /* I-Beam weight from actual dimensions (no catalogue table — see NOTE
+       above): cross-sectional area = two flanges + the web between them,
+       same formula structure as calcAngleBar/calcFlatBar. */
+    function calcIBeam() {
+        var d  = toMm(parseFloat(document.getElementById('calcDepth').value));
+        var bf = toMm(parseFloat(document.getElementById('calcFlangeWidth').value));
+        var tf = toMm(parseFloat(document.getElementById('calcFlangeThickness').value));
+        var tw = toMm(parseFloat(document.getElementById('calcWebThickness').value));
+        var L  = toM(parseFloat(document.getElementById('calcLength').value));
+        var q  = positiveQty();
+        if (!isPositive(d) || !isPositive(bf) || !isPositive(tf) || !isPositive(tw) || !isPositive(L)) return null;
+        if (2 * tf >= d) return { error: 'Flange thickness looks too large for that depth — please double-check the values.' };
+        var area = 2 * (bf * tf) + (d - 2 * tf) * tw;
+        var perPc = area * L * STEEL_DENSITY / 1000000;
+        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
+    }
+
+    /* T-Bar weight: one flange + one stem, uniform thickness (see NOTE
+       above — catalogue gives no dimension table, so this is computed
+       purely from what the person enters). */
+    function calcTBar() {
+        var b = toMm(parseFloat(document.getElementById('calcFlangeWidth').value));
+        var h = toMm(parseFloat(document.getElementById('calcDepth').value));
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
         var L = toM(parseFloat(document.getElementById('calcLength').value));
         var q = positiveQty();
-        if (idx === '' || !isPositive(L)) return null;
-        var unitW = PURLIN_SIZES[parseInt(idx)].weight;
-        var perPc = unitW * L;
-        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg', breakdown: unitW + ' kg/m \u00d7 ' + L.toFixed(2) + ' m' };
+        if (!isPositive(b) || !isPositive(h) || !isPositive(t) || !isPositive(L)) return null;
+        if (t >= h) return { error: 'Thickness looks too large for that height — please double-check the values.' };
+        var area = (b * t) + (h - t) * t;
+        var perPc = area * L * STEEL_DENSITY / 1000000;
+        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
+    }
+
+    /* Z-Bar weight: same two-leg geometry as Angle Bar (see NOTE above). */
+    function calcZBar() {
+        var a = toMm(parseFloat(document.getElementById('calcLegA').value));
+        var b = toMm(parseFloat(document.getElementById('calcLegB').value));
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
+        var q = positiveQty();
+        if (!isPositive(a) || !isPositive(b) || !isPositive(t) || !isPositive(L)) return null;
+        if (t >= a + b) return { error: 'Thickness looks too large for those leg lengths — please double-check the values.' };
+        var perPc = (a + b - t) * t * L * STEEL_DENSITY / 1000000;
+        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
+    }
+
+    /* C-Purlin / Z-Purlin weight from actual A/B/C/T dimensions, per the
+       2026 catalogue (p.37, p.39 — see NOTE above buildPurlinForm). These
+       are thin-walled cold-formed sections, so weight is estimated from the
+       centerline perimeter (depth + 2 flanges + 2 lips) times wall
+       thickness, which is the standard approximation for this shape. */
+    function calcPurlin() {
+        var a = toMm(parseFloat(document.getElementById('calcDepth').value));
+        var b = toMm(parseFloat(document.getElementById('calcFlangeWidth').value));
+        var c = toMm(parseFloat(document.getElementById('calcLip').value)) || 0;
+        var t = toMm(parseFloat(document.getElementById('calcThickness').value));
+        var L = toM(parseFloat(document.getElementById('calcLength').value));
+        var q = positiveQty();
+        if (!isPositive(a) || !isPositive(b) || !isPositive(t) || !isPositive(L)) return null;
+        var perimeter = a + 2 * b + 2 * c;
+        var area = perimeter * t;
+        var perPc = area * L * STEEL_DENSITY / 1000000;
+        return { perPiece: perPc, total: perPc * q, qty: q, unit: 'kg' };
     }
 
     function calcSheetPile() {
@@ -669,6 +920,9 @@
         'pipe':       { form: buildPipeForm,      calc: calcPipe },
         'tube':       { form: buildTubeForm,      calc: calcTube },
         'beam':       { form: buildBeamForm,      calc: calcBeam },
+        'i_beam':     { form: buildIBeamForm,     calc: calcIBeam },
+        't_bar':      { form: buildTBarForm,      calc: calcTBar },
+        'z_bar':      { form: buildZBarForm,      calc: calcZBar },
         'purlin':     { form: buildPurlinForm,    calc: calcPurlin },
         'sheet_pile': { form: buildSheetPileForm, calc: calcSheetPile },
         'wire_mesh':  { form: buildWireMeshForm,  calc: calcWireMesh },
@@ -834,7 +1088,7 @@
             }
 
             currentCalcFn = TYPE_CONFIG[type].calc;
-            formContainer.innerHTML = TYPE_CONFIG[type].form();
+            formContainer.innerHTML = TYPE_CONFIG[type].form(productName);
             productNameEl.textContent = productName || '';
             resultEl.classList.remove('show');
             syncUnitSelects();
@@ -966,6 +1220,7 @@
             if (homeCalcResult) homeCalcResult.classList.remove('show');
             resetHomeCalcDropdown();
             homeCalcCalcFn = null;
+            homeCalcSelectedCategoryName = '';
         }
 
         var homeCalcOpenBtn = document.getElementById('homeCalcOpenBtn');
@@ -987,6 +1242,7 @@
         var homeCalcDropdownPanel = document.getElementById('homeCalcDropdownPanel');
         var homeCalcHiddenInput = document.getElementById('homeCalcProduct');
         var DEFAULT_DROPDOWN_LABEL = '-- Choose a product --';
+        var homeCalcSelectedCategoryName = '';
 
         function resetHomeCalcDropdown() {
             if (!homeCalcDropdown) return;
@@ -1040,6 +1296,7 @@
         function selectHomeCalcProduct(optionEl) {
             var productName = optionEl.getAttribute('data-value');
             var categorySlug = optionEl.getAttribute('data-category-slug');
+            homeCalcSelectedCategoryName = optionEl.getAttribute('data-category-name') || '';
 
             homeCalcDropdownPanel.querySelectorAll('.calc-dropdown-option.selected').forEach(function (o) {
                 o.classList.remove('selected');
@@ -1057,7 +1314,7 @@
                 return;
             }
             homeCalcCalcFn = TYPE_CONFIG[type].calc;
-            homeFormContainer.innerHTML = TYPE_CONFIG[type].form();
+            homeFormContainer.innerHTML = TYPE_CONFIG[type].form(productName);
             syncUnitSelects();
         }
 
@@ -1141,8 +1398,13 @@
         var homeCalcQuoteEl = document.getElementById('homeCalcQuoteBtn');
         if (homeCalcQuoteEl) {
             homeCalcQuoteEl.addEventListener('click', function () {
+                var categoryName = homeCalcSelectedCategoryName;
                 closeHomeCalc();
-                var quoteTrigger = document.querySelector('.btn-quote-trigger[data-product]');
+                var quoteTrigger = null;
+                if (categoryName) {
+                    quoteTrigger = document.querySelector('.btn-quote-trigger[data-product="' + CSS.escape(categoryName) + '"]');
+                }
+                if (!quoteTrigger) quoteTrigger = document.querySelector('.btn-quote-trigger[data-product]');
                 if (quoteTrigger) quoteTrigger.click();
             });
         }
