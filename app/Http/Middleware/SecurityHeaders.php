@@ -10,11 +10,6 @@ class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // SEC-06: Generate per-request CSP nonce for inline scripts (app.blade.php uses {{ $cspNonce }})
-        $nonce = base64_encode(random_bytes(16));
-        $request->attributes->set('cspNonce', $nonce);
-        try { view()->share('cspNonce', $nonce); } catch (\Throwable $e) {}
-
         $response = $next($request);
 
         // Prevent clickjacking - page cannot be framed
