@@ -1085,10 +1085,23 @@
 
         var currentType = null;
         var currentCalcFn = null;
+        var lastCalcResult = null;
+        var lastCalcProductName = null;
+
+        function formatPrefill(result, productName) {
+            if (!result || result.error) return '';
+            var txt = result.qty + ' pcs';
+            if (result.total) txt += ' — ' + fmt(result.total) + ' kg (≈ ' + fmt(result.total * LB_PER_KG) + ' lbs)';
+            if (result.breakdown) txt += ' — ' + result.breakdown;
+            if (productName) txt = productName + ' — ' + txt;
+            return txt;
+        }
 
         function openCalcModal(productName, categorySlug, explicitType) {
             var type = resolveType(productName, categorySlug, explicitType);
             currentType = type;
+            lastCalcProductName = productName || '';
+            lastCalcResult = null;
 
             if (!type || !TYPE_CONFIG[type]) {
                 formContainer.innerHTML = buildUnsupportedForm();
@@ -1162,6 +1175,7 @@
                 var result = currentCalcFn();
                 if (!result) {
                     resultEl.classList.remove('show');
+                    lastCalcResult = null;
                     return;
                 }
                 if (result.error) {
@@ -1169,6 +1183,7 @@
                     resultSecondaryEl.textContent = '';
                     resultBreakdownEl.innerHTML = '<span class="calc-error-msg">' + result.error + '</span>';
                     resultEl.classList.add('show');
+                    lastCalcResult = result;
                     return;
                 }
 
@@ -1184,6 +1199,7 @@
                 resultBreakdownEl.innerHTML = breakdown;
 
                 resultEl.classList.add('show');
+                lastCalcResult = result;
             });
         }
 
@@ -1198,13 +1214,24 @@
             });
         }
 
-        /* "Request a Quote" from calculator */
+        /* "Request a Quote" from calculator — prefill estimatedQty but keep editable */
         var quoteBtn = document.getElementById('calcQuoteBtn');
         if (quoteBtn) {
             quoteBtn.addEventListener('click', function () {
+                var prefill = formatPrefill(lastCalcResult, lastCalcProductName);
                 closeCalcModal();
                 var quoteTrigger = document.querySelector('.btn-quote-trigger[data-product]');
                 if (quoteTrigger) quoteTrigger.click();
+                // Wait for quote modal to open (script.js populates via subProductsDataReady)
+                setTimeout(function () {
+                    var qtyEl = document.getElementById('estimatedQty');
+                    if (qtyEl && prefill) {
+                        qtyEl.value = prefill;
+                        qtyEl.focus();
+                        // Trigger input event so any listeners update
+                        qtyEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }, 350);
             });
         }
 
@@ -1218,6 +1245,7 @@
         var homeCalcSecondaryEl = document.getElementById('homeCalcResultSecondary');
         var homeCalcBreakdownEl = document.getElementById('homeCalcResultBreakdown');
         var homeCalcCalcFn = null;
+        var homeLastResult = null;
 
         function openHomeCalc() {
             if (!homeOverlay) return;
@@ -1373,6 +1401,7 @@
                 var result = homeCalcCalcFn();
                 if (!result) {
                     homeCalcResult.classList.remove('show');
+                    homeLastResult = null;
                     return;
                 }
                 if (result.error) {
@@ -1380,6 +1409,7 @@
                     homeCalcSecondaryEl.textContent = '';
                     homeCalcBreakdownEl.innerHTML = '<span class="calc-error-msg">' + result.error + '</span>';
                     homeCalcResult.classList.add('show');
+                    homeLastResult = result;
                     return;
                 }
                 var totalKg = result.total;
@@ -1394,6 +1424,7 @@
                 homeCalcBreakdownEl.innerHTML = breakdown;
 
                 homeCalcResult.classList.add('show');
+                homeLastResult = result;
             });
         }
 
@@ -1412,6 +1443,7 @@
         var homeCalcQuoteEl = document.getElementById('homeCalcQuoteBtn');
         if (homeCalcQuoteEl) {
             homeCalcQuoteEl.addEventListener('click', function () {
+                var prefill = formatPrefill(homeLastResult, homeCalcHiddenInput ? homeCalcHiddenInput.value : homeCalcSelectedCategoryName);
                 var categoryName = homeCalcSelectedCategoryName;
                 closeHomeCalc();
                 var quoteTrigger = null;
@@ -1420,6 +1452,14 @@
                 }
                 if (!quoteTrigger) quoteTrigger = document.querySelector('.btn-quote-trigger[data-product]');
                 if (quoteTrigger) quoteTrigger.click();
+                setTimeout(function () {
+                    var qtyEl = document.getElementById('estimatedQty');
+                    if (qtyEl && prefill) {
+                        qtyEl.value = prefill;
+                        qtyEl.focus();
+                        qtyEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }, 350);
             });
         }
     });
