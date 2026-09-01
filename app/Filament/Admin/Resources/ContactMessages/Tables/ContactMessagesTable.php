@@ -16,6 +16,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -48,14 +49,20 @@ class ContactMessagesTable
                     ->limit(50)
                     ->tooltip(fn ($record) => $record->message)
                     ->searchable(),
-                TextColumn::make('status')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state) => ucfirst($state))
-                    ->color(fn (string $state) => match ($state) {
-                        'unread' => 'warning',
-                        'read' => 'info',
-                        'responded' => 'success',
-                        default => 'gray',
+                SelectColumn::make('status')
+                    ->label('Status')
+                    ->options([
+                        'unread' => 'Unread',
+                        'read' => 'Read',
+                        'responded' => 'Responded',
+                    ])
+                    ->selectablePlaceholder(false)
+                    ->rules(['required'])
+                    ->afterStateUpdated(function ($record, $state) {
+                        $isSeen = $state !== 'unread';
+                        if ((bool) $record->is_seen !== $isSeen) {
+                            $record->update(['is_seen' => $isSeen]);
+                        }
                     }),
                 TextColumn::make('created_at')
                     ->dateTime()

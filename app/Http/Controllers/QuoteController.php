@@ -32,29 +32,39 @@ class QuoteController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
 
-        // SEC-07: Duplicate/replay + time-check (bot submits <2s) + payload guard already above
+        // SEC-07: Layered abuse controls — relaxed for usability (was too strict, blocked legit users matching one field)
         $clientIp = $request->ip();
-        // Minimum human interaction time: 2 seconds (forms that include form_started_at are checked server-side)
+        // Minimum human interaction time: 1.2s (was 2s, too strict for fast typers / autofill)
         if ($request->filled('form_started_at')) {
             $started = (int) $request->input('form_started_at');
             $nowMs = (int) round(microtime(true) * 1000);
-            if ($started > 0 && ($nowMs - $started) < 2000) {
+            if ($started > 0 && ($nowMs - $started) < 1200) {
                 try { \Illuminate\Support\Facades\Log::warning('Rapid form submission (bot) blocked', ['ip' => $clientIp, 'elapsed_ms' => $nowMs - $started]); } catch (\Throwable $e) {}
                 // Silent success to not reveal trap
                 return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
             }
         }
-        // Per-IP rapid-fire guard (2s) even without form_started_at
-        $lastKey = 'submit_last_' . md5($clientIp);
+        // Per-IP rapid-fire guard: 1.2s (was 2s) — per-form, not global, and softens to silent success after 1st
+        $lastKey = 'submit_last_' . md5($clientIp . '|' . $request->input('subProduct', $request->input('cName', $request->input('ref_fullname', $request->input('name','')))));
         $lastTs = \Illuminate\Support\Facades\Cache::get($lastKey);
-        if ($lastTs && (microtime(true) - $lastTs) < 2) {
+        if ($lastTs && (microtime(true) - $lastTs) < 1.2) {
             return response()->json(['status' => 'error', 'message' => 'Please wait a moment before submitting again.'], 429);
         }
-        $dupKey = 'submit_quote_dup_' . md5($clientIp . '|' . json_encode($request->only(['clientEmail','cEmail','ref_email','email','clientContact','cPhone','ref_phone','mobile'])));
-        if (\Illuminate\Support\Facades\Cache::has($dupKey)) {
-            return response()->json(['status' => 'error', 'message' => 'Please wait a moment before submitting again.'], 429);
+        // Duplicate guard: 5 similar tries per 5 min — include message/qty so “forgot to add product” with different message isn’t considered duplicate
+        $primaryEmail = strtolower(trim($request->input('clientEmail') ?? $request->input('cEmail') ?? $request->input('ref_email') ?? $request->input('email') ?? ''));
+        $primaryPhone = preg_replace('/[\s\-\(\)]/', '', (string) ($request->input('clientContact') ?? $request->input('cPhone') ?? $request->input('ref_phone') ?? $request->input('mobile') ?? ''));
+        $primaryName = strtolower(trim($request->input('clientName') ?? $request->input('cName') ?? $request->input('ref_fullname') ?? $request->input('name') ?? ''));
+        $primaryMessage = strtolower(trim($request->input('estimatedQty') ?? $request->input('cMessage') ?? $request->input('ref_remarks') ?? $request->input('remarks') ?? $request->input('qHowHeard') ?? $request->input('cHowHeard') ?? $request->input('howHeard') ?? ''));
+        $formType = $request->hasAny(['clientName']) ? 'quote' : ($request->hasAny(['cName']) ? 'contact' : ($request->hasAny(['ref_fullname']) ? 'referral' : 'hero'));
+        $dupKey = 'submit_dup_' . md5($clientIp . '|' . $formType . '|' . $primaryEmail . '|' . $primaryPhone . '|' . $primaryName . '|' . $primaryMessage);
+        if (!empty($primaryEmail) && !empty($primaryPhone)) {
+            if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($dupKey, 5)) {
+                $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($dupKey);
+                $minutes = (int) ceil($seconds / 60);
+                return response()->json(['status' => 'error', 'message' => "You recently submitted a similar request. Please wait {$minutes} minute(s) before trying again. ({$seconds}s remaining)"], 429);
+            }
         }
-        \Illuminate\Support\Facades\Cache::put($lastKey, microtime(true), 60);
+        \Illuminate\Support\Facades\Cache::put($lastKey, microtime(true), 30);
 
         // ---- Case 1: quoteForm modal (embedded on Home, Products, and every category page) ----
         if ($request->hasAny(['clientName', 'clientContact', 'estimatedQty'])) {
@@ -114,7 +124,9 @@ class QuoteController extends Controller
                 'source' => $sourcePage,
                 'created_at' => now(),
             ]);
-            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
+            if (!empty($primaryEmail) && !empty($primaryPhone)) {
+                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
+            }
 
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
@@ -154,7 +166,9 @@ class QuoteController extends Controller
                 'status' => 'unread',
                 'created_at' => now(),
             ]);
-            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
+            if (!empty($primaryEmail) && !empty($primaryPhone)) {
+                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
+            }
 
             return response()->json(['status' => 'success', 'message' => 'Your message has been received!']);
         }
@@ -188,7 +202,9 @@ class QuoteController extends Controller
                 'status' => 'new',
                 'created_at' => now(),
             ]);
-            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
+            if (!empty($primaryEmail) && !empty($primaryPhone)) {
+                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
+            }
 
             return response()->json(['status' => 'success', 'message' => 'Thank you! Your referral has been received and recorded in the system.']);
         }
@@ -226,7 +242,9 @@ class QuoteController extends Controller
                 'source' => 'home',
                 'created_at' => now(),
             ]);
-            \Illuminate\Support\Facades\Cache::put($dupKey, true, 60);
+            if (!empty($primaryEmail) && !empty($primaryPhone)) {
+                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
+            }
 
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }

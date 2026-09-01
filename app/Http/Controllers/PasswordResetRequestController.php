@@ -28,23 +28,21 @@ class PasswordResetRequestController extends Controller
         ]);
 
         $email = strtolower(trim($request->input('email')));
-        $user = User::where('email', $email)->first();
+        $user = User::whereRaw('LOWER(email) = ?', [strtolower($email)])->first();
 
-        if ($user) {
-            $existing = PasswordResetRequest::where('email', $email)
-                ->where('status', 'pending')
-                ->where('expires_at', '>', now())
-                ->first();
-            if (! $existing) {
-                PasswordResetRequest::create([
-                    'email' => $email,
-                    'user_id' => $user->id,
-                    'status' => 'pending',
-                    'requested_at' => now(),
-                    'expires_at' => now()->addHours(24),
-                ]);
-                try { \App\Models\ActivityLog::log(null, "Password reset requested for {$email}"); } catch (\Throwable $e) {}
-            }
+        $existing = PasswordResetRequest::whereRaw('LOWER(email) = ?', [strtolower($email)])
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->first();
+        if (! $existing) {
+            PasswordResetRequest::create([
+                'email' => $email,
+                'user_id' => $user?->id,
+                'status' => 'pending',
+                'requested_at' => now(),
+                'expires_at' => now()->addHours(24),
+            ]);
+            try { \App\Models\ActivityLog::log($user ?? null, "Password reset requested for {$email}"); } catch (\Throwable $e) {}
         }
 
         RateLimiter::hit($key, 300);

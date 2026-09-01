@@ -19,6 +19,7 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -59,14 +60,20 @@ class QuoteRequestsTable
                     ->searchable(),
                 TextColumn::make('category.name')
                     ->label('Category'),
-                TextColumn::make('status')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state) => ucfirst($state))
-                    ->color(fn (string $state) => match ($state) {
-                        'new' => 'warning',
-                        'contacted' => 'info',
-                        'closed' => 'success',
-                        default => 'gray',
+                SelectColumn::make('status')
+                    ->label('Status')
+                    ->options([
+                        'new' => 'New',
+                        'contacted' => 'Contacted',
+                        'closed' => 'Closed',
+                    ])
+                    ->selectablePlaceholder(false)
+                    ->rules(['required'])
+                    ->afterStateUpdated(function ($record, $state) {
+                        $isSeen = $state !== 'new';
+                        if ((bool) $record->is_seen !== $isSeen) {
+                            $record->update(['is_seen' => $isSeen]);
+                        }
                     }),
                 TextColumn::make('created_at')
                     ->dateTime()

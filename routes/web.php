@@ -38,9 +38,10 @@ Route::get('/blog/{slug}/', [PageController::class, 'blogDetail'])->name('blog_d
 // ---- API ENDPOINTS FOR FORM SUBMISSIONS ----
 // Public, anonymous-visitor endpoints. Rate-limited (throttle) since these
 // write directly to the DB with no login and are a spam/flood target.
+// 10 tries per 5 min per IP (was 5 per 5 — too strict when testing How did you hear us)
 Route::post('/api/submit-quote/', [QuoteController::class, 'submit'])
     ->name('submit_quote')
-    ->middleware('throttle:5,1');
+    ->middleware('throttle:10,5');
 Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])->name('quote_product_data')
     ->middleware('throttle:60,1');
 

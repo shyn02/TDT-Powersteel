@@ -69,7 +69,7 @@ class PasswordResetRequestsTable
                     ->modalHeading(fn ($record) => "Approve reset for {$record->email}?")
                     ->modalDescription('This will generate a temporary password and force the user to change it on next login. Copy the password to share securely.')
                     ->action(function ($record) {
-                        $user = $record->user ?? \App\Models\User::where('email', $record->email)->first();
+                        $user = $record->user ?? \App\Models\User::whereRaw('LOWER(email) = ?', [strtolower($record->email)])->first();
                         if (! $user) {
                             Notification::make()->title('User not found for '.$record->email)->danger()->send();
                             return;
