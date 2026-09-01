@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Support\HtmlSanitizer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BlogPost extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'title', 'slug', 'tag', 'excerpt', 'cover_image', 'body',
         'is_featured', 'is_active', 'published_date',

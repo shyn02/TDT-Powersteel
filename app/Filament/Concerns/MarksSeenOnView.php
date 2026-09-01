@@ -14,8 +14,17 @@ trait MarksSeenOnView
     {
         parent::mount($record);
 
+        $updates = [];
         if ($this->record->is_seen === false) {
-            $this->record->update(['is_seen' => true]);
+            $updates['is_seen'] = true;
+        }
+        // Auto-advance ContactMessage status unread -> read on view (matches expected UX; QuoteRequest/Referral keep 'new')
+        if (isset($this->record->status) && $this->record->status === 'unread') {
+            $updates['status'] = 'read';
+        }
+
+        if (! empty($updates)) {
+            $this->record->update($updates);
         }
     }
 }

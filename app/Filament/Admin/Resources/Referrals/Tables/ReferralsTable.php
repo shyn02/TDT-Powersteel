@@ -9,10 +9,15 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Table;
@@ -56,6 +61,7 @@ class ReferralsTable
                     ->sortable(),
             ])
             ->filters([
+                TrashedFilter::make()->label('Archived (30-day)'),
                 SelectFilter::make('status')
                     ->options([
                         'new' => 'New',
@@ -71,13 +77,17 @@ class ReferralsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                RestoreAction::make()->label('Restore')->color('success'),
+                ForceDeleteAction::make()->label('Delete permanently'),
             ])
             ->headerActions([
                 ExportAction::make()->exporter(ReferralExporter::class),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('Archive (30 days)'),
+                    RestoreBulkAction::make()->label('Restore'),
+                    ForceDeleteBulkAction::make()->label('Delete permanently'),
                     ExportBulkAction::make()->exporter(ReferralExporter::class),
 
                     BulkAction::make('mark_as_new')

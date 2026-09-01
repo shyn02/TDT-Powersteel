@@ -5,9 +5,14 @@ namespace App\Filament\Admin\Resources\SocialHighlights\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class SocialHighlightsTable
@@ -41,15 +46,19 @@ class SocialHighlightsTable
                     ->sortable(),
             ])
             ->filters([
-                //
+                TrashedFilter::make()->label('Archived (30-day)'),
             ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                RestoreAction::make()->label('Restore')->color('success'),
+                ForceDeleteAction::make()->label('Delete permanently'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('Archive (30 days)'),
+                    RestoreBulkAction::make()->label('Restore'),
+                    ForceDeleteBulkAction::make()->label('Delete permanently'),
                 ]),
             ]);
     }

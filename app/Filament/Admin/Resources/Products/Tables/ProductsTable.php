@@ -2,15 +2,20 @@
 
 namespace App\Filament\Admin\Resources\Products\Tables;
 
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class ProductsTable
@@ -45,6 +50,7 @@ class ProductsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                TrashedFilter::make()->label('Archived (30-day)'),
                 SelectFilter::make('category_id')
                     ->label('Category')
                     ->relationship('category', 'name'),
@@ -54,10 +60,14 @@ class ProductsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                RestoreAction::make()->label('Restore')->color('success'),
+                ForceDeleteAction::make()->label('Delete permanently'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('Archive (30 days)'),
+                    RestoreBulkAction::make()->label('Restore'),
+                    ForceDeleteBulkAction::make()->label('Delete permanently'),
                 ]),
             ]);
     }

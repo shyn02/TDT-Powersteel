@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
@@ -56,6 +57,7 @@ class ChatSessionsTable
                     ->sortable(),
             ])
             ->filters([
+                TrashedFilter::make()->label('Archived (30-day)'),
                 SelectFilter::make('status')
                     ->options([
                         'unassigned' => 'Unassigned',

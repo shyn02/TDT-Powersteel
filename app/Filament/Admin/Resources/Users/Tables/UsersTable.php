@@ -5,6 +5,10 @@ namespace App\Filament\Admin\Resources\Users\Tables;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
@@ -13,6 +17,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class UsersTable
@@ -39,6 +44,7 @@ class UsersTable
                     ->sortable(),
             ])
             ->filters([
+                TrashedFilter::make()->label('Archived (30-day)'),
                 SelectFilter::make('position')
                     ->relationship('profile', 'position')
                     ->options([
@@ -52,6 +58,8 @@ class UsersTable
             ])
             ->recordActions([
                 EditAction::make(),
+                RestoreAction::make()->label('Restore')->color('success'),
+                ForceDeleteAction::make()->label('Delete permanently'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

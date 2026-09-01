@@ -3,12 +3,15 @@
 namespace App\Filament\Admin\Resources\Referrals\Pages;
 
 use App\Filament\Admin\Resources\Referrals\ReferralResource;
+use App\Filament\Concerns\MarksSeenOnView;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditReferral extends EditRecord
 {
+    use MarksSeenOnView;
+
     protected static string $resource = ReferralResource::class;
 
     protected function getHeaderActions(): array

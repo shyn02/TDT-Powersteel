@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\ActivityLogs\Tables;
 
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class ActivityLogsTable
