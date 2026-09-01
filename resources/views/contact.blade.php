@@ -62,9 +62,18 @@
                                 <div class="branch-details-body">
                                     <strong>TDT POWERSTEEL CORPORATION</strong>
                                     <p><strong>Address:</strong> Vicente Cruz St. 1017-A 2/F, Brgy. 475 Sampaloc, NCR, City of Manila First District, 1015</p>
-                                    <p><strong>Telefax:</strong> (02) 8831-0000 / (02) 8230-2908</p>
-                                    <p><strong>Mobile:</strong> 0977-8509274 / 0917-5385048 / 0977-8035487 / 0977-7083247 / 0917-7079810</p>
+                                    <p><strong>Telefax:</strong> (02) 8831 - 0000 / (02) 8230 - 2906</p>
+                                    <p><strong>Mobile:</strong> 0977-8509274 / 0917-5383046 / 0917-1126466 / 0977-8035487 / 0917-1086516 / 0917-7083247 / 0917-7079610</p>
                                     <p><strong>Email:</strong> websitehandling@tdtpowersteel.com.ph</p>
+                                </div>
+                            </details>
+
+                            <details class="branch-details">
+                                <summary><span><span class="branch-dot">•</span>Albay</span></summary>
+                                <div class="branch-details-body">
+                                    <p><strong>Address:</strong> Door 2, Citispire Building,, Imelda C. Roces Avenue, Barangay Gogon, Tahao Road, Legazpi City, Albay</p>
+                                    <p><strong>Telephone:</strong> 052 201 2210</p>
+                                    <p><strong>Mobile:</strong> 0917-6224018</p>
                                 </div>
                             </details>
 
@@ -72,15 +81,22 @@
                                 <summary><span><span class="branch-dot">•</span>Isabela</span></summary>
                                 <div class="branch-details-body">
                                     <p><strong>Address:</strong> Nungnungan, Municipality of Cauayan, Province of Isabela</p>
-                                    <p><strong>Mobile:</strong> 0917 834 9007 / 0917-7127703 / 0917-7048213 / 0917-7083233 / 0917-1051738</p>
+                                    <p><strong>Mobile:</strong> 0917 834 9007 / 0917-7127703 / 0917-7048213 / 0917-7083233 / 0917-1051736</p>
                                 </div>
                             </details>
 
                             <details class="branch-details">
-                                <summary><span><span class="branch-dot">•</span>Cebu</span></summary>
+                                <summary><span><span class="branch-dot">•</span>Ilocos</span></summary>
                                 <div class="branch-details-body">
-                                    <p><strong>Address:</strong> Door-1B Vel-ouano Building II, M.C. Briones St., Highway, Brgy. Bakilid Mandaue City</p>
-                                    <p><strong>Mobile:</strong> 0917 854 1995 / 0917-8542032 / 0917-8542020</p>
+                                    <p><strong>Mobile:</strong> 0917 712 7740</p>
+                                </div>
+                            </details>
+
+                            <details class="branch-details">
+                                <summary><span><span class="branch-dot">•</span>Iloilo</span></summary>
+                                <div class="branch-details-body">
+                                    <p><strong>Address:</strong> Door-3 Jereo St., Lapaz, M.H. Del Pilar, San Pedro, Jaro, Ilo-ilo City</p>
+                                    <p><strong>Mobile:</strong> 0917-1066227</p>
                                 </div>
                             </details>
 
@@ -93,17 +109,49 @@
                             </details>
 
                             <details class="branch-details">
-                                <summary><span><span class="branch-dot">•</span>Davao</span></summary>
+                                <summary><span><span class="branch-dot">•</span>Gensan</span></summary>
                                 <div class="branch-details-body">
-                                    <p><strong>Address:</strong> Door-2 GRI Business Center KM. 14, Panacan, Davao City</p>
-                                    <p><strong>Mobile:</strong> 0917 813 1091 / 0917-1097828</p>
+                                    <p><strong>Mobile:</strong> 0985 336 2440</p>
+                                    <p><strong>Mobile:</strong> 0912 003 9935</p>
                                 </div>
                             </details>
 
                             <details class="branch-details">
-                                <summary><span><span class="branch-dot">•</span>GenSan</span></summary>
+                                <summary><span><span class="branch-dot">•</span>Cebu</span></summary>
                                 <div class="branch-details-body">
-                                    <p><strong>Mobile:</strong> 0965 338 2440 / 0912 003 9935</p>
+                                    <p><strong>Address:</strong> Door-18 Vel-ouano Building II, M.C. Briones St., Highway, Brgy, Bakilid Mandaue City</p>
+                                    <p><strong>Mobile:</strong> 0917 654 1995 / 0917-6542032 / 0917-6542020</p>
+                                </div>
+                            </details>
+
+                            <details class="branch-details">
+                                <summary><span><span class="branch-dot">•</span>Davao</span></summary>
+                                <div class="branch-details-body">
+                                    <p><strong>Address:</strong> Door-2 GRI Business Center KM. 14, Panacan, Davao City</p>
+                                    <p><strong>Mobile:</strong> 0917 813 1091 / 0917-1097628</p>
+                                </div>
+                            </details>
+
+                            <details class="branch-details">
+                                <summary><span><span class="branch-dot">•</span>Cavite</span></summary>
+                                <div class="branch-details-body">
+                                    <p><strong>Mobile:</strong> 0917 708 3274</p>
+                                </div>
+                            </details>
+
+                            <details class="branch-details">
+                                <summary><span><span class="branch-dot">•</span>Batangas</span></summary>
+                                <div class="branch-details-body">
+                                    <p><strong>Address:</strong> 9003 Le Soro-Soro Karsada, Brgy. Taysan, San Jose, Batangas</p>
+                                    <p><strong>Mobile:</strong> 0917-1099103 / 0917-1067148 / 0917-1054478</p>
+                                    <p><strong>Telephone:</strong> 043 726 4187</p>
+                                </div>
+                            </details>
+
+                            <details class="branch-details">
+                                <summary><span><span class="branch-dot">•</span>Marilao</span></summary>
+                                <div class="branch-details-body">
+                                    <p><strong>Address:</strong> Lot 5A-4 Karlaville North Ave. Camanse Prenza II 3019 Marilao, Bulacan</p>
                                 </div>
                             </details>
                         </div>
