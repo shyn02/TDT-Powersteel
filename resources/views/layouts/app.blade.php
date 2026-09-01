@@ -364,6 +364,7 @@
                     <label for="qHowHeardOther">Please Specify</label>
                     <input type="text" name="qHowHeardOther" id="qHowHeardOther" placeholder="Tell us how you heard about us">
                 </div>
+                <div id="quoteFormError" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:10px 12px; border-radius:8px; font-size:13px; margin-top:4px;"></div>
                 <button type="submit" class="btn-orange submit-btn" id="quoteSubmitBtn">
                     <span class="btn-text">SUBMIT REQUEST</span>
                 </button>

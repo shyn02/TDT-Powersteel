@@ -57,6 +57,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
+    function showQuoteError(message) {
+        const el = document.getElementById('quoteFormError');
+        if (el) {
+            el.textContent = message;
+            el.style.display = 'block';
+            // Ensure it's visible inside the scrollable modal
+            try { el.scrollIntoView({behavior: 'smooth', block: 'nearest'}); } catch(e) {}
+        }
+    }
+    function hideQuoteError() {
+        const el = document.getElementById('quoteFormError');
+        if (el) { el.style.display = 'none'; el.textContent = ''; }
+    }
+
     function removeToast(toast) {
         if (!toast) return;
         
@@ -485,6 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeModal() {
         if (!modal) return;
+        hideQuoteError();
         modal.classList.remove('active');
         document.body.classList.remove('quote-modal-open');
         document.body.style.overflowY = ''; 
@@ -534,6 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (quoteForm) {
         quoteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            hideQuoteError();
             const submitBtn = document.getElementById('quoteSubmitBtn');
             const clientInput = document.getElementById('clientName');
             const subItemInput = document.getElementById('subProductSelect');
@@ -548,7 +564,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Client-side PH mobile check before submit
             const phoneEl = document.getElementById('clientContact');
             if (phoneEl && !isValidPhMobile(phoneEl.value)) {
-                showToast('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.');
+                const m = 'Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.';
+                showQuoteError(m);
+                showToast(m);
                 return;
             }
 
@@ -567,15 +585,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const data = await response.json().catch(() => null);
                 if (response.ok) {
+                    hideQuoteError();
                     showToast(`Thank you, ${client}! We have successfully received your quote request for "${itemLabel}".`);
                     closeModal();
                 } else {
                     const msg = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : null) || 'Failed to send. Please check mobile number.';
+                    showQuoteError(msg);
                     showToast(msg);
                 }
             } catch (error) {
                 console.error('Quote submit error:', error);
-                showToast('Network error. Check your connection.');
+                const msg2 = 'Network error. Check your connection.';
+                showQuoteError(msg2);
+                showToast(msg2);
             } finally {
                 if(submitBtn) {
                     submitBtn.classList.remove('loading');
