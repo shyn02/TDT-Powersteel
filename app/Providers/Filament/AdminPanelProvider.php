@@ -52,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
             // the store/content/accounts/system layout of the old admin.
             ->navigationGroups([
                 'Store Management',
+                'Catalog Management',
                 'Content Management',
                 'User Access & Accounts',
                 'System',

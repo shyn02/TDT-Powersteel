@@ -37,6 +37,7 @@ class DataManagement extends Page implements HasSchemas
     protected string $view = 'filament.admin.pages.data-management';
 
     public ?array $data = [];
+    public ?array $restoreState = [];
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -51,6 +52,7 @@ class DataManagement extends Page implements HasSchemas
     public function mount(): void
     {
         $this->form->fill(['older_than' => 'all']);
+        $this->restoreState = ['restore_types' => []];
     }
 
     /** Mirrors Django's _clearable_map(). */
@@ -72,6 +74,24 @@ class DataManagement extends Page implements HasSchemas
                 'label' => $entry['label'],
                 'count' => $entry['query'](null)->count(),
             ])
+            ->all();
+    }
+
+    public function archivedCounts(): array
+    {
+        return collect($this->clearableMap())
+            ->map(function ($entry) {
+                $query = $entry['query'](null);
+                $model = $query->getModel();
+                $usesSoftDeletes = in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model));
+                if (! $usesSoftDeletes) {
+                    return ['label' => $entry['label'], 'count' => 0];
+                }
+                return [
+                    'label' => $entry['label'],
+                    'count' => (clone $query)->onlyTrashed()->count(),
+                ];
+            })
             ->all();
     }
 
@@ -106,6 +126,8 @@ class DataManagement extends Page implements HasSchemas
                     ->required(fn ($get) => $get('older_than') === 'custom'),
             ]);
     }
+
+    // restoreData is now handled via plain wire:model checkboxes in the Blade view, not a Filament form
 
     public function downloadBackup()
     {
@@ -211,7 +233,62 @@ class DataManagement extends Page implements HasSchemas
         $ageLabel = $cutoff === null ? 'all (regardless of age)' : "older than {$olderThan} days";
         ActivityLog::log(Auth::user(), "Cleared old data ({$ageLabel}) — ".implode('; ', $summary));
 
-        Notification::make()->title('Successfully cleared: '.implode('; ', $summary))->success()->send();
+        Notification::make()->title('Successfully archived: '.implode('; ', $summary).' — moved to Archived (restorable 30 days)')->success()->send();
+    }
+
+    public function restoreData(): void
+    {
+        $selected = $this->restoreState['restore_types'] ?? [];
+
+        if (empty($selected)) {
+            Notification::make()->title('No data types were selected to restore.')->warning()->send();
+            return;
+        }
+
+        $map = $this->clearableMap();
+        $summary = [];
+        $cutoff = now()->subDays(30);
+
+        foreach ($selected as $key) {
+            if (! isset($map[$key])) {
+                continue;
+            }
+            $query = $map[$key]['query'](null);
+            $model = $query->getModel();
+            if (! in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model))) {
+                continue;
+            }
+            // Only restore trashed within 30 days (still archivable)
+            $count = (clone $query)->onlyTrashed()->where('deleted_at', '>=', $cutoff)->count();
+            if ($count > 0) {
+                (clone $query)->onlyTrashed()->where('deleted_at', '>=', $cutoff)->restore();
+            }
+            $summary[] = "{$map[$key]['label']}: {$count} restored";
+        }
+
+        ActivityLog::log(Auth::user(), "Restored archived data — ".implode('; ', $summary));
+        Notification::make()->title('Successfully restored: '.implode('; ', $summary))->success()->send();
+    }
+
+    public function restoreAll(): void
+    {
+        $map = $this->clearableMap();
+        $summary = [];
+        $cutoff = now()->subDays(30);
+        foreach ($map as $key => $entry) {
+            $query = $entry['query'](null);
+            $model = $query->getModel();
+            if (! in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model))) {
+                continue;
+            }
+            $count = (clone $query)->onlyTrashed()->where('deleted_at', '>=', $cutoff)->count();
+            if ($count > 0) {
+                (clone $query)->onlyTrashed()->where('deleted_at', '>=', $cutoff)->restore();
+            }
+            $summary[] = "{$entry['label']}: {$count} restored";
+        }
+        ActivityLog::log(Auth::user(), "Restored ALL archived data — ".implode('; ', $summary));
+        Notification::make()->title('Successfully restored ALL: '.implode('; ', $summary))->success()->send();
     }
 
     public function getTitle(): string
