@@ -5,6 +5,17 @@
 <link rel="stylesheet" href="/static/blog.css">
 @endpush
 
+@push('scripts')
+{{-- Required for the "Social Highlights" section below: without these SDK scripts,
+     the fb-post/fb-video and instagram-media embed markup just sits as empty boxes —
+     these scripts are what actually turn them into visible embeds. Highlights that
+     have an uploaded Video file instead of a live permalink don't need these, since
+     they render as a plain <video> tag. --}}
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0"></script>
+<script async src="//www.instagram.com/embed.js"></script>
+@endpush
+
 @section('title', 'Blog | TDT Powersteel Corporation')
 @section('description', 'News, guides, and updates from TDT Powersteel Corporation — steel supply insights, logistics, sustainability, and company announcements.')
 
@@ -111,6 +122,11 @@
                         <video class="social-profile-video" autoplay muted loop playsinline preload="none" loading="lazy" poster="/static/images/tdt-facebook-highlight-poster.jpg">
                             <source src="{{ asset('storage/' . $item->video_file) }}" type="video/mp4">
                         </video>
+                        @elseif (str_contains($item->embed_permalink ?? '', '/reel/') || str_contains($item->embed_permalink ?? '', '/videos/') || str_contains($item->embed_permalink ?? '', '/watch/'))
+                        {{-- Facebook's fb-post plugin only understands regular post permalinks
+                             (facebook.com/PAGE/posts/ID) — reel and video links need fb-video instead,
+                             or the embed silently renders nothing. --}}
+                        <div class="fb-video" data-href="{{ $item->embed_permalink }}" data-width="500" data-show-text="false"></div>
                         @else
                         <div class="fb-post" data-href="{{ $item->embed_permalink }}" data-width="500" data-show-text="false"></div>
                         @endif

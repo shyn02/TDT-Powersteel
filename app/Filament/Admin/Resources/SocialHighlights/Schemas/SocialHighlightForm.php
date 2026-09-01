@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\SocialHighlights\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -28,9 +29,17 @@ class SocialHighlightForm
                 TextInput::make('link_url')
                     ->url()
                     ->required(),
-                TextInput::make('embed_permalink'),
+                TextInput::make('embed_permalink')
+                    ->helperText('Used only when no video file is uploaded below. For Facebook/Instagram posts — reels are unreliable via this method, upload a video file instead.'),
                 TextInput::make('handle'),
-                TextInput::make('video_file'),
+                FileUpload::make('video_file')
+                    ->label('Video file')
+                    ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/quicktime'])
+                    ->disk('public')
+                    ->directory('social_highlights')
+                    ->visibility('public')
+                    ->maxSize(51200)
+                    ->helperText('Max 50MB. MP4, WebM, or MOV. Takes priority over the Embed permalink above — recommended, since it always works regardless of Facebook/Instagram embed availability.'),
                 Toggle::make('is_active')
                     ->required(),
                 TextInput::make('order')
