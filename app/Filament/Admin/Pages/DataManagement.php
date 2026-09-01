@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Pages;
 
 use App\Models\ActivityLog;
 use App\Models\ChatSession;
+use App\Models\ContactMessage;
 use App\Models\QuoteRequest;
 use App\Models\Referral;
 use BackedEnum;
@@ -37,31 +38,41 @@ class DataManagement extends Page implements HasSchemas
     protected string $view = 'filament.admin.pages.data-management';
 
     public ?array $data = [];
-    public ?array $restoreState = [];
+    public ?array $restoreData = [];
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->isAdminPosition() ?? false;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user?->isAdminPosition() ?? false;
     }
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->isAdminPosition() ?? false;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user?->isAdminPosition() ?? false;
     }
 
     public function mount(): void
     {
         $this->form->fill(['older_than' => 'all']);
-        $this->restoreState = ['restore_types' => []];
+        $this->restoreData = ['restore_types' => []];
+        // Ensure restoreForm is initialized if it exists
+        if (isset($this->restoreForm)) {
+            try { $this->restoreForm->fill(['restore_types' => []]); } catch (\Throwable $e) {}
+        }
     }
 
     /** Mirrors Django's _clearable_map(). */
     protected function clearableMap(): array
     {
         return [
-            'contact' => ['label' => 'Contact Us Submissions', 'query' => fn ($cutoff) => QuoteRequest::query()->where('source', 'contact')->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
+            'contact' => ['label' => 'Contact Us Submissions', 'query' => fn ($cutoff) => ContactMessage::query()->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
             'referral' => ['label' => 'Referral Submissions', 'query' => fn ($cutoff) => Referral::query()->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
-            'quote' => ['label' => 'Request-a-Quote Submissions (home / product / quote)', 'query' => fn ($cutoff) => QuoteRequest::query()->whereIn('source', ['quote', 'home', 'product'])->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
+            'quote' => ['label' => 'Request-a-Quote Submissions (home / product / quote)', 'query' => fn ($cutoff) => QuoteRequest::query()->whereIn('source', ['home', 'product'])->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
             'quickchat' => ['label' => 'Quick Chat Conversations (active and closed)', 'query' => fn ($cutoff) => ChatSession::query()->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
             'activitylog' => ['label' => 'Activity Log Entries', 'query' => fn ($cutoff) => ActivityLog::query()->when($cutoff, fn ($q) => $q->where('created_at', '<', $cutoff))],
         ];
@@ -133,14 +144,14 @@ class DataManagement extends Page implements HasSchemas
     {
         $now = now();
 
-        $quoteRequests = QuoteRequest::query()->whereIn('source', ['quote', 'home', 'product'])->with(['category', 'product'])->get()
+        $quoteRequests = QuoteRequest::query()->whereIn('source', ['home', 'product'])->with(['category', 'product'])->get()
             ->map(fn ($q) => $q->only(['id', 'full_name', 'company_name', 'email', 'phone', 'address', 'how_heard', 'estimated_qty', 'status', 'created_at']) + [
                 'category' => $q->category?->name,
                 'product' => $q->product?->name,
             ]);
 
-        $contactMessages = QuoteRequest::query()->where('source', 'contact')->get()
-            ->map(fn ($q) => $q->only(['id', 'full_name', 'company_name', 'email', 'phone', 'address', 'how_heard', 'estimated_qty', 'status', 'created_at']));
+        $contactMessages = ContactMessage::all()
+            ->map(fn ($q) => $q->only(['id', 'full_name', 'company_name', 'email', 'phone', 'landline', 'address', 'how_heard', 'message', 'status', 'created_at']));
 
         $referrals = Referral::all();
 
@@ -238,7 +249,7 @@ class DataManagement extends Page implements HasSchemas
 
     public function restoreData(): void
     {
-        $selected = $this->restoreState['restore_types'] ?? [];
+        $selected = $this->restoreData['restore_types'] ?? [];
 
         if (empty($selected)) {
             Notification::make()->title('No data types were selected to restore.')->warning()->send();

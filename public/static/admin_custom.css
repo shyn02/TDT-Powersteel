@@ -304,6 +304,63 @@ h1, h2, h3 {
 .tdt-stat-card-violet  { border-top-color: #8b5cf6; }
 .tdt-stat-card-violet  .tdt-stat-number { color: #8b5cf6; }
 
+/* --- DATA MANAGEMENT: record-count grids + restore checkbox list --- */
+.tdt-data-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+    .tdt-data-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.tdt-data-grid .tdt-stat-card {
+    padding: 14px 16px;
+}
+
+.tdt-data-grid .tdt-stat-number {
+    font-size: 26px;
+}
+
+.tdt-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 700px) {
+    .tdt-checkbox-grid { grid-template-columns: 1fr; }
+}
+
+.tdt-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(113, 112, 116, 0.16);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.tdt-checkbox-item:hover {
+    background-color: #f9f9f9;
+}
+
+.tdt-checkbox-item input[type="checkbox"] {
+    accent-color: #f59e0b;
+    width: 16px;
+    height: 16px;
+}
+
+.tdt-checkbox-item span {
+    font-size: 13px;
+    color: var(--tdt-gray-dark);
+}
+
 /* --- DASHBOARD: status breakdown + recent activity row --- */
 .tdt-dashboard-row {
     display: grid;

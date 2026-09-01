@@ -38,6 +38,11 @@ class SecurityHeaders
             // so the worker silently fails to start and image previews never render —
             // the file still uploads/saves fine, only the in-browser preview breaks.
             "worker-src 'self' blob:",
+            // <video>/<audio> sources fall back to default-src (no blob:) unless
+            // media-src is set explicitly — without this, Filament's video file
+            // upload preview (Social Highlights' video_file field) stays blank
+            // the same way image previews did before worker-src was added above.
+            "media-src 'self' blob:",
             "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com",
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob: https://api.qrserver.com",

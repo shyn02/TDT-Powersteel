@@ -31,16 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->login(\App\Filament\Admin\Pages\Auth\Login::class)
             ->brandName(new HtmlString('<img src="' . asset('static/images/logo.png') . '" alt="TDT Powersteel" style="height:40px;width:auto;display:block;">'))
             ->renderHook(
-                'body.start',
+                PanelsRenderHook::BODY_START,
                 fn () => '<link rel="stylesheet" href="' . asset('static/admin_custom.css') . '?v=' . filemtime(public_path('static/admin_custom.css')) . '">',
             )
-            // NOTE: the hook name Filament's own layout actually checks
-            // for is the PanelsRenderHook::BODY_START constant
-            // ('panels::body.start'), not the plain string 'body.start'
-            // used above — so that CSS `<link>` was never being output
-            // anywhere. Kept as-is to avoid changing existing visual
-            // behavior in this change; register new hooks with the
-            // constant, like the one below, so they actually fire.
             ->renderHook(
                 PanelsRenderHook::SCRIPTS_AFTER,
                 fn () => '<script src="' . asset('static/admin_live_badges.js') . '?v=' . filemtime(public_path('static/admin_live_badges.js')) . '"></script>',

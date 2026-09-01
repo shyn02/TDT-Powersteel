@@ -1,10 +1,10 @@
 <x-filament-panels::page>
     <x-filament::section heading="Current record counts">
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div class="tdt-data-grid">
             @foreach ($this->counts() as $entry)
-                <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                    <p class="text-sm text-gray-500">{{ $entry['label'] }}</p>
-                    <p class="text-2xl font-semibold">{{ $entry['count'] }}</p>
+                <div class="tdt-stat-card">
+                    <p class="tdt-stat-label">{{ $entry['label'] }}</p>
+                    <p class="tdt-stat-number">{{ $entry['count'] }}</p>
                 </div>
             @endforeach
         </div>
@@ -28,20 +28,20 @@
     </x-filament::section>
 
     <x-filament::section heading="Restore archived data (within 30 days)" class="mt-6">
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 mb-4">
+        <div class="tdt-data-grid">
             @foreach ($this->archivedCounts() as $entry)
-                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
-                    <p class="text-sm text-gray-500">{{ $entry['label'] }} — archived</p>
-                    <p class="text-2xl font-semibold">{{ $entry['count'] }}</p>
+                <div class="tdt-stat-card tdt-stat-card-amber">
+                    <p class="tdt-stat-label">{{ $entry['label'] }} — archived</p>
+                    <p class="tdt-stat-number">{{ $entry['count'] }}</p>
                 </div>
             @endforeach
         </div>
         <p class="text-sm text-gray-500 mb-3">Restores all archived records of the selected types that are still within the 30-day window. Permanently deleted records cannot be restored.</p>
-        <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             @foreach (collect($this->clearableMap())->map(fn($e) => $e['label']) as $key => $label)
-                <label class="flex items-center gap-2 rounded-lg border p-2 hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" wire:model="restoreState.restore_types" value="{{ $key }}" class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
-                    <span class="text-sm">{{ $label }}</span>
+                <label class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer transition">
+                    <input type="checkbox" wire:model.live="restoreData.restore_types" value="{{ $key }}" class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 h-4 w-4">
+                    <span class="text-sm font-medium text-gray-700">{{ $label }}</span>
                 </label>
             @endforeach
         </div>

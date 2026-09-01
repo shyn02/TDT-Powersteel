@@ -35,10 +35,12 @@ class SocialHighlightForm
                 FileUpload::make('video_file')
                     ->label('Video file')
                     ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/quicktime'])
+                    ->panelLayout('grid')
                     ->disk('public')
                     ->directory('social_highlights')
                     ->visibility('public')
                     ->maxSize(51200)
+                    ->columnSpanFull()
                     ->helperText('Max 50MB. MP4, WebM, or MOV. Takes priority over the Embed permalink above — recommended, since it always works regardless of Facebook/Instagram embed availability.'),
                 Toggle::make('is_active')
                     ->required(),
