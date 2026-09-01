@@ -131,25 +131,51 @@ document.addEventListener('DOMContentLoaded', function() {
     function populateSizes(categoryName, productName) {
         const sizeGroup = document.getElementById('sizeGroup');
         const sizeSelect = document.getElementById('sizeSelect');
-        if (!sizeGroup || !sizeSelect) return;
+        const sizePanel = document.getElementById('sizePanel');
+        const sizeLabel = document.getElementById('sizeLabel');
+        if (!sizeGroup || !sizeSelect || !sizePanel || !sizeLabel) return;
 
         const product = findProduct(categoryName, productName);
         const sizes = product && product.sizes ? product.sizes : [];
 
-        sizeSelect.innerHTML = '';
+        sizePanel.innerHTML = '';
+        closeSizeDropdown();
 
         if (sizes.length === 0) {
             sizeGroup.style.display = 'none';
+            sizeSelect.value = '';
+            sizeLabel.textContent = sizeLabel.getAttribute('data-placeholder') || '-- Select Size / Specification --';
             return;
         }
 
         sizeGroup.style.display = '';
-        sizes.forEach(size => {
-            const option = document.createElement('option');
-            option.value = size;
-            option.textContent = size;
-            sizeSelect.appendChild(option);
+        sizes.forEach((size, i) => {
+            const opt = document.createElement('div');
+            opt.className = 'calc-dropdown-option' + (i === 0 ? ' selected' : '');
+            opt.setAttribute('role', 'option');
+            opt.setAttribute('tabindex', '0');
+            opt.setAttribute('data-value', size);
+            opt.textContent = size;
+            sizePanel.appendChild(opt);
         });
+
+        const firstSize = sizes.length ? sizes[0] : '';
+        sizeSelect.value = firstSize;
+        sizeLabel.textContent = firstSize || sizeLabel.getAttribute('data-placeholder');
+    }
+
+    function closeSizeDropdown() {
+        const dropdown = document.getElementById('sizeDropdown');
+        const trigger = document.getElementById('sizeTrigger');
+        const panel = document.getElementById('sizePanel');
+        if (dropdown) dropdown.classList.remove('open');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        if (panel) {
+            panel.classList.remove('open');
+            if (dropdown && panel.parentElement !== dropdown) {
+                dropdown.appendChild(panel);
+            }
+        }
     }
 
     function populateSubProducts(categoryName) {
@@ -301,6 +327,67 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    /* ---------- Custom "Size / Specification" dropdown ---------- */
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('sizeDropdown');
+        if (!dropdown) return;
+
+        const trigger = e.target.closest('#sizeTrigger');
+        if (trigger) {
+            e.stopPropagation();
+            const panel = document.getElementById('sizePanel');
+            if (dropdown.classList.contains('open')) {
+                closeSizeDropdown();
+            } else {
+                document.body.appendChild(panel);
+                positionSubProductPanel(trigger, panel);
+                dropdown.classList.add('open');
+                panel.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+            }
+            return;
+        }
+
+        const opt = e.target.closest('#sizePanel .calc-dropdown-option');
+        if (opt) {
+            const panel = document.getElementById('sizePanel');
+            const label = document.getElementById('sizeLabel');
+            const hiddenInput = document.getElementById('sizeSelect');
+            panel.querySelectorAll('.calc-dropdown-option.selected').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            const value = opt.getAttribute('data-value');
+            if (label) label.textContent = opt.textContent;
+            if (hiddenInput) hiddenInput.value = value;
+            closeSizeDropdown();
+            return;
+        }
+
+        if (dropdown.classList.contains('open') && !dropdown.contains(e.target)) {
+            const panel = document.getElementById('sizePanel');
+            if (!panel || !panel.contains(e.target)) {
+                closeSizeDropdown();
+            }
+        }
+    });
+
+    function repositionOpenSizeDropdown() {
+        const dropdown = document.getElementById('sizeDropdown');
+        if (dropdown && dropdown.classList.contains('open')) {
+            positionSubProductPanel(document.getElementById('sizeTrigger'), document.getElementById('sizePanel'));
+        }
+    }
+    window.addEventListener('resize', repositionOpenSizeDropdown);
+    window.addEventListener('scroll', repositionOpenSizeDropdown, true);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSizeDropdown();
+        const opt = e.target.closest && e.target.closest('.calc-dropdown-option');
+        if (opt && (e.key === 'Enter' || e.key === ' ') && opt.closest('#sizePanel')) {
+            e.preventDefault();
+            opt.click();
+        }
+    });
+
     /* ---------- Custom "How Did You Hear About Us?" dropdown ---------- */
     function closeQHowHeardDropdown() {
         const dropdown = document.getElementById('qHowHeardDropdown');
@@ -403,6 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflowY = ''; 
         if (quoteForm) quoteForm.reset();
         closeSubProductDropdown();
+        closeSizeDropdown();
         closeQHowHeardDropdown();
         resetQHowHeardDropdown();
         const sizeGroup = document.getElementById('sizeGroup');

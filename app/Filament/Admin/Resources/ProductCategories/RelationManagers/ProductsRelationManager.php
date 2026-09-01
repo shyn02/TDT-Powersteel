@@ -32,6 +32,7 @@ class ProductsRelationManager extends RelationManager
                     ->required(),
                 FileUpload::make('image')
                     ->image()
+                    ->panelLayout('grid')
                     ->disk('public')
                     ->directory('products'),
                 Textarea::make('description')

@@ -294,14 +294,26 @@
                 </div>
                 
                 <div class="form-group" id="subProductGroup">
-                    <label for="subProductSelect">Specific Steel Product / Size</label>
+                    <label for="subProductSelect">Specific Steel Product</label>
                     <div class="calc-dropdown" id="subProductDropdown">
                         <button type="button" class="calc-dropdown-trigger" id="subProductTrigger" aria-haspopup="listbox" aria-expanded="false">
-                            <span id="subProductLabel" data-placeholder="-- Select Size / Specification --">-- Select Size / Specification --</span>
+                            <span id="subProductLabel" data-placeholder="-- Select Product --">-- Select Product --</span>
                             <i class="fa-solid fa-chevron-down calc-dropdown-arrow"></i>
                         </button>
                         <div class="calc-dropdown-panel" id="subProductPanel" role="listbox" tabindex="-1"></div>
                         <input type="hidden" name="subProduct" id="subProductSelect" value="">
+                    </div>
+                </div>
+
+                <div class="form-group" id="sizeGroup" style="display:none;">
+                    <label for="sizeSelect">Size / Specification</label>
+                    <div class="calc-dropdown" id="sizeDropdown">
+                        <button type="button" class="calc-dropdown-trigger" id="sizeTrigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="sizeLabel" data-placeholder="-- Select Size / Specification --">-- Select Size / Specification --</span>
+                            <i class="fa-solid fa-chevron-down calc-dropdown-arrow"></i>
+                        </button>
+                        <div class="calc-dropdown-panel" id="sizePanel" role="listbox" tabindex="-1"></div>
+                        <input type="hidden" name="sizeSpec" id="sizeSelect" value="">
                     </div>
                 </div>
 

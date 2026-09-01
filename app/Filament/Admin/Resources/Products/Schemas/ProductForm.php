@@ -49,9 +49,11 @@ class ProductForm
                             ->columnSpanFull(),
                         FileUpload::make('image')
                             ->image()
+                            ->panelLayout('grid')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
                             ->disk('public')
                             ->directory('products')
+                            ->visibility('public')
                             ->imageEditor()
                             ->maxSize(5120)
                             ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),

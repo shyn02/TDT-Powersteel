@@ -26,9 +26,11 @@ class BlogPostForm
                     ->required(),
                 FileUpload::make('cover_image')
                     ->image()
+                    ->panelLayout('grid')
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
                     ->disk('public')
                     ->directory('blog')
+                    ->visibility('public')
                     ->imageEditor()
                     ->maxSize(5120)
                     ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),

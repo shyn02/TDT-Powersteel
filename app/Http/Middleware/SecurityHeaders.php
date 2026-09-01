@@ -32,10 +32,16 @@ class SecurityHeaders
         $csp = implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh",
+            // Filament's FileUpload spins up a Web Worker from a blob: URL (client-side
+            // image resizing/thumbnail generation before upload). Without this, the
+            // browser falls back to script-src for workers, which doesn't allow blob:,
+            // so the worker silently fails to start and image previews never render —
+            // the file still uploads/saves fine, only the in-browser preview breaks.
+            "worker-src 'self' blob:",
             "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com",
             "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob: https://api.qrserver.com",
-            "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://esm.sh https://cdn.jsdelivr.net https://www.google.com",
+            "connect-src 'self' blob: data: http: https: ws: wss: https://fonts.googleapis.com https://fonts.gstatic.com https://esm.sh https://cdn.jsdelivr.net https://www.google.com",
             "frame-src 'self' https://www.google.com https://maps.google.com https://google.com",
             "frame-ancestors 'none'",
             "object-src 'none'",

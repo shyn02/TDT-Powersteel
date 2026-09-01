@@ -38,25 +38,30 @@ class ProductCategoryForm
                     ]),
 
                 Section::make('Products page tile / category banner')
-                    ->columns(2)
                     ->schema([
                         FileUpload::make('image')
                             ->label('Tile image')
                             ->image()
+                            ->panelLayout('grid')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
                             ->disk('public')
                             ->directory('categories')
+                            ->visibility('public')
                             ->imageEditor()
                             ->maxSize(5120)
-                            ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),
+                            ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.')
+                            ->columnSpanFull(),
                         FileUpload::make('banner_image')
                             ->image()
+                            ->panelLayout('grid')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
                             ->disk('public')
-                            ->directory('categories')
+                            ->directory('categories/banners')
+                            ->visibility('public')
                             ->imageEditor()
                             ->maxSize(5120)
-                            ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),
+                            ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.')
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Category page text')
