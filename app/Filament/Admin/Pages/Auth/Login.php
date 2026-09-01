@@ -31,6 +31,8 @@ class Login extends BaseLogin
                 $this->getRoleFormComponent(),
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
+                \Filament\Schemas\Components\View::make('forgot_link')
+                    ->view('filament.admin.auth.forgot-link'),
                 $this->getRememberFormComponent(),
                 $this->getMfaFormComponent(),
             ]);
@@ -138,5 +140,15 @@ class Login extends BaseLogin
         }
 
         parent::throwFailureValidationException();
+    }
+
+    public function getRedirectUrl(): ?string
+    {
+        $user = \Filament\Facades\Filament::auth()->user();
+        if ($user && method_exists($user, 'isPasswordExpired') && $user->isPasswordExpired()) {
+            return \App\Filament\Admin\Pages\ChangePassword::getUrl(panel: 'admin');
+        }
+
+        return parent::getRedirectUrl();
     }
 }

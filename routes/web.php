@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PasswordResetRequestController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Admin\NavBadgeController;
@@ -8,6 +9,10 @@ use Illuminate\Support\Facades\Route;
 
 // Fix for Livewire unauthenticated redirects: Laravel default expects route('login') but Filament uses admin/login
 Route::get('/login', fn () => redirect('/admin/login'))->name('login');
+
+// Public password reset request (guest) — creates PasswordResetRequest for admin review
+Route::get('/admin/request-password-reset', [PasswordResetRequestController::class, 'showRequestForm'])->name('password.request');
+Route::post('/admin/request-password-reset', [PasswordResetRequestController::class, 'request'])->name('password.request.post')->middleware('throttle:3,1');
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/products/', [PageController::class, 'products'])->name('products');
