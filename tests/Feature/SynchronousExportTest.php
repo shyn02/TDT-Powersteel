@@ -5,13 +5,22 @@ namespace Tests\Feature;
 use App\Exports\CsvExportDefinition;
 use App\Exports\CsvExportFailure;
 use App\Exports\SynchronousCsvExporter;
+use App\Filament\Admin\Resources\ContactMessages\Pages\ListContactMessages;
+use App\Filament\Admin\Resources\QuoteRequests\Pages\ListQuoteRequests;
+use App\Filament\Admin\Resources\Referrals\Pages\ListReferrals;
+use App\Models\ContactMessage;
+use App\Models\ProductCategory;
 use App\Models\QuoteRequest;
+use App\Models\Referral;
+use App\Models\User;
 use Carbon\CarbonImmutable;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Tests\TestCase;
@@ -24,14 +33,484 @@ class SynchronousExportTest extends TestCase
     {
         parent::setUp();
 
+        Filament::setCurrentPanel('admin');
         $this->temporaryDirectory = storage_path('framework/testing/synchronous-exports/'.Str::uuid());
     }
 
     protected function tearDown(): void
     {
+        CarbonImmutable::setTestNow();
+        Filament::setCurrentPanel(null);
         File::deleteDirectory($this->temporaryDirectory);
 
         parent::tearDown();
+    }
+
+    public function test_quote_header_export_preserves_filter_scope_columns_and_long_values(): void
+    {
+        $this->signInAsAuthorizedStaff();
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 9, 18, 14, 30, 45));
+
+        $category = ProductCategory::query()->create([
+            'name' => 'Structural Steel',
+            'slug' => 'structural-steel',
+        ]);
+
+        QuoteRequest::query()->insert([
+            [
+                'id' => 1,
+                'category_id' => null,
+                'full_name' => 'Hidden Quote',
+                'company_name' => 'Hidden Co',
+                'email' => 'hidden@example.test',
+                'phone' => '09170000001',
+                'address' => 'Hidden address',
+                'how_heard' => 'Search',
+                'estimated_qty' => 'Hidden quantity',
+                'status' => 'new',
+                'is_seen' => false,
+                'source' => 'home',
+                'created_at' => '2026-09-18 14:29:00',
+            ],
+            [
+                'id' => 2,
+                'category_id' => $category->id,
+                'full_name' => 'Visible Quote',
+                'company_name' => 'Visible Co',
+                'email' => 'visible@example.test',
+                'phone' => '09170000002',
+                'address' => 'Visible address',
+                'how_heard' => 'Referral',
+                'estimated_qty' => str_repeat('Long quantity ', 20),
+                'status' => 'contacted',
+                'is_seen' => true,
+                'source' => 'product',
+                'created_at' => '2026-09-18 14:30:00',
+            ],
+            [
+                'id' => 3,
+                'category_id' => null,
+                'full_name' => 'Closed Quote',
+                'company_name' => 'Closed Co',
+                'email' => 'closed@example.test',
+                'phone' => '09170000003',
+                'address' => 'Closed address',
+                'how_heard' => 'Search',
+                'estimated_qty' => 'Closed quantity',
+                'status' => 'closed',
+                'is_seen' => true,
+                'source' => 'home',
+                'created_at' => '2026-09-18 14:31:00',
+            ],
+        ]);
+
+        $component = Livewire::test(ListQuoteRequests::class)
+            ->set('tableFilters', ['status' => ['value' => 'contacted']])
+            ->callAction(['name' => 'export', 'context' => ['table' => true]]);
+
+        $component->assertFileDownloaded(
+            'quote-requests-20260918-143045.csv',
+            null,
+            'text/csv; charset=UTF-8',
+        );
+
+        $rows = $this->downloadedRows($component);
+
+        $this->assertSame([
+            'Full Name',
+            'Company',
+            'Email',
+            'Phone',
+            'Address',
+            'How They Heard About Us',
+            'Estimated Quantity',
+            'Category',
+            'Status',
+            'Date Submitted',
+        ], $rows[0]);
+        $this->assertCount(2, $rows);
+        $this->assertSame('Visible Quote', $rows[1][0]);
+        $this->assertSame('Structural Steel', $rows[1][7]);
+        $this->assertSame('Contacted', $rows[1][8]);
+        $this->assertSame('2026-09-18 14:30', $rows[1][9]);
+        $this->assertSame(str_repeat('Long quantity ', 20), $rows[1][6]);
+        $this->assertDatabaseCount('jobs', 0);
+        $this->assertDatabaseCount('exports', 0);
+    }
+
+    public function test_contact_header_export_preserves_filter_scope_and_current_columns(): void
+    {
+        $this->signInAsAuthorizedStaff();
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 9, 18, 14, 30, 45));
+
+        ContactMessage::query()->insert([
+            [
+                'id' => 1,
+                'full_name' => 'Unread Contact',
+                'company_name' => 'Unread Co',
+                'email' => 'unread@example.test',
+                'phone' => '09170000001',
+                'landline' => '0220000001',
+                'address' => 'Unread address',
+                'how_heard' => 'Search',
+                'message' => 'Do not export this row.',
+                'status' => 'unread',
+                'is_seen' => false,
+                'created_at' => '2026-09-18 14:29:00',
+            ],
+            [
+                'id' => 2,
+                'full_name' => 'Visible Contact',
+                'company_name' => 'Visible Co',
+                'email' => 'visible@example.test',
+                'phone' => '09170000002',
+                'landline' => '0220000002',
+                'address' => 'Visible address',
+                'how_heard' => 'Referral',
+                'message' => 'Visible contact message.',
+                'status' => 'read',
+                'is_seen' => true,
+                'created_at' => '2026-09-18 14:30:00',
+            ],
+        ]);
+
+        $component = Livewire::test(ListContactMessages::class)
+            ->set('tableFilters', ['status' => ['value' => 'read']])
+            ->callAction(['name' => 'export', 'context' => ['table' => true]]);
+
+        $component->assertFileDownloaded(
+            'contact-messages-20260918-143045.csv',
+            null,
+            'text/csv; charset=UTF-8',
+        );
+
+        $rows = $this->downloadedRows($component);
+
+        $this->assertSame([
+            'Full Name',
+            'Company',
+            'Email',
+            'Phone',
+            'Landline',
+            'Address',
+            'How They Heard About Us',
+            'Message',
+            'Status',
+            'Date Submitted',
+        ], $rows[0]);
+        $this->assertCount(2, $rows);
+        $this->assertSame('Visible Contact', $rows[1][0]);
+        $this->assertSame('Visible contact message.', $rows[1][7]);
+        $this->assertSame('Read', $rows[1][8]);
+        $this->assertSame('2026-09-18 14:30', $rows[1][9]);
+    }
+
+    public function test_referral_header_export_preserves_filter_scope_and_current_columns(): void
+    {
+        $this->signInAsAuthorizedStaff();
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 9, 18, 14, 30, 45));
+
+        Referral::query()->insert([
+            [
+                'id' => 1,
+                'referrer_name' => 'New Referrer',
+                'referrer_company' => 'New Co',
+                'referrer_phone' => '09170000001',
+                'referrer_email' => 'new@example.test',
+                'contact_person' => 'New Contact',
+                'referred_company' => 'New Referred Co',
+                'project_type' => 'Bridge',
+                'project_scale' => 'Small',
+                'region' => 'North',
+                'remarks' => 'Do not export this row.',
+                'status' => 'new',
+                'is_seen' => false,
+                'created_at' => '2026-09-18 14:29:00',
+            ],
+            [
+                'id' => 2,
+                'referrer_name' => 'Visible Referrer',
+                'referrer_company' => 'Visible Co',
+                'referrer_phone' => '09170000002',
+                'referrer_email' => 'visible@example.test',
+                'contact_person' => 'Visible Contact',
+                'referred_company' => 'Visible Referred Co',
+                'project_type' => 'Warehouse',
+                'project_scale' => 'Large',
+                'region' => 'South',
+                'remarks' => 'Visible referral remarks.',
+                'status' => 'contacted',
+                'is_seen' => true,
+                'created_at' => '2026-09-18 14:30:00',
+            ],
+        ]);
+
+        $component = Livewire::test(ListReferrals::class)
+            ->set('tableFilters', ['status' => ['value' => 'contacted']])
+            ->callAction(['name' => 'export', 'context' => ['table' => true]]);
+
+        $component->assertFileDownloaded(
+            'referrals-20260918-143045.csv',
+            null,
+            'text/csv; charset=UTF-8',
+        );
+
+        $rows = $this->downloadedRows($component);
+
+        $this->assertSame([
+            'Referrer Name',
+            'Referrer Company',
+            'Referrer Phone',
+            'Referrer Email',
+            'Contact Person',
+            'Referred Company',
+            'Project Type',
+            'Project Scale',
+            'Region',
+            'Remarks',
+            'Status',
+            'Date Submitted',
+        ], $rows[0]);
+        $this->assertCount(2, $rows);
+        $this->assertSame('Visible Referrer', $rows[1][0]);
+        $this->assertSame('Visible referral remarks.', $rows[1][9]);
+        $this->assertSame('Contacted', $rows[1][10]);
+        $this->assertSame('2026-09-18 14:30', $rows[1][11]);
+    }
+
+    public function test_bulk_exports_use_only_selected_noncontiguous_quote_ids(): void
+    {
+        $this->signInAsAuthorizedStaff();
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 9, 18, 14, 30, 45));
+
+        QuoteRequest::query()->insert([
+            $this->quoteRow(1, 'Selected First', 'new'),
+            $this->quoteRow(2, 'Not Selected', 'contacted'),
+            $this->quoteRow(3, 'Selected Third', 'closed'),
+        ]);
+
+        $component = Livewire::test(ListQuoteRequests::class)
+            ->set('selectedTableRecords', [1, 3])
+            ->callAction([
+                'name' => 'export',
+                'context' => ['table' => true, 'bulk' => true],
+            ]);
+
+        $component->assertFileDownloaded('quote-requests-20260918-143045.csv');
+        $rows = $this->downloadedRows($component);
+
+        $this->assertSame(['Selected First', 'Selected Third'], [$rows[1][0], $rows[2][0]]);
+        $this->assertNotContains('Not Selected', array_column($rows, 0));
+        $this->assertDatabaseCount('jobs', 0);
+        $this->assertDatabaseCount('exports', 0);
+    }
+
+    public function test_bulk_exports_use_only_selected_noncontiguous_contact_and_referral_ids(): void
+    {
+        $this->signInAsAuthorizedStaff();
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 9, 18, 14, 30, 45));
+
+        ContactMessage::query()->insert([
+            $this->contactRow(1, 'Selected Contact First', 'unread'),
+            $this->contactRow(2, 'Not Selected Contact', 'read'),
+            $this->contactRow(3, 'Selected Contact Third', 'responded'),
+        ]);
+        $contactComponent = Livewire::test(ListContactMessages::class)
+            ->set('selectedTableRecords', [1, 3])
+            ->callAction([
+                'name' => 'export',
+                'context' => ['table' => true, 'bulk' => true],
+            ]);
+
+        $contactComponent->assertFileDownloaded('contact-messages-20260918-143045.csv');
+        $contactRows = $this->downloadedRows($contactComponent);
+        $this->assertSame(['Selected Contact First', 'Selected Contact Third'], [$contactRows[1][0], $contactRows[2][0]]);
+        $this->assertNotContains('Not Selected Contact', array_column($contactRows, 0));
+
+        Referral::query()->insert([
+            $this->referralRow(1, 'Selected Referrer First', 'new'),
+            $this->referralRow(2, 'Not Selected Referrer', 'contacted'),
+            $this->referralRow(3, 'Selected Referrer Third', 'rewarded'),
+        ]);
+        $referralComponent = Livewire::test(ListReferrals::class)
+            ->set('selectedTableRecords', [1, 3])
+            ->callAction([
+                'name' => 'export',
+                'context' => ['table' => true, 'bulk' => true],
+            ]);
+
+        $referralComponent->assertFileDownloaded('referrals-20260918-143045.csv');
+        $referralRows = $this->downloadedRows($referralComponent);
+        $this->assertSame(['Selected Referrer First', 'Selected Referrer Third'], [$referralRows[1][0], $referralRows[2][0]]);
+        $this->assertNotContains('Not Selected Referrer', array_column($referralRows, 0));
+        $this->assertDatabaseCount('jobs', 0);
+        $this->assertDatabaseCount('exports', 0);
+    }
+
+    public function test_inactive_user_is_forbidden_from_all_export_resources(): void
+    {
+        $inactive = User::factory()->create(['is_active' => false]);
+
+        $this->actingAs($inactive)->get('/admin/quote-requests')->assertForbidden();
+        $this->actingAs($inactive)->get('/admin/contact-messages')->assertForbidden();
+        $this->actingAs($inactive)->get('/admin/referrals')->assertForbidden();
+    }
+
+    public function test_unauthorized_direct_action_call_returns_no_file(): void
+    {
+        $this->signInAsAuthorizedStaff();
+
+        $component = Livewire::test(ListQuoteRequests::class);
+        $action = collect($component->instance()->getTable()->getHeaderActions())
+            ->first(fn ($action): bool => $action->getName() === 'export');
+        $this->assertNotNull($action);
+        $action->authorize(static fn (): bool => false);
+        $action->clearVisibilityCache();
+        $action->livewire($component->instance());
+
+        $response = $action->call();
+
+        if ($response instanceof BinaryFileResponse) {
+            @unlink($response->getFile()->getPathname());
+        }
+
+        $this->assertNull($response);
+    }
+
+    public function test_export_failure_notification_uses_the_service_correlation_id(): void
+    {
+        $this->signInAsAuthorizedStaff();
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 9, 18, 14, 30, 45));
+
+        QuoteRequest::query()->insert([
+            [
+                ...$this->quoteRow(1, 'Invalid UTF-8', 'new'),
+                'estimated_qty' => "invalid \xC3\x28 bytes",
+            ],
+        ]);
+
+        $loggedContext = null;
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function (string $message, array $context) use (&$loggedContext): bool {
+                $loggedContext = $context;
+
+                return $message === 'Synchronous CSV export failed.'
+                    && isset($context['correlation_id'])
+                    && $context['resource'] === 'quote-requests';
+            });
+
+        Livewire::test(ListQuoteRequests::class)
+            ->callAction(['name' => 'export', 'context' => ['table' => true]])
+            ->assertNoFileDownloaded();
+
+        $notifications = session('filament.claimed_notifications', []);
+        $this->assertSame('Export failed', data_get($notifications, '0.title'));
+        $this->assertSame(
+            "The export could not be created (reference {$loggedContext['correlation_id']}). Please retry.",
+            data_get($notifications, '0.body'),
+        );
+        $this->assertSame('danger', data_get($notifications, '0.status'));
+        $this->assertDatabaseCount('jobs', 0);
+        $this->assertDatabaseCount('exports', 0);
+    }
+
+    private function signInAsAuthorizedStaff(): User
+    {
+        $user = User::factory()->create(['is_active' => true]);
+        $user->profile()->update(['position' => 'admin']);
+
+        $this->actingAs($user);
+
+        return $user;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function quoteRow(int $id, string $name, string $status): array
+    {
+        return [
+            'id' => $id,
+            'category_id' => null,
+            'full_name' => $name,
+            'company_name' => "{$name} Co",
+            'email' => strtolower(str_replace(' ', '.', $name)).'@example.test',
+            'phone' => '0917000000'.($id % 10),
+            'address' => "{$name} address",
+            'how_heard' => 'Search',
+            'estimated_qty' => "Quantity for {$name}",
+            'status' => $status,
+            'is_seen' => $status !== 'new',
+            'source' => 'home',
+            'created_at' => '2026-09-18 14:30:00',
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function contactRow(int $id, string $name, string $status): array
+    {
+        return [
+            'id' => $id,
+            'full_name' => $name,
+            'company_name' => "{$name} Co",
+            'email' => strtolower(str_replace(' ', '.', $name)).'@example.test',
+            'phone' => '0917000000'.($id % 10),
+            'landline' => '022000000'.($id % 10),
+            'address' => "{$name} address",
+            'how_heard' => 'Search',
+            'message' => "Message for {$name}",
+            'status' => $status,
+            'is_seen' => $status !== 'unread',
+            'created_at' => '2026-09-18 14:30:00',
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function referralRow(int $id, string $name, string $status): array
+    {
+        return [
+            'id' => $id,
+            'referrer_name' => $name,
+            'referrer_company' => "{$name} Co",
+            'referrer_phone' => '0917000000'.($id % 10),
+            'referrer_email' => strtolower(str_replace(' ', '.', $name)).'@example.test',
+            'contact_person' => "Contact for {$name}",
+            'referred_company' => "Referred {$name} Co",
+            'project_type' => 'Warehouse',
+            'project_scale' => 'Large',
+            'region' => 'South',
+            'remarks' => "Remarks for {$name}",
+            'status' => $status,
+            'is_seen' => $status !== 'new',
+            'created_at' => '2026-09-18 14:30:00',
+        ];
+    }
+
+    /**
+     * @return array<int, array<int, string>>
+     */
+    private function downloadedRows(object $component): array
+    {
+        $content = data_get($component->effects, 'download.content');
+        $this->assertIsString($content);
+
+        $stream = fopen('php://memory', 'rb+');
+        $this->assertIsResource($stream);
+        fwrite($stream, base64_decode($content, true));
+        rewind($stream);
+
+        $rows = [];
+        while (($row = fgetcsv($stream, null, ',', '"', '')) !== false) {
+            $rows[] = $row;
+        }
+        fclose($stream);
+
+        return $rows;
     }
 
     public function test_it_writes_a_private_ordered_csv_in_500_id_chunks_and_deletes_it_after_send(): void

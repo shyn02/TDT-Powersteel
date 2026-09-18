@@ -2,14 +2,14 @@
 
 namespace App\Filament\Admin\Resources\ContactMessages\Tables;
 
+use App\Filament\Actions\SynchronousExportAction;
+use App\Filament\Actions\SynchronousExportBulkAction;
 use App\Filament\Exports\ContactMessageExporter;
 use App\Models\ContactMessage;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ExportAction;
-use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
@@ -20,9 +20,9 @@ use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Filament\Tables\Table;
 
 class ContactMessagesTable
 {
@@ -90,14 +90,18 @@ class ContactMessagesTable
                 ForceDeleteAction::make()->label('Delete permanently'),
             ])
             ->headerActions([
-                ExportAction::make()->exporter(ContactMessageExporter::class),
+                SynchronousExportAction::make()
+                    ->exporter(ContactMessageExporter::class)
+                    ->authorize('viewAny', ContactMessage::class),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->label('Archive (30 days)'),
                     RestoreBulkAction::make()->label('Restore'),
                     ForceDeleteBulkAction::make()->label('Delete permanently'),
-                    ExportBulkAction::make()->exporter(ContactMessageExporter::class),
+                    SynchronousExportBulkAction::make()
+                        ->exporter(ContactMessageExporter::class)
+                        ->authorize('viewAny', ContactMessage::class),
 
                     BulkAction::make('mark_as_unread')
                         ->label("Mark as 'Unread'")

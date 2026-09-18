@@ -2,13 +2,14 @@
 
 namespace App\Filament\Admin\Resources\Referrals\Tables;
 
+use App\Filament\Actions\SynchronousExportAction;
+use App\Filament\Actions\SynchronousExportBulkAction;
 use App\Filament\Exports\ReferralExporter;
+use App\Models\Referral;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ExportAction;
-use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
@@ -19,9 +20,9 @@ use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Filament\Tables\Table;
 
 class ReferralsTable
 {
@@ -76,7 +77,7 @@ class ReferralsTable
                         'rewarded' => 'Rewarded / Closed',
                     ]),
                 SelectFilter::make('project_type')
-                    ->options(fn () => \App\Models\Referral::query()
+                    ->options(fn () => Referral::query()
                         ->whereNotNull('project_type')
                         ->distinct()
                         ->pluck('project_type', 'project_type')),
@@ -88,14 +89,18 @@ class ReferralsTable
                 ForceDeleteAction::make()->label('Delete permanently'),
             ])
             ->headerActions([
-                ExportAction::make()->exporter(ReferralExporter::class),
+                SynchronousExportAction::make()
+                    ->exporter(ReferralExporter::class)
+                    ->authorize('viewAny', Referral::class),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->label('Archive (30 days)'),
                     RestoreBulkAction::make()->label('Restore'),
                     ForceDeleteBulkAction::make()->label('Delete permanently'),
-                    ExportBulkAction::make()->exporter(ReferralExporter::class),
+                    SynchronousExportBulkAction::make()
+                        ->exporter(ReferralExporter::class)
+                        ->authorize('viewAny', Referral::class),
 
                     BulkAction::make('mark_as_new')
                         ->label("Mark as 'New'")
