@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Admin\Resources\QuoteRequests\Tables\QuoteRequestsTable;
 use App\Models\QuoteRequest;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -30,6 +34,34 @@ class QuoteSubmissionTest extends TestCase
             'name' => 'Long Remark Customer',
             'mobile' => '09171234568',
             'remarks' => "  {$remarks}  ",
+        ]);
+
+        $response->assertOk();
+        $this->assertSame($remarks, QuoteRequest::query()->latest('id')->value('estimated_qty'));
+    }
+
+    public function test_hero_remarks_of_exactly_150_characters_are_preserved(): void
+    {
+        $remarks = str_repeat('E', 150);
+
+        $response = $this->postJson(route('submit_quote'), [
+            'name' => 'Exact Length Customer',
+            'mobile' => '09171234572',
+            'remarks' => $remarks,
+        ]);
+
+        $response->assertOk();
+        $this->assertSame($remarks, QuoteRequest::query()->latest('id')->value('estimated_qty'));
+    }
+
+    public function test_multibyte_hero_remarks_longer_than_150_characters_are_preserved(): void
+    {
+        $remarks = str_repeat('鋼', 151);
+
+        $response = $this->postJson(route('submit_quote'), [
+            'name' => 'Multibyte Customer',
+            'mobile' => '09171234573',
+            'remarks' => $remarks,
         ]);
 
         $response->assertOk();
@@ -93,6 +125,27 @@ class QuoteSubmissionTest extends TestCase
         $this->assertSame('text', Schema::getColumnType('quote_requests', 'estimated_qty'));
     }
 
+    public function test_migration_upgrade_preserves_existing_varchar_values(): void
+    {
+        Schema::table('quote_requests', function (Blueprint $table): void {
+            $table->string('estimated_qty', 150)->change();
+        });
+
+        $existingValue = str_repeat('V', 150);
+        QuoteRequest::create([
+            'full_name' => 'Existing Varchar Quote',
+            'estimated_qty' => $existingValue,
+            'status' => 'new',
+            'source' => 'home',
+        ]);
+
+        $migration = require database_path('migrations/2026_09_18_000001_expand_quote_estimated_qty_to_text.php');
+        $migration->up();
+
+        $this->assertSame('text', Schema::getColumnType('quote_requests', 'estimated_qty'));
+        $this->assertSame($existingValue, QuoteRequest::query()->latest('id')->value('estimated_qty'));
+    }
+
     public function test_migration_refuses_to_restore_a_string_column_when_values_would_be_truncated(): void
     {
         QuoteRequest::create([
@@ -104,7 +157,22 @@ class QuoteSubmissionTest extends TestCase
 
         $migration = require database_path('migrations/2026_09_18_000001_expand_quote_estimated_qty_to_text.php');
 
-        $this->expectException(\RuntimeException::class);
-        $migration->down();
+        try {
+            $migration->down();
+            $this->fail('Expected the migration rollback to refuse truncating quote values.');
+        } catch (\RuntimeException $exception) {
+            $this->assertStringContainsString('exceed 150 characters', $exception->getMessage());
+        }
+
+        $this->assertSame('text', Schema::getColumnType('quote_requests', 'estimated_qty'));
+    }
+
+    public function test_admin_table_displays_the_full_estimated_quantity_without_a_character_limit(): void
+    {
+        $table = QuoteRequestsTable::configure(Table::make($this->createMock(HasTable::class)));
+        $estimatedQuantityColumn = $table->getColumn('estimated_qty');
+
+        $this->assertNotNull($estimatedQuantityColumn);
+        $this->assertNull($estimatedQuantityColumn->getCharacterLimit());
     }
 }

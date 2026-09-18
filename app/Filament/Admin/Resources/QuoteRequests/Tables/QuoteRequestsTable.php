@@ -55,7 +55,6 @@ class QuoteRequestsTable
                     ->searchable(),
                 TextColumn::make('estimated_qty')
                     ->label('Estimated Quantity')
-                    ->limit(50)
                     ->tooltip(fn ($record) => $record->estimated_qty)
                     ->searchable(),
                 TextColumn::make('category.name')
