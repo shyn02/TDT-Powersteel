@@ -5,25 +5,37 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Support\LegacyProjectChecksum;
 use Carbon\Carbon;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
- * Task 1 — canonicalize and archive legacy project rows.
+ * Tasks 1–2 — archive, reconcile, and convert legacy project rows.
  *
- * Covers spec §4.5: every legacy scalar is copied into the read-only
+ * Task 1 (preserved): every legacy scalar is copied into the read-only
  * `legacy_projects_20260918` table (including soft-deleted rows) with a
  * canonical SHA-256 checksum, and re-running the copy updates a changed
  * payload without duplicating rows.
  *
- * Task 2 will extend this suite with reconciliation-gate cases (missing
- * IDs, count mismatch, payload/checksum mismatch, unique-key rejection
- * per Ruling R1). Those cases must preserve the archive coverage below.
+ * Task 2 (Ruling R1): reconciliation succeeds only when source/archive
+ * counts match, every source ID occurs once, and every recomputed checksum
+ * matches. Duplicate-ID evidence is proven at the uniqueness boundary
+ * (unique `original_project_id` rejects a second archive row); missing IDs,
+ * count mismatch, and payload/checksum mismatch are proven as hard gates
+ * that throw before any legacy column is dropped. Conversion re-runs the
+ * gate, then moves `projects` to the public fields while retaining the
+ * archive; its `down()` is intentionally irreversible.
  */
 class ProjectMigrationTest extends TestCase
 {
     private const ARCHIVE_TABLE = 'legacy_projects_20260918';
+
+    private const RECONCILE_MIGRATION = '2026_09_18_000004_reconcile_legacy_projects.php';
+
+    private const CONVERT_MIGRATION = '2026_09_18_000005_convert_projects_to_public_content.php';
+
+    private const COMPOSITE_INDEX = 'projects_public_read_index';
 
     private const PAYLOAD_ORDER = [
         'date_added',
@@ -37,10 +49,94 @@ class ProjectMigrationTest extends TestCase
         'deleted_at',
     ];
 
+    private const LEGACY_COLUMNS = [
+        'date_added',
+        'contractor',
+        'project_name',
+        'value',
+        'status',
+        'is_priority',
+        'encoded_by',
+    ];
+
+    private const PUBLIC_COLUMNS = [
+        'tag',
+        'image',
+        'location',
+        'title',
+        'info',
+        'is_published',
+        'sort_order',
+        'migration_key',
+        'updated_at',
+    ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // RefreshDatabase migrates to latest (including the Task 2
+        // conversion once it exists). Legacy-dependent cases need the
+        // pre-conversion shape, so rebuild it deterministically here.
+        // Post-conversion assertions run after explicitly invoking the
+        // conversion migration within the test itself.
+        $this->resetProjectsToLegacySchema();
+    }
+
+    private function resetProjectsToLegacySchema(): void
+    {
+        Schema::disableForeignKeyConstraints();
+
+        try {
+            Schema::dropIfExists('projects');
+
+            Schema::create('projects', function (Blueprint $table) {
+                $table->id();
+                $table->date('date_added');
+                $table->string('contractor', 200);
+                $table->text('project_name');
+                $table->decimal('value', 16, 2)->default(0);
+                $table->string('status', 50)->default('for_bidding');
+                $table->boolean('is_priority')->default(false);
+                $table->foreignId('encoded_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->timestamp('created_at')->useCurrent();
+                $table->softDeletes();
+            });
+        } finally {
+            Schema::enableForeignKeyConstraints();
+        }
+
+        if (Schema::hasTable(self::ARCHIVE_TABLE)) {
+            DB::table(self::ARCHIVE_TABLE)->delete();
+        }
+    }
+
     private function runArchiveMigration(): void
     {
         $migration = require database_path('migrations/2026_09_18_000003_archive_legacy_projects.php');
         $migration->up();
+    }
+
+    private function runReconcileMigration(): void
+    {
+        $migration = require database_path('migrations/'.self::RECONCILE_MIGRATION);
+        $migration->up();
+    }
+
+    private function runConvertMigration(): void
+    {
+        $migration = require database_path('migrations/'.self::CONVERT_MIGRATION);
+        $migration->up();
+    }
+
+    private function assertLegacyColumnsPresent(): void
+    {
+        foreach (array_merge(self::LEGACY_COLUMNS, ['created_at', 'deleted_at']) as $column) {
+            $this->assertTrue(
+                Schema::hasColumn('projects', $column),
+                "Legacy column [{$column}] must still be present when the gate halts."
+            );
+        }
     }
 
     private function makeProject(array $overrides = []): Project
@@ -198,5 +294,269 @@ class ProjectMigrationTest extends TestCase
 
         $expected = LegacyProjectChecksum::payload(Project::withTrashed()->find($project->getKey()));
         $this->assertSame(LegacyProjectChecksum::checksum($expected), $updated->source_checksum);
+    }
+
+    public function test_reconciliation_passes_when_archive_matches_source(): void
+    {
+        $this->makeProject(['contractor' => 'Gate pass one']);
+        $trashed = $this->makeProject(['project_name' => 'Gate pass trashed']);
+        $trashed->delete();
+
+        $this->runArchiveMigration();
+
+        $this->runReconcileMigration();
+
+        $this->assertSame(
+            Project::withTrashed()->count(),
+            DB::table(self::ARCHIVE_TABLE)->count(),
+            'Matching source/archive counts must pass the gate.'
+        );
+        $this->assertLegacyColumnsPresent();
+    }
+
+    public function test_reconciliation_rejects_tampered_checksum_without_exposing_payload(): void
+    {
+        $sensitive = 'SensitiveContractorXYZ123';
+        $project = $this->makeProject(['contractor' => $sensitive]);
+
+        $this->runArchiveMigration();
+
+        DB::table(self::ARCHIVE_TABLE)
+            ->where('original_project_id', $project->getKey())
+            ->update(['contractor' => 'Tampered value', 'source_checksum' => str_repeat('0', 64)]);
+
+        try {
+            $this->runReconcileMigration();
+            $this->fail('Tampered archive payload/checksum must throw before conversion.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString((string) $project->getKey(), $e->getMessage(), 'Mismatch error must name the offending ID.');
+            $this->assertStringNotContainsString($sensitive, $e->getMessage(), 'Gate error must not leak sensitive payload text.');
+            $this->assertStringNotContainsString('Tampered value', $e->getMessage(), 'Gate error must not leak tampered payload text.');
+        }
+
+        $this->assertLegacyColumnsPresent();
+        $this->assertTrue(Schema::hasTable(self::ARCHIVE_TABLE), 'Archive must be retained after a halted gate.');
+    }
+
+    public function test_reconciliation_rejects_missing_archive_id_and_preserves_legacy_columns(): void
+    {
+        $kept = $this->makeProject(['contractor' => 'Kept row']);
+        $removed = $this->makeProject(['contractor' => 'Removed row']);
+
+        $this->runArchiveMigration();
+
+        DB::table(self::ARCHIVE_TABLE)->where('original_project_id', $removed->getKey())->delete();
+
+        try {
+            $this->runReconcileMigration();
+            $this->fail('Missing archive ID must throw before conversion.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString((string) $removed->getKey(), $e->getMessage(), 'Missing-ID error must name the absent ID.');
+            $this->assertStringNotContainsString('Removed row', $e->getMessage(), 'Gate error must not leak payload text.');
+        }
+
+        $this->assertLegacyColumnsPresent();
+        $this->assertNotNull(
+            DB::table(self::ARCHIVE_TABLE)->where('original_project_id', $kept->getKey())->first(),
+            'Unrelated archive rows must remain after a halted gate.'
+        );
+    }
+
+    public function test_reconciliation_rejects_extra_source_row_count_mismatch(): void
+    {
+        $this->makeProject(['contractor' => 'Archived row']);
+        $this->runArchiveMigration();
+
+        $extra = $this->makeProject(['contractor' => 'Unarchived row']);
+
+        try {
+            $this->runReconcileMigration();
+            $this->fail('Source/archive count mismatch must throw before conversion.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString((string) $extra->getKey(), $e->getMessage(), 'Count-mismatch error must name the unarchived ID.');
+        }
+
+        $this->assertLegacyColumnsPresent();
+    }
+
+    public function test_archive_rejects_duplicate_original_project_id(): void
+    {
+        $project = $this->makeProject();
+
+        $this->runArchiveMigration();
+
+        $existing = DB::table(self::ARCHIVE_TABLE)->where('original_project_id', $project->getKey())->first();
+        $this->assertNotNull($existing);
+
+        $duplicate = (array) $existing;
+        unset($duplicate['id']);
+
+        try {
+            DB::table(self::ARCHIVE_TABLE)->insert($duplicate);
+            $this->fail('Duplicate original_project_id must be rejected by the unique key (R1).');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertMatchesRegularExpression('/unique|duplicate/i', $e->getMessage(), 'Rejection must come from the unique constraint.');
+        }
+
+        $this->assertSame(
+            1,
+            DB::table(self::ARCHIVE_TABLE)->where('original_project_id', $project->getKey())->count(),
+            'Archive must still hold exactly one row per source ID.'
+        );
+    }
+
+    public function test_conversion_succeeds_with_public_schema_unique_key_and_named_index(): void
+    {
+        $live = $this->makeProject(['project_name' => 'Live legacy row']);
+        $trashed = $this->makeProject(['project_name' => 'Trashed legacy row']);
+        $trashed->delete();
+        $trashedId = $trashed->getKey();
+        $liveId = $live->getKey();
+
+        $this->runArchiveMigration();
+        $archiveCount = DB::table(self::ARCHIVE_TABLE)->count();
+
+        $this->runConvertMigration();
+
+        foreach (self::PUBLIC_COLUMNS as $column) {
+            $this->assertTrue(Schema::hasColumn('projects', $column), "Converted projects must have [{$column}].");
+        }
+
+        foreach (self::LEGACY_COLUMNS as $column) {
+            $this->assertFalse(Schema::hasColumn('projects', $column), "Legacy column [{$column}] must be dropped after a passing gate.");
+        }
+
+        $this->assertTrue(Schema::hasColumn('projects', 'created_at'), 'created_at must be preserved.');
+        $this->assertTrue(Schema::hasColumn('projects', 'deleted_at'), 'deleted_at soft-delete column must be preserved.');
+
+        $this->assertTrue(Schema::hasTable(self::ARCHIVE_TABLE), 'Archive table must be retained after conversion.');
+        $this->assertSame($archiveCount, DB::table(self::ARCHIVE_TABLE)->count(), 'Archive rows must survive conversion.');
+        $this->assertSame($archiveCount, DB::table('projects')->count(), 'No live row may disappear during conversion.');
+
+        $trashedRow = DB::table('projects')->where('id', $trashedId)->first();
+        $this->assertNotNull($trashedRow, 'Soft-deleted rows must survive conversion.');
+        $this->assertNotNull($trashedRow->deleted_at, 'Soft-deleted rows must retain deleted_at after conversion.');
+
+        $liveRow = DB::table('projects')->where('id', $liveId)->first();
+        $this->assertNotNull($liveRow);
+        $this->assertFalse((bool) $liveRow->is_published, 'Converted rows default to unpublished.');
+        $this->assertSame(0, (int) $liveRow->sort_order, 'Converted rows default to sort_order 0.');
+        $this->assertNull($liveRow->migration_key, 'migration_key starts nullable for legacy rows.');
+
+        // Unique migration_key boundary: duplicates rejected, multiple NULLs allowed.
+        DB::table('projects')->where('id', $liveId)->update(['migration_key' => 'homepage-legacy-01']);
+
+        try {
+            DB::table('projects')->insert([
+                'tag' => 'dup',
+                'image' => '/static/images/dup.jpg',
+                'location' => null,
+                'title' => 'Duplicate key probe',
+                'info' => null,
+                'is_published' => false,
+                'sort_order' => 0,
+                'migration_key' => 'homepage-legacy-01',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $this->fail('Duplicate migration_key must be rejected by its unique constraint.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertMatchesRegularExpression('/unique|duplicate/i', $e->getMessage());
+        }
+
+        $this->assertNamedCompositeIndexExists();
+    }
+
+    public function test_conversion_halts_on_checksum_mismatch_and_preserves_legacy_columns(): void
+    {
+        $project = $this->makeProject(['contractor' => 'Pre-conversion gate']);
+        $this->runArchiveMigration();
+
+        DB::table(self::ARCHIVE_TABLE)
+            ->where('original_project_id', $project->getKey())
+            ->update(['source_checksum' => str_repeat('f', 64)]);
+
+        try {
+            $this->runConvertMigration();
+            $this->fail('Conversion must re-run reconciliation and halt on mismatch.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString((string) $project->getKey(), $e->getMessage());
+        }
+
+        $this->assertLegacyColumnsPresent();
+        $this->assertFalse(Schema::hasColumn('projects', 'migration_key'), 'Public columns must not appear when the gate halts.');
+        $this->assertTrue(Schema::hasTable(self::ARCHIVE_TABLE), 'Archive must be retained after halted conversion.');
+    }
+
+    public function test_conversion_down_throws_irreversible_stabilization_exception(): void
+    {
+        $this->makeProject();
+        $this->runArchiveMigration();
+        $this->runConvertMigration();
+
+        $migration = require database_path('migrations/'.self::CONVERT_MIGRATION);
+
+        try {
+            $migration->down();
+            $this->fail('Conversion down() must throw an irreversible-stabilization exception.');
+        } catch (\RuntimeException $e) {
+            $this->assertMatchesRegularExpression('/irreversible/i', $e->getMessage());
+        }
+
+        $this->assertTrue(Schema::hasTable(self::ARCHIVE_TABLE), 'Archive must survive the down() refusal.');
+    }
+
+    private function assertNamedCompositeIndexExists(): void
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            $list = DB::select("PRAGMA index_list('projects')");
+            $names = array_map(fn ($row) => is_array($row) ? ($row['name'] ?? null) : ($row->name ?? null), $list);
+
+            $this->assertContains(
+                self::COMPOSITE_INDEX,
+                $names,
+                'Named composite public-read index must exist.'
+            );
+
+            // PRAGMA index_info already returns the indexed column names
+            // (seqno, cid, name); no cid->name remap is needed.
+            $info = DB::select("PRAGMA index_info('".self::COMPOSITE_INDEX."')");
+            $ordered = [];
+            foreach ($info as $row) {
+                $row = (array) $row;
+                $ordered[(int) $row['seqno']] = $row['name'];
+            }
+            ksort($ordered);
+
+            $indexed = array_values($ordered);
+
+            $this->assertSame(
+                ['is_published', 'deleted_at', 'sort_order', 'id'],
+                $indexed,
+                'Composite index must cover (is_published, deleted_at, sort_order, id) in order.'
+            );
+
+            return;
+        }
+
+        // MySQL / other drivers: fall back to Laravel's index introspection.
+        $indexes = Schema::getIndexes('projects');
+        $found = null;
+        foreach ($indexes as $index) {
+            $name = $index['name'] ?? null;
+            if ($name === self::COMPOSITE_INDEX) {
+                $found = $index;
+                break;
+            }
+        }
+
+        $this->assertNotNull($found, 'Named composite public-read index must exist.');
+        $this->assertSame(
+            ['is_published', 'deleted_at', 'sort_order', 'id'],
+            $found['columns'] ?? [],
+            'Composite index must cover (is_published, deleted_at, sort_order, id) in order.'
+        );
     }
 }
