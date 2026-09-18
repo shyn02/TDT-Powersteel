@@ -52,7 +52,10 @@ class QuoteController extends Controller
         }
         // Duplicate guard: 5 similar tries per 5 min — include message/qty so “forgot to add product” with different message isn’t considered duplicate
         $primaryEmail = strtolower(trim($request->input('clientEmail') ?? $request->input('cEmail') ?? $request->input('ref_email') ?? $request->input('email') ?? ''));
-        $primaryPhone = preg_replace('/[\s\-\(\)]/', '', (string) ($request->input('clientContact') ?? $request->input('cPhone') ?? $request->input('ref_phone') ?? $request->input('mobile') ?? ''));
+        $primaryPhoneInput = $request->input('clientContact') ?? $request->input('cPhone') ?? $request->input('ref_phone') ?? $request->input('mobile');
+        $primaryPhone = is_string($primaryPhoneInput)
+            ? preg_replace('/[\s\-\(\)]/', '', $primaryPhoneInput)
+            : '';
         $primaryName = strtolower(trim($request->input('clientName') ?? $request->input('cName') ?? $request->input('ref_fullname') ?? $request->input('name') ?? ''));
         $primaryMessage = strtolower(trim($request->input('estimatedQty') ?? $request->input('cMessage') ?? $request->input('ref_remarks') ?? $request->input('remarks') ?? $request->input('qHowHeard') ?? $request->input('cHowHeard') ?? $request->input('howHeard') ?? ''));
         $formType = $request->hasAny(['clientName']) ? 'quote' : ($request->hasAny(['cName']) ? 'contact' : ($request->hasAny(['ref_fullname']) ? 'referral' : 'hero'));
@@ -72,9 +75,9 @@ class QuoteController extends Controller
                 'clientName' => ['required', 'string', 'max:150'],
                 'clientCompany' => ['nullable', 'string', 'max:150'],
                 'clientEmail' => ['nullable', 'email:rfc', 'max:255'],
-                'clientContact' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX (11 digits) or +639XXXXXXXXX.'); }],
+                'clientContact' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The client contact field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX (11 digits) or +639XXXXXXXXX.'); }],
                 'clientAddress' => ['nullable', 'string', 'max:255'],
-                'estimatedQty' => ['required', 'string', 'max:150'],
+                'estimatedQty' => ['required', 'string'],
                 'qHowHeard' => ['nullable', 'string', 'max:100'],
                 'qHowHeardOther' => ['nullable', 'string', 'max:100'],
                 'subProduct' => ['nullable', 'string', 'max:200'],
@@ -137,7 +140,7 @@ class QuoteController extends Controller
                 'cName' => ['required', 'string', 'max:150'],
                 'cCompany' => ['nullable', 'string', 'max:150'],
                 'cEmail' => ['nullable', 'email:rfc', 'max:255'],
-                'cPhone' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
+                'cPhone' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The contact phone field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
                 'cLandline' => ['nullable', 'string', 'max:50'],
                 'cAddress' => ['nullable', 'string', 'max:255'],
                 'cHowHeard' => ['nullable', 'string', 'max:100'],
@@ -178,7 +181,7 @@ class QuoteController extends Controller
             $request->validate([
                 'ref_fullname' => ['required', 'string', 'max:200'],
                 'ref_company' => ['nullable', 'string', 'max:200'],
-                'ref_phone' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
+                'ref_phone' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The referral phone field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
                 'ref_email' => ['nullable', 'email:rfc', 'max:255'],
                 'ref_contact_person' => ['required', 'string', 'max:200'],
                 'ref_referred_company' => ['required', 'string', 'max:200'],
@@ -215,11 +218,11 @@ class QuoteController extends Controller
                 'name' => ['required', 'string', 'max:150'],
                 'company' => ['nullable', 'string', 'max:150'],
                 'email' => ['nullable', 'email:rfc', 'max:255'],
-                'mobile' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
+                'mobile' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The mobile field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
                 'address' => ['nullable', 'string', 'max:255'],
                 'howHeard' => ['nullable', 'string', 'max:100'],
                 'howHeardOther' => ['nullable', 'string', 'max:100'],
-                'remarks' => ['nullable', 'string', 'max:150'],
+                'remarks' => ['nullable', 'string'],
                 'website' => ['nullable', 'string', 'max:100'],
             ]);
             $howHeard = trim((string) $request->input('howHeard', ''));
