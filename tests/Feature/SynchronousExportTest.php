@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Tests\TestCase;
 
@@ -76,6 +77,10 @@ class SynchronousExportTest extends TestCase
 
         $path = $response->getFile()->getPathname();
         $this->assertFileExists($path);
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $this->assertSame(0600, fileperms($path) & 0777);
+            $this->assertSame(0700, fileperms($this->temporaryDirectory) & 0777);
+        }
         $csv = file_get_contents($path);
         $this->assertIsString($csv);
         $this->assertTrue(mb_check_encoding($csv, 'UTF-8'));
@@ -134,7 +139,7 @@ class SynchronousExportTest extends TestCase
             headers: ['ID', 'Full Name'],
             row: static function (Model $record): array {
                 if ((int) $record->getKey() === 501) {
-                    throw new \RuntimeException('private row payload must not be exposed');
+                    throw new RuntimeException('private row payload must not be exposed');
                 }
 
                 return [$record->getKey(), $record->full_name];
@@ -169,6 +174,152 @@ class SynchronousExportTest extends TestCase
         $this->assertSame([], File::allFiles($this->temporaryDirectory));
         $this->assertDatabaseCount('jobs', 0);
         $this->assertDatabaseCount('exports', 0);
+    }
+
+    public function test_invalid_utf8_fails_with_the_logged_correlation_id_and_removes_the_temp_file(): void
+    {
+        QuoteRequest::query()->insert([
+            'id' => 1,
+            'full_name' => 'Invalid UTF-8 Customer',
+            'estimated_qty' => "invalid \xC3\x28 bytes",
+            'status' => 'new',
+            'is_seen' => false,
+            'source' => 'home',
+        ]);
+        $loggedContext = null;
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function (string $message, array $context) use (&$loggedContext): bool {
+                $loggedContext = $context;
+
+                return $message === 'Synchronous CSV export failed.'
+                    && isset($context['correlation_id'], $context['resource']);
+            });
+
+        $definition = new CsvExportDefinition(
+            resource: 'invalid-utf8',
+            headers: ['ID', 'Estimated Quantity'],
+            row: static fn (Model $record): array => [$record->getKey(), $record->estimated_qty],
+        );
+
+        try {
+            (new SynchronousCsvExporter($this->temporaryDirectory))->download(
+                QuoteRequest::query(),
+                $definition,
+                CarbonImmutable::create(2026, 9, 18, 14, 30, 45),
+            );
+            $this->fail('Expected invalid UTF-8 to abort the export.');
+        } catch (CsvExportFailure $failure) {
+            $this->assertMatchesRegularExpression(
+                '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+                $failure->correlationId(),
+            );
+            $this->assertSame($failure->correlationId(), $loggedContext['correlation_id']);
+            $this->assertSame('invalid-utf8', $failure->resource());
+        }
+
+        $this->assertSame([], File::allFiles($this->temporaryDirectory));
+    }
+
+    public function test_it_fails_before_mapping_rows_when_private_directory_permissions_cannot_be_established(): void
+    {
+        $this->insertQuoteRequests(1);
+        $mappedRows = 0;
+        $loggedContext = null;
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function (string $message, array $context) use (&$loggedContext): bool {
+                $loggedContext = $context;
+
+                return $message === 'Synchronous CSV export failed.'
+                    && isset($context['correlation_id'], $context['resource'])
+                    && ! isset($context['row']);
+            });
+
+        $definition = new CsvExportDefinition(
+            resource: 'permission-failure',
+            headers: ['ID', 'Full Name'],
+            row: static function (Model $record) use (&$mappedRows): array {
+                $mappedRows++;
+
+                return [$record->getKey(), $record->full_name];
+            },
+        );
+
+        try {
+            (new SynchronousCsvExporter(
+                temporaryDirectory: $this->temporaryDirectory,
+                chmod: static fn (string $path, int $mode): bool => false,
+                permissionsMeaningful: true,
+            ))->download(
+                QuoteRequest::query(),
+                $definition,
+                CarbonImmutable::create(2026, 9, 18, 14, 30, 45),
+            );
+            $this->fail('Expected the export to abort when private directory permissions fail.');
+        } catch (CsvExportFailure $failure) {
+            $this->assertSame($failure->correlationId(), $loggedContext['correlation_id']);
+            $this->assertSame('permission-failure', $failure->resource());
+        }
+
+        $this->assertSame(0, $mappedRows);
+        $this->assertSame([], File::allFiles($this->temporaryDirectory));
+    }
+
+    public function test_failed_cleanup_remains_typed_and_correlated_without_logging_row_data(): void
+    {
+        $this->insertQuoteRequests(1);
+        $loggedContext = null;
+        $temporaryPath = null;
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function (string $message, array $context) use (&$loggedContext): bool {
+                $loggedContext = $context;
+
+                return $message === 'Synchronous CSV export failed.'
+                    && isset(
+                        $context['correlation_id'],
+                        $context['resource'],
+                        $context['exception'],
+                        $context['cleanup_exception'],
+                    )
+                    && ! isset($context['row'])
+                    && ! str_contains(json_encode($context), 'private row payload');
+            });
+
+        $definition = new CsvExportDefinition(
+            resource: 'cleanup-failure',
+            headers: ['ID', 'Full Name'],
+            row: static function (): array {
+                throw new \LogicException('private row payload must not be logged');
+            },
+        );
+
+        try {
+            (new SynchronousCsvExporter(
+                temporaryDirectory: $this->temporaryDirectory,
+                unlink: static function (string $path) use (&$temporaryPath): bool {
+                    $temporaryPath = $path;
+
+                    return false;
+                },
+            ))->download(
+                QuoteRequest::query(),
+                $definition,
+                CarbonImmutable::create(2026, 9, 18, 14, 30, 45),
+            );
+            $this->fail('Expected row mapping and cleanup failure to abort the export.');
+        } catch (CsvExportFailure $failure) {
+            $this->assertSame($failure->correlationId(), $loggedContext['correlation_id']);
+            $this->assertSame('cleanup-failure', $failure->resource());
+        }
+
+        $this->assertNotNull($temporaryPath);
+        $this->assertFileExists($temporaryPath);
+        $this->assertSame(RuntimeException::class, $loggedContext['cleanup_exception']);
     }
 
     private function insertQuoteRequests(int $count): void
