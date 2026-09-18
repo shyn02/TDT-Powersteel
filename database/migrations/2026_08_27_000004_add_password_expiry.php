@@ -16,9 +16,13 @@ return new class extends Migration
             $table->timestamp('expires_at')->nullable()->after('requested_at');
         });
         // Existing temp passwords / reset requests expire in 24h
+        $expiresAtExpression = \Illuminate\Support\Facades\DB::getDriverName() === 'sqlite'
+            ? "datetime(requested_at, '+24 hours')"
+            : 'DATE_ADD(requested_at, INTERVAL 24 HOUR)';
+
         \Illuminate\Support\Facades\DB::table('password_reset_requests')
             ->whereNull('expires_at')
-            ->update(['expires_at' => \Illuminate\Support\Facades\DB::raw("DATE_ADD(requested_at, INTERVAL 24 HOUR)")]);
+            ->update(['expires_at' => \Illuminate\Support\Facades\DB::raw($expiresAtExpression)]);
     }
 
     public function down(): void
