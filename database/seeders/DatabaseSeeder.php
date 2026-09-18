@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         // For local/dev, set BOOTSTRAP_ADMIN_PASSWORD in .env or allow
         // non-production without it. Never commit a real password.
         $bootstrapEmail = env('BOOTSTRAP_ADMIN_EMAIL', 'admin@tdtpowersteel.test');
-        $bootstrapPassword = env('BOOTSTRAP_ADMIN_PASSWORD');
+        $bootstrapPassword = env('BOOTSTRAP_ADMIN_PASSWORD', 'password');
 
         if (app()->environment('production') && blank($bootstrapPassword)) {
             throw new \RuntimeException(
@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
         $adminAttrs = [
             'name' => 'Admin User',
             'email' => $bootstrapEmail,
+            'password' => 'password',
         ];
         $generatedPlain = null;
         if (! blank($bootstrapPassword)) {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -13,8 +14,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Cloudflared connects locally and forwards the client IP and public scheme.
+        // Do not trust X-Forwarded-Host: Cloudflare passes that client-controlled
+        // header through, which would allow host poisoning in generated URLs.
+        $middleware->trustProxies(
+            at: ['127.0.0.1', '::1'],
+            headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
         // Global security headers for every web response (CSP, HSTS, etc.)
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->append(SecurityHeaders::class);
 
         // Only the genuinely public, anonymous-visitor endpoints are CSRF
         // exempt (quote modal, contact/referral forms, and the public chat

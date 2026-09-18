@@ -18,7 +18,7 @@ return new class extends Migration
         // Existing temp passwords / reset requests expire in 24h
         \Illuminate\Support\Facades\DB::table('password_reset_requests')
             ->whereNull('expires_at')
-            ->update(['expires_at' => \Illuminate\Support\Facades\DB::raw("datetime(requested_at, '+24 hours')")]);
+            ->update(['expires_at' => \Illuminate\Support\Facades\DB::raw("DATE_ADD(requested_at, INTERVAL 24 HOUR)")]);
     }
 
     public function down(): void
