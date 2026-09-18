@@ -36,4 +36,8 @@ class ChatSessionPolicy
     public function deleteAny(User $user): bool { return $user->isAdminPosition(); }
     public function restore(User $user, ChatSession $record): bool { return $user->isAdminPosition(); }
     public function forceDelete(User $user, ChatSession $record): bool { return $user->isAdminPosition(); }
+    public function terminate(User $user, ChatSession $record): bool
+    {
+        return $user->is_active && $user->isAdminPosition();
+    }
 }

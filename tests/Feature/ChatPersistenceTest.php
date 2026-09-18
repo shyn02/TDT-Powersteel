@@ -842,4 +842,340 @@ class ChatPersistenceTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    // ---- Task 3: staff replies + idempotent termination (RED) ----
+
+    private function makeStaffUser(string $position = 'admin', bool $active = true): User
+    {
+        $user = User::factory()->create(['is_active' => $active]);
+        $user->profile()->update(['position' => $position]);
+
+        return $user->fresh()->load('profile');
+    }
+
+    private function createStaffSession(array $overrides = []): ChatSession
+    {
+        $now = $overrides['now'] ?? Carbon::parse('2026-08-01 10:00:00');
+        $activity = $overrides['last_activity_at'] ?? $now->copy();
+        unset($overrides['now'], $overrides['last_activity_at']);
+
+        return ChatSession::create(array_merge([
+            'session_token' => $this->makeToken('staff-'.uniqid('', true)),
+            'client_name' => 'Visitor (/home)',
+            'page' => '/home',
+            'is_active' => true,
+            'created_at' => $now->copy(),
+            'last_message_at' => $activity->copy(),
+            'last_activity_at' => $activity->copy(),
+            'expires_at' => $activity->copy()->addDays(30),
+            'status' => 'active',
+            'token_version' => 2,
+        ], $overrides));
+    }
+
+    public function test_terminate_policy_allows_only_active_admin_position(): void
+    {
+        $session = $this->createStaffSession();
+        $policy = new \App\Policies\ChatSessionPolicy;
+
+        $admin = $this->makeStaffUser('admin', true);
+        $salesRep = $this->makeStaffUser('sales_rep', true);
+        $support = $this->makeStaffUser('support', true);
+        $inactiveAdmin = $this->makeStaffUser('admin', false);
+
+        $this->assertTrue($policy->terminate($admin, $session), 'Active admin must be able to terminate.');
+        $this->assertFalse($policy->terminate($salesRep, $session), 'Sales rep must not terminate.');
+        $this->assertFalse($policy->terminate($support, $session), 'Support must not terminate.');
+        $this->assertFalse($policy->terminate($inactiveAdmin, $session), 'Inactive admin must not terminate.');
+
+        // Existing view/update rules must not be broadened by the new method.
+        $this->assertTrue($policy->view($admin, $session));
+        $this->assertFalse($policy->view($salesRep, $session), 'Unassigned-claim rule still governs non-admin view.');
+    }
+
+    public function test_staff_reply_via_writer_rolls_activity_and_expiry(): void
+    {
+        $activity = Carbon::parse('2026-08-01 10:00:00');
+        $session = $this->createStaffSession(['now' => $activity->copy(), 'last_activity_at' => $activity->copy()]);
+        $staff = $this->makeStaffUser('admin', true);
+
+        $writeAt = Carbon::parse('2026-08-05 14:30:00');
+        Carbon::setTestNow($writeAt->copy());
+
+        try {
+            $message = (new \App\Actions\Chat\WriteChatMessage)->forStaff($session, $staff->id, 'Staff follow up');
+
+            $this->assertSame('staff', $message->sender);
+            $this->assertSame($staff->id, $message->staff_user_id);
+
+            $session->refresh();
+            $this->assertSame(
+                $writeAt->format('Y-m-d H:i:s'),
+                $session->last_activity_at->format('Y-m-d H:i:s')
+            );
+            $this->assertSame(
+                $writeAt->copy()->addDays(30)->format('Y-m-d H:i:s'),
+                $session->expires_at->format('Y-m-d H:i:s')
+            );
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_staff_reply_via_writer_rejects_terminal_without_mutation(): void
+    {
+        $activity = Carbon::parse('2026-08-01 10:00:00');
+        $session = $this->createStaffSession(['now' => $activity->copy(), 'last_activity_at' => $activity->copy()]);
+        $terminator = $this->makeStaffUser('admin', true);
+        $session->update([
+            'terminated_at' => Carbon::parse('2026-08-01 12:00:00'),
+            'terminated_by' => $terminator->id,
+            'is_active' => false,
+            'status' => 'closed',
+        ]);
+        $expectedExpiry = $session->expires_at->format('Y-m-d H:i:s');
+        $count = $session->messages()->count();
+        $staff = $this->makeStaffUser('admin', true);
+
+        Carbon::setTestNow(Carbon::parse('2026-08-02 10:00:00'));
+
+        try {
+            try {
+                (new \App\Actions\Chat\WriteChatMessage)->forStaff($session, $staff->id, 'too late');
+                $this->fail('Terminal staff write must be rejected.');
+            } catch (\App\Actions\Chat\ChatWriteRejectedException $e) {
+                $this->assertSame('terminated', $e->lifecycle);
+            }
+
+            $session->refresh();
+            $this->assertSame($count, $session->messages()->count());
+            $this->assertSame($expectedExpiry, $session->expires_at->format('Y-m-d H:i:s'));
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_view_send_reply_rolls_activity_only_after_commit(): void
+    {
+        \Filament\Facades\Filament::setCurrentPanel('admin');
+
+        try {
+            $admin = $this->makeStaffUser('admin', true);
+            $this->actingAs($admin);
+
+            $activity = Carbon::parse('2026-08-01 10:00:00');
+            $session = $this->createStaffSession(['now' => $activity->copy(), 'last_activity_at' => $activity->copy()]);
+
+            $writeAt = Carbon::parse('2026-08-05 14:30:00');
+            Carbon::setTestNow($writeAt->copy());
+
+            $component = \Livewire\Livewire::test(
+                \App\Filament\Admin\Resources\ChatSessions\Pages\ViewChatSession::class,
+                ['record' => $session->id]
+            );
+            $component->set('newMessage', 'Staff follow up')->call('sendReply');
+
+            $session->refresh();
+            $this->assertSame(1, $session->messages()->where('sender', 'staff')->count());
+            $this->assertSame('Staff follow up', $session->messages()->where('sender', 'staff')->first()->message);
+            $this->assertSame(
+                $writeAt->format('Y-m-d H:i:s'),
+                $session->last_activity_at->format('Y-m-d H:i:s'),
+                'Committed staff reply must roll activity.'
+            );
+            $this->assertSame(
+                $writeAt->copy()->addDays(30)->format('Y-m-d H:i:s'),
+                $session->expires_at->format('Y-m-d H:i:s'),
+                'Committed staff reply must roll expiry exactly +30 days.'
+            );
+        } finally {
+            Carbon::setTestNow();
+            \Filament\Facades\Filament::setCurrentPanel(null);
+        }
+    }
+
+    public function test_view_send_reply_rejected_on_terminated_session(): void
+    {
+        \Filament\Facades\Filament::setCurrentPanel('admin');
+
+        try {
+            $admin = $this->makeStaffUser('admin', true);
+            $this->actingAs($admin);
+
+            $activity = Carbon::parse('2026-08-01 10:00:00');
+            $session = $this->createStaffSession(['now' => $activity->copy(), 'last_activity_at' => $activity->copy()]);
+            $session->update([
+                'terminated_at' => Carbon::parse('2026-08-01 12:00:00'),
+                'terminated_by' => $admin->id,
+                'is_active' => false,
+                'status' => 'closed',
+            ]);
+            $expectedExpiry = $session->expires_at->format('Y-m-d H:i:s');
+
+            Carbon::setTestNow(Carbon::parse('2026-08-02 10:00:00'));
+
+            $component = \Livewire\Livewire::test(
+                \App\Filament\Admin\Resources\ChatSessions\Pages\ViewChatSession::class,
+                ['record' => $session->id]
+            );
+            $component->set('newMessage', 'too late')->call('sendReply');
+
+            $session->refresh();
+            $this->assertSame(0, $session->messages()->count(), 'Terminal staff reply must not create a message.');
+            $this->assertSame($expectedExpiry, $session->expires_at->format('Y-m-d H:i:s'));
+        } finally {
+            Carbon::setTestNow();
+            \Filament\Facades\Filament::setCurrentPanel(null);
+        }
+    }
+
+    public function test_terminate_action_is_idempotent_retains_history_and_blocks_guest_replay(): void
+    {
+        \Filament\Facades\Filament::setCurrentPanel('admin');
+
+        try {
+            $admin = $this->makeStaffUser('admin', true);
+            $this->actingAs($admin);
+
+            $activity = Carbon::parse('2026-08-01 10:00:00');
+            $session = $this->createStaffSession(['now' => $activity->copy(), 'last_activity_at' => $activity->copy()]);
+            $session->messages()->create(['sender' => 'client', 'message' => 'hello', 'created_at' => $activity->copy()]);
+            $session->messages()->create([
+                'sender' => 'staff', 'staff_user_id' => $admin->id, 'message' => 'hi there',
+                'created_at' => $activity->copy()->addHour(),
+            ]);
+            $expectedExpiry = $session->expires_at->format('Y-m-d H:i:s');
+            $expectedActivity = $session->last_activity_at->format('Y-m-d H:i:s');
+
+            $terminatedAt = Carbon::parse('2026-08-02 10:00:00');
+            Carbon::setTestNow($terminatedAt->copy());
+
+            $component = \Livewire\Livewire::test(
+                \App\Filament\Admin\Resources\ChatSessions\Pages\ViewChatSession::class,
+                ['record' => $session->id]
+            );
+            $component->callAction('terminate');
+
+            $session->refresh();
+            $this->assertNotNull($session->terminated_at);
+            $this->assertSame(
+                $terminatedAt->format('Y-m-d H:i:s'),
+                $session->terminated_at->format('Y-m-d H:i:s')
+            );
+            $this->assertSame($admin->id, $session->terminated_by);
+            $this->assertFalse($session->is_active);
+            $this->assertSame('closed', $session->status);
+            $this->assertSame(2, $session->messages()->count(), 'Termination must never delete messages.');
+            $this->assertSame($expectedExpiry, $session->expires_at->format('Y-m-d H:i:s'), 'Termination must not extend expiry.');
+            $this->assertSame($expectedActivity, $session->last_activity_at->format('Y-m-d H:i:s'), 'Termination must not roll activity.');
+            $this->assertSame(1, \App\Models\ActivityLog::where('actor_id', $admin->id)->count());
+
+            // Repeat termination preserves original actor/time (first-write-wins).
+            $secondAdmin = $this->makeStaffUser('admin', true);
+            $this->actingAs($secondAdmin);
+            Carbon::setTestNow($terminatedAt->copy()->addHour());
+
+            $repeat = \Livewire\Livewire::test(
+                \App\Filament\Admin\Resources\ChatSessions\Pages\ViewChatSession::class,
+                ['record' => $session->id]
+            );
+            $repeat->callAction('terminate');
+
+            $session->refresh();
+            $this->assertSame($admin->id, $session->terminated_by, 'Repeat must preserve original actor.');
+            $this->assertSame(
+                $terminatedAt->format('Y-m-d H:i:s'),
+                $session->terminated_at->format('Y-m-d H:i:s'),
+                'Repeat must preserve original time.'
+            );
+            $this->assertSame(2, $session->messages()->count());
+            $this->assertSame(
+                1,
+                \App\Models\ActivityLog::where('actor_id', $admin->id)->count(),
+                'First-write-wins audit: repeat must not add a second termination log for the winner.'
+            );
+
+            // Blocked guest replay after termination returns history without mutation.
+            $raw = 'task3-terminated-replay-00000000000131';
+            $session->update(['session_token' => hash_hmac('sha256', $raw, (string) config('app.key'))]);
+            $count = $session->messages()->count();
+
+            Carbon::setTestNow(Carbon::parse('2026-08-03 10:00:00'));
+            $response = $this->postJson('/api/chat/messages', [
+                'contractVersion' => 1,
+                'operation' => 'message',
+                'sessionId' => $raw,
+                'text' => 'after end',
+                'page' => '/home',
+            ]);
+
+            $response->assertStatus(410);
+            $this->assertSame('terminated', $response->json('status'));
+            $this->assertSame('CHAT_TERMINATED', $response->json('code'));
+            $this->assertCount(2, $response->json('messages'));
+
+            $session->refresh();
+            $this->assertSame($count, $session->messages()->count());
+            $this->assertSame($expectedExpiry, $session->expires_at->format('Y-m-d H:i:s'));
+        } finally {
+            Carbon::setTestNow();
+            \Filament\Facades\Filament::setCurrentPanel(null);
+        }
+    }
+
+    public function test_terminate_action_denies_non_admin(): void
+    {
+        $session = $this->createStaffSession();
+        $rep = $this->makeStaffUser('sales_rep', true);
+
+        $this->assertFalse(\Illuminate\Support\Facades\Gate::forUser($rep)->allows('terminate', $session));
+    }
+
+    public function test_viewing_claiming_and_termination_do_not_extend_expiry(): void
+    {
+        \Filament\Facades\Filament::setCurrentPanel('admin');
+
+        try {
+            $admin = $this->makeStaffUser('admin', true);
+            $rep = $this->makeStaffUser('sales_rep', true);
+
+            $activity = Carbon::parse('2026-08-01 10:00:00');
+            $expectedExpiry = $activity->copy()->addDays(30)->format('Y-m-d H:i:s');
+
+            // Viewing (markIncomingAsRead) must not extend expiry.
+            $viewed = $this->createStaffSession(['now' => $activity->copy(), 'last_activity_at' => $activity->copy()]);
+            $viewed->messages()->create(['sender' => 'client', 'message' => 'ping', 'is_read' => false, 'created_at' => $activity->copy()]);
+            $this->actingAs($admin);
+            Carbon::setTestNow(Carbon::parse('2026-08-05 10:00:00'));
+
+            $viewer = \Livewire\Livewire::test(
+                \App\Filament\Admin\Resources\ChatSessions\Pages\ViewChatSession::class,
+                ['record' => $viewed->id]
+            );
+            $viewer->call('markIncomingAsRead');
+
+            $viewed->refresh();
+            $this->assertSame($expectedExpiry, $viewed->expires_at->format('Y-m-d H:i:s'));
+            $this->assertSame($activity->format('Y-m-d H:i:s'), $viewed->last_activity_at->format('Y-m-d H:i:s'));
+
+            // Claiming must not extend expiry. The claim transition only assigns
+            // assigned_to/status (see ChatController@claim); it never rolls
+            // activity. Exercise the same mutation the controller performs.
+            $claimable = $this->createStaffSession([
+                'now' => $activity->copy(), 'last_activity_at' => $activity->copy(), 'status' => 'unassigned',
+            ]);
+            $this->actingAs($rep);
+            Carbon::setTestNow(Carbon::parse('2026-08-06 10:00:00'));
+
+            $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($rep)->allows('update', $claimable));
+            $claimable->update(['assigned_to' => $rep->id, 'status' => 'active']);
+
+            $claimable->refresh();
+            $this->assertSame($expectedExpiry, $claimable->expires_at->format('Y-m-d H:i:s'));
+            $this->assertSame($activity->format('Y-m-d H:i:s'), $claimable->last_activity_at->format('Y-m-d H:i:s'));
+        } finally {
+            Carbon::setTestNow();
+            \Filament\Facades\Filament::setCurrentPanel(null);
+        }
+    }
 }
