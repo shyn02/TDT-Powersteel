@@ -395,7 +395,7 @@
     <script src="/static/preloader.js"></script>
     <!-- Main JavaScript file handles everything cleanly -->
     <script defer src="/static/script.js"></script>
-    <script defer src="/static/chatwidget.js"></script>
+    <script type="module" src="/static/chatwidget.js"></script>
     <script defer src="/static/calculator.js"></script>
     @stack('scripts')
 </body>
