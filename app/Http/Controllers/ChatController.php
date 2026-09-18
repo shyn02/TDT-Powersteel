@@ -2,179 +2,179 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Chat\ResolveGuestChat;
+use App\Actions\Chat\WriteChatMessage;
+use App\Http\Requests\ChatMessageRequest;
 use App\Models\ActivityLog;
-use App\Models\ChatMessage;
 use App\Models\ChatSession;
 use App\Models\SystemSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ChatController extends Controller
 {
-    public function messages(Request $request): JsonResponse
+    public function messages(ChatMessageRequest $request, ResolveGuestChat $resolver, WriteChatMessage $writer): JsonResponse
     {
-        // SEC-03 FIXED (#1): Reject GET with bearer token — POST only.
-        if (! $request->isMethod('post')) {
-            return response()->json(['status' => 'error', 'message' => 'Use POST with body poll'], 405)
-                ->header('Allow', 'POST')
-                ->header('Cache-Control', 'no-store');
+        // Defense in depth: the FormRequest already rejects query-string
+        // credentials, but never resolve a token from the URL here.
+        if ($request->query('sessionId') !== null || $request->query('after') !== null) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => ['sessionId' => ['Use POST body, not query string.']],
+            ], 422)->header('Cache-Control', 'no-store');
         }
-        if ($request->boolean('poll')) {
-            return $this->pollMessages($request);
+
+        $validated = $request->validated();
+        $operation = $validated['operation'];
+
+        if ($operation === 'restore') {
+            return $this->handleRestore($validated, $resolver);
         }
-        if ($request->has('after') && ! $request->filled('type') && ! $request->filled('text')) {
-            return $this->pollMessages($request);
+
+        if ($operation === 'poll') {
+            return $this->handlePoll($validated, $resolver);
         }
-        return $this->postMessage($request);
+
+        return $this->handleWrite($validated, $writer);
     }
 
-    protected function hashToken(string $raw): string
+    protected function handleRestore(array $validated, ResolveGuestChat $resolver): JsonResponse
     {
-        return hash_hmac('sha256', $raw, config('app.key'));
-    }
+        $session = $resolver($validated['sessionId'] ?? null);
 
-    protected function findSessionByToken(string $raw): ?ChatSession
-    {
-        // SEC-02: Only HMAC-hashed lookup; raw fallback removed after migration window.
-        $hash = $this->hashToken($raw);
-        return ChatSession::where('session_token', $hash)->first();
-    }
-
-    protected function isSessionExpired(ChatSession $session): bool
-    {
-        if ($session->revoked_at) return true;
-        if ($session->expires_at && $session->expires_at->isPast()) return true;
-        return false;
-    }
-
-    protected function postMessage(Request $request): JsonResponse
-    {
-        $request->validate([
-            'sessionId' => ['required', 'string', 'max:128'],
-            'type' => ['nullable', 'string', 'in:message,handoff_requested', 'max:32'],
-            'text' => ['nullable', 'string', 'max:2000'],
-            'page' => ['nullable', 'string', 'max:150'],
-        ]);
-
-        $rawId = trim((string) $request->input('sessionId', ''));
-        $type = (string) $request->input('type', '');
-        $text = trim((string) $request->input('text', ''));
-        $page = trim((string) $request->input('page', ''));
-
-        if ($rawId === '') {
-            return response()->json(['status' => 'error', 'message' => 'Missing sessionId'], 400);
+        if (! $session) {
+            return $this->terminalResponse(null, 'invalid', 'CHAT_INVALID', 404);
         }
 
-        // SEC-02 FIXED (#2): Server-side credential generation — never trust client-selected token for new sessions.
-        // If token not found, generate server-side (64 hex, 256-bit) and force rotation. Client must use returned newSessionId.
-        $existing = $this->findSessionByToken($rawId);
-        $needsRotation = false;
-        $effectiveRaw = $rawId;
-        if (! $existing) {
-            // New session: ignore client-provided value, generate server-side
-            $needsRotation = true;
-            $effectiveRaw = bin2hex(random_bytes(32));
-        } elseif (str_starts_with($rawId, 'sess_') || strlen($rawId) < 32) {
-            // Legacy low-entropy still stored: rotate if somehow found (should have been revoked)
-            $needsRotation = true;
-            $effectiveRaw = bin2hex(random_bytes(32));
-            // Keep existing session but will create new hashed entry below
-            $existing = null;
+        $status = $session->lifecycleStatus(now());
+
+        if ($status === 'active') {
+            return $this->activeResponse($session, $this->fullHistory($session));
         }
 
-        $hash = $this->hashToken($effectiveRaw);
-        $session = ChatSession::firstOrCreate(
-            ['session_token' => $hash],
-            [
-                'client_name' => $page !== '' ? "Visitor ({$page})" : 'Website Visitor',
-                'page' => $page,
-                'token_version' => 2,
-                'expires_at' => now()->addHours(24),
-            ]
+        if ($status === 'terminated') {
+            return $this->terminalResponse($session, 'terminated', 'CHAT_TERMINATED', 410);
+        }
+
+        if ($status === 'expired') {
+            return $this->terminalResponse($session, 'expired', 'CHAT_EXPIRED', 410);
+        }
+
+        return $this->terminalResponse($session, 'invalid', 'CHAT_INVALID', 404);
+    }
+
+    protected function handlePoll(array $validated, ResolveGuestChat $resolver): JsonResponse
+    {
+        $session = $resolver($validated['sessionId'] ?? null);
+
+        if (! $session) {
+            return $this->terminalResponse(null, 'invalid', 'CHAT_INVALID', 404);
+        }
+
+        $status = $session->lifecycleStatus(now());
+
+        if ($status === 'active') {
+            $after = (int) $validated['after'];
+            $rows = $session->messages()->with('staffUser')->where('id', '>', $after)->orderBy('id')->get();
+
+            return $this->activeResponse($session, $rows);
+        }
+
+        if ($status === 'terminated') {
+            return $this->terminalResponse($session, 'terminated', 'CHAT_TERMINATED', 410);
+        }
+
+        if ($status === 'expired') {
+            return $this->terminalResponse($session, 'expired', 'CHAT_EXPIRED', 410);
+        }
+
+        return $this->terminalResponse($session, 'invalid', 'CHAT_INVALID', 404);
+    }
+
+    protected function handleWrite(array $validated, WriteChatMessage $writer): JsonResponse
+    {
+        $operation = $validated['operation'];
+
+        $result = $writer->forGuest(
+            $validated['sessionId'] ?? null,
+            $operation,
+            $validated['text'] ?? null,
+            $validated['page'] ?? null
         );
 
-        // SEC-02: Enforce revoked and expiry (24h) on every write path
-        if ($this->isSessionExpired($session)) {
-            return response()->json(['status' => 'error', 'message' => 'Session expired'], 401)
-                ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+        if (isset($result['error'])) {
+            $error = $result['error'];
+            /** @var ?ChatSession $session */
+            $session = $result['session'] ?? null;
+
+            if ($error === 'terminated') {
+                return $this->terminalResponse($session, 'terminated', 'CHAT_TERMINATED', 410);
+            }
+
+            if ($error === 'expired') {
+                return $this->terminalResponse($session, 'expired', 'CHAT_EXPIRED', 410);
+            }
+
+            return $this->terminalResponse($session, 'invalid', 'CHAT_INVALID', 404);
         }
 
-        // If we rotated, ensure token hash is stored (firstOrCreate already did)
-        if (! $session->wasRecentlyCreated && $page !== '' && ! $session->page) {
-            $session->page = $page;
+        /** @var ChatSession $session */
+        $session = $result['session'];
+        $payload = $this->activePayload($session, $this->fullHistory($session));
+
+        if (! empty($result['created'])) {
+            $payload['sessionId'] = $result['rawToken'];
         }
 
-        if ($type === 'handoff_requested') {
-            ChatMessage::create([
-                'session_id' => $session->id,
-                'sender' => 'client',
-                'message' => '[Requested to speak with a live agent]',
-                'created_at' => now(),
-            ]);
-        } elseif ($type === 'message' && $text !== '') {
-            ChatMessage::create([
-                'session_id' => $session->id,
-                'sender' => 'client',
-                'message' => $text,
-                'created_at' => now(),
-            ]);
-        }
-
-        $session->is_active = true;
-        $session->last_message_at = now();
-        $session->save();
-
-        $payload = ['status' => 'ok'];
-        if ($needsRotation) {
-            $payload['newSessionId'] = $effectiveRaw;
-        }
-        return response()->json($payload)->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+        return response()->json($payload)->header('Cache-Control', 'no-store');
     }
 
-    protected function pollMessages(Request $request): JsonResponse
+    protected function fullHistory(ChatSession $session): Collection
     {
-        $request->validate([
-            'sessionId' => ['required', 'string', 'max:128'],
-            'after' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
-            'poll' => ['nullable', 'boolean'],
-        ]);
-        // SEC-03 FIXED: Only body (POST JSON) — reject query-string bearer tokens
-        if ($request->query('sessionId') !== null || $request->query('after') !== null) {
-            return response()->json(['status' => 'error', 'message' => 'Use POST body, not query string'], 400)
-                ->header('Cache-Control', 'no-store');
-        }
-        $rawId = trim((string) $request->input('sessionId', ''));
-        $afterId = (int) $request->input('after', 0);
+        return $session->messages()->with('staffUser')->orderBy('id')->get();
+    }
 
-        // Enforce Cache-Control: no-store on all poll responses (SEC-03)
-        $noStore = ['Cache-Control' => 'no-store, no-cache, must-revalidate', 'Pragma' => 'no-cache'];
+    protected function serializeMessages(Collection $rows): array
+    {
+        return $rows->map(fn ($m) => [
+            'id' => $m->id,
+            'sender' => $m->sender,
+            'text' => $m->message,
+            'agentName' => $m->sender === 'staff' ? ($m->staffUser?->name ?: 'Agent') : null,
+            'createdAt' => $m->created_at?->toIso8601String(),
+        ])->all();
+    }
 
-        $messages = [];
-        $session = $rawId !== '' ? $this->findSessionByToken($rawId) : null;
+    protected function activePayload(ChatSession $session, Collection $rows): array
+    {
+        return [
+            'contractVersion' => 1,
+            'status' => 'active',
+            'expiresAt' => $session->expires_at?->toIso8601String(),
+            'messages' => $this->serializeMessages($rows),
+        ];
+    }
 
-        if ($session && $this->isSessionExpired($session)) {
-            return response()->json(['status' => 'error', 'message' => 'Session expired'], 401)->withHeaders($noStore);
-        }
+    protected function activeResponse(ChatSession $session, Collection $rows): JsonResponse
+    {
+        return response()->json($this->activePayload($session, $rows))
+            ->header('Cache-Control', 'no-store');
+    }
 
-        if ($session) {
-            $rows = $session->messages()
-                ->where('sender', 'staff')
-                ->where('id', '>', $afterId)
-                ->with('staffUser')
-                ->orderBy('id')
-                ->get();
+    protected function terminalResponse(?ChatSession $session, string $status, string $code, int $http): JsonResponse
+    {
+        $messages = ($status === 'terminated' && $session)
+            ? $this->serializeMessages($this->fullHistory($session))
+            : [];
 
-            foreach ($rows as $m) {
-                $messages[] = [
-                    'id' => $m->id,
-                    'text' => $m->message,
-                    'agentName' => $m->staffUser?->name ?: 'Agent',
-                ];
-            }
-        }
-
-        return response()->json(['messages' => $messages])->withHeaders($noStore);
+        return response()->json([
+            'contractVersion' => 1,
+            'status' => $status,
+            'code' => $code,
+            'messages' => $messages,
+        ], $http)->header('Cache-Control', 'no-store');
     }
 
     public function unassignedQueue(Request $request): JsonResponse
