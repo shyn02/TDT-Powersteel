@@ -36,20 +36,15 @@ Route::get('/products/{slug}/', [PageController::class, 'categoryDetail'])->name
 Route::get('/blog/{slug}/', [PageController::class, 'blogDetail'])->name('blog_detail');
 
 // ---- API ENDPOINTS FOR FORM SUBMISSIONS ----
-// Public, anonymous-visitor endpoints. Rate-limited (throttle) since these
-// write directly to the DB with no login and are a spam/flood target.
-// 10 tries per 5 min per IP (was 5 per 5 — too strict when testing How did you hear us)
+// Public, anonymous-visitor endpoints.
 Route::post('/api/submit-quote/', [QuoteController::class, 'submit'])
-    ->name('submit_quote')
-    ->middleware('throttle:10,5');
-Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])->name('quote_product_data')
-    ->middleware('throttle:60,1');
+    ->name('submit_quote');
+Route::get('/api/quote-product-data/', [QuoteController::class, 'productData'])->name('quote_product_data');
 
 // ---- LIVE CHAT ----
 // SEC-03 FIXED: POST only — GET with bearer token was removed to prevent URL/history/log leakage (audit #1).
 Route::post('/api/chat/messages', [ChatController::class, 'messages'])
-    ->name('chat_messages_api')
-    ->middleware('throttle:20,1');
+    ->name('chat_messages_api');
 
 // Staff-only chat pool. Requires login -> NOT exempted from CSRF (see
 // bootstrap/app.php), unlike the two public routes above.
@@ -60,7 +55,7 @@ Route::post('/api/chats/{sessionId}/claim/', [ChatController::class, 'claim'])->
 
 // Admin sidebar live badge counts (Quote Requests / Referrals / Contact
 // Messages / Live Chat) — same visibility as the badges themselves
-// (any logged-in staff member), throttled since it's polled repeatedly.
+// (any logged-in staff member).
 Route::get('/admin/api/nav-counts', [NavBadgeController::class, 'index'])
     ->name('admin.nav_counts')
-    ->middleware(['auth', 'throttle:30,1']);
+    ->middleware('auth');
