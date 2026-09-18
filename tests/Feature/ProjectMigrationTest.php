@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
- * Tasks 1–2 — archive, reconcile, and convert legacy project rows.
+ * Tasks 1–3 — archive, reconcile, convert, and import homepage cards.
  *
  * Task 1 (preserved): every legacy scalar is copied into the read-only
  * `legacy_projects_20260918` table (including soft-deleted rows) with a
@@ -26,6 +26,14 @@ use Tests\TestCase;
  * that throw before any legacy column is dropped. Conversion re-runs the
  * gate, then moves `projects` to the public fields while retaining the
  * archive; its `down()` is intentionally irreversible.
+ *
+ * Task 3 (Ruling R2): the dedicated post-conversion
+ * `HomepageProjectSeeder` upserts exactly the ten verbatim first-set
+ * homepage cards (`homepage-legacy-01`–`10`, sort 1–10, published, static
+ * image paths retained) by `migration_key`; re-running corrects an edited
+ * title without adding an eleventh row. Rollout is the dedicated
+ * post-conversion data migration invoking the seeder, never general
+ * destructive reseeding.
  */
 class ProjectMigrationTest extends TestCase
 {
@@ -127,6 +135,103 @@ class ProjectMigrationTest extends TestCase
     {
         $migration = require database_path('migrations/'.self::CONVERT_MIGRATION);
         $migration->up();
+    }
+
+    private function runHomepageSeeder(): void
+    {
+        (new \Database\Seeders\HomepageProjectSeeder)->run();
+    }
+
+    /**
+     * Verbatim first-set homepage fixture from
+     * resources/views/home.blade.php:240-364 (second marquee set ignored).
+     *
+     * @return array<string, array{tag: string, image: string, location: string, title: string, info: string, sort_order: int}>
+     */
+    private static function expectedHomepageCards(): array
+    {
+        return [
+            'homepage-legacy-01' => [
+                'tag' => 'RENEWABLE ENERGY INFRASTRUCTURE',
+                'image' => '/static/images/steel1.jpg',
+                'location' => 'TIWI, ALBAY & BATANGAS–LAGUNA',
+                'title' => 'Tiwi & Mak-ban Geothermal Powerplant',
+                'info' => 'Supplied robust steel products that supported the construction and operational requirements of these major geothermal facilities, which harness the Earth’s natural heat to generate reliable and renewable electricity for the Luzon grid.',
+                'sort_order' => 1,
+            ],
+            'homepage-legacy-02' => [
+                'tag' => 'Commercial Building',
+                'image' => '/static/images/steel3.jpg',
+                'location' => 'Pasay City, Metro Manila',
+                'title' => 'SM Mall of Asia',
+                'info' => 'Supplied quality steel materials to support the structural and construction requirements of one of the Philippines’ major shopping, leisure, and entertainment destinations.',
+                'sort_order' => 2,
+            ],
+            'homepage-legacy-03' => [
+                'tag' => 'HOTEL & INTEGRATED RESORT',
+                'image' => '/static/images/steel2.jpg',
+                'location' => 'PARAÑAQUE CITY, METRO MANILA',
+                'title' => 'OKADA MANILA',
+                'info' => 'Supplied quality steel materials to support the structural and construction requirements of this 30-hectare luxury integrated resort, featuring hotels, dining, retail, entertainment, and event facilities.',
+                'sort_order' => 3,
+            ],
+            'homepage-legacy-04' => [
+                'tag' => 'CONVENTION & EXHIBITION CENTER',
+                'image' => '/static/images/steel4.jpg',
+                'location' => 'PASAY CITY, METRO MANILA',
+                'title' => 'SMX CONVENTION CENTER MANILA',
+                'info' => 'Supplied quality steel materials to support the structural and construction requirements of one of the Philippines’ leading venues for conventions, exhibitions, corporate functions, and large-scale events.',
+                'sort_order' => 4,
+            ],
+            'homepage-legacy-05' => [
+                'tag' => 'TRANSPORTATION INFRASTRUCTURE',
+                'image' => '/static/images/steel6.jpg',
+                'location' => 'METRO MANILA TO BACOOR, CAVITE',
+                'title' => 'LRT-1 CAVITE EXTENSION',
+                'info' => 'Contributed quality steel materials to the development of this major railway expansion, designed to improve public transportation and provide faster, more convenient travel between Metro Manila and Cavite.',
+                'sort_order' => 5,
+            ],
+            'homepage-legacy-06' => [
+                'tag' => 'HOTEL & HOSPITALITY',
+                'image' => '/static/images/Manila-hotel.jpg',
+                'location' => 'ERMITA, MANILA',
+                'title' => 'THE MANILA HOTEL',
+                'info' => 'Provided dependable steel materials for the construction and improvement requirements of this historic luxury hotel, helping preserve its distinguished character while supporting modern hospitality operations.',
+                'sort_order' => 6,
+            ],
+            'homepage-legacy-07' => [
+                'tag' => 'INTEGRATED RESORT & ENTERTAINMENT COMPLEX',
+                'image' => '/static/images/steel5.jpg',
+                'location' => 'PASAY CITY, METRO MANILA',
+                'title' => 'NEWPORT WORLD RESORTS',
+                'info' => 'Delivered reliable steel materials that contributed to the development of this landmark destination, bringing together luxury hotels, dining establishments, retail spaces, entertainment venues, and event facilities within one integrated complex.',
+                'sort_order' => 7,
+            ],
+            'homepage-legacy-08' => [
+                'tag' => 'COMMERCIAL & RETAIL DEVELOPMENT',
+                'image' => '/static/images/SM-SAN LAZARO.jpg',
+                'location' => 'SANTA CRUZ, MANILA',
+                'title' => 'SM CITY SAN LAZARO',
+                'info' => 'Supported the development of this major urban shopping destination through the supply of dependable steel materials for its structural and construction needs.',
+                'sort_order' => 8,
+            ],
+            'homepage-legacy-09' => [
+                'tag' => 'POWER & ENERGY INFRASTRUCTURE',
+                'image' => '/static/images/GN-POWERPLANT.jpg',
+                'location' => 'MARIVELES, BATAAN',
+                'title' => 'GN POWER MARIVELES ENERGY CENTER',
+                'info' => 'Furnished durable steel products that supported the development of this large-scale energy facility, built to strengthen power generation capacity and help meet the growing electricity requirements of the Luzon grid.',
+                'sort_order' => 9,
+            ],
+            'homepage-legacy-10' => [
+                'tag' => 'ROAD & TRANSPORTATION INFRASTRUCTURE',
+                'image' => '/static/images/NLEX-.jpg',
+                'location' => 'METRO MANILA TO CENTRAL AND NORTHERN LUZON',
+                'title' => 'NORTH LUZON EXPRESSWAY',
+                'info' => 'Contributed durable steel products for the construction and improvement of this major expressway, helping support safer roadways, smoother mobility, and more efficient movement of people and goods between Metro Manila and Northern Luzon.',
+                'sort_order' => 10,
+            ],
+        ];
     }
 
     private function assertLegacyColumnsPresent(): void
@@ -504,6 +609,56 @@ class ProjectMigrationTest extends TestCase
         }
 
         $this->assertTrue(Schema::hasTable(self::ARCHIVE_TABLE), 'Archive must survive the down() refusal.');
+    }
+
+    public function test_homepage_seeder_imports_exact_ten_cards_idempotently(): void
+    {
+        // Empty legacy start keeps the exact-ten assertion deterministic:
+        // archive + convert run on zero rows, so the seeder alone owns all
+        // ten projects rows below.
+        $this->runArchiveMigration();
+        $this->runConvertMigration();
+
+        $expected = self::expectedHomepageCards();
+
+        $this->runHomepageSeeder();
+        $this->runHomepageSeeder();
+
+        $this->assertTrue(Schema::hasTable(self::ARCHIVE_TABLE), 'Archive must be retained after the homepage import.');
+
+        $rows = DB::table('projects')->orderBy('sort_order')->orderBy('id')->get();
+
+        $this->assertCount(10, $rows, 'Seeder must produce exactly ten projects rows from an empty conversion.');
+        $this->assertSame(10, DB::table('projects')->whereNotNull('migration_key')->count(), 'All ten rows must carry a migration key.');
+
+        $keys = $rows->pluck('migration_key')->all();
+        $this->assertSame(array_keys($expected), $keys, 'Keys must match homepage-legacy-01..10 in order.');
+
+        foreach ($rows as $row) {
+            $fixture = $expected[$row->migration_key];
+
+            $this->assertSame($fixture['tag'], $row->tag, "Tag mismatch for [{$row->migration_key}].");
+            $this->assertSame($fixture['image'], $row->image, "Image mismatch for [{$row->migration_key}].");
+            $this->assertSame($fixture['location'], $row->location, "Location mismatch for [{$row->migration_key}].");
+            $this->assertSame($fixture['title'], $row->title, "Title mismatch for [{$row->migration_key}].");
+            $this->assertSame($fixture['info'], $row->info, "Info mismatch for [{$row->migration_key}].");
+            $this->assertSame($fixture['sort_order'], (int) $row->sort_order, "Sort order mismatch for [{$row->migration_key}].");
+            $this->assertTrue((bool) $row->is_published, "Row [{$row->migration_key}] must be published.");
+            $this->assertStringStartsWith('/static/images/', (string) $row->image, "Row [{$row->migration_key}] must retain its static image path.");
+        }
+
+        // Editable text is key-addressed: corrupting a title is repaired by
+        // key on the next run without adding an eleventh row.
+        DB::table('projects')->where('migration_key', 'homepage-legacy-02')->update(['title' => 'Edited title']);
+
+        $this->runHomepageSeeder();
+
+        $this->assertSame(10, DB::table('projects')->count(), 'Rerun must upsert by key, never add an eleventh row.');
+        $this->assertSame(
+            $expected['homepage-legacy-02']['title'],
+            DB::table('projects')->where('migration_key', 'homepage-legacy-02')->value('title'),
+            'Rerun must restore the verbatim title by migration key.'
+        );
     }
 
     private function assertNamedCompositeIndexExists(): void
