@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BlogPost;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Project;
 use App\Models\SocialHighlight;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -35,7 +36,9 @@ class PageController extends Controller
             ->get()
             ->groupBy(fn ($product) => $product->category->name);
 
-        return view('home', compact('categories', 'calcProducts'));
+        $projects = Project::published()->get();
+
+        return view('home', compact('categories', 'calcProducts', 'projects'));
     }
 
     public function products(): View

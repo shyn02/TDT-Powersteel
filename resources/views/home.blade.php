@@ -226,268 +226,65 @@
         </div>
     </div>
 
+    @if(isset($projects) && $projects->isNotEmpty())
     <section id="projects" class="projects-section">
         <div class="container">
             <div class="section-header reveal">
                 <span class="section-subtitle">OUR TRACK RECORD</span>
              <h2 class="section-title">PROJECTS WE HAVE <span>SUPPLIED</span></h2>
                 <div class="accent-line"></div>
-                <p class="projects-intro">A look at some of the developments, fabrication shops, and infrastructure projects we've supplied with steel across the Philippines.</p>
+                <p class="projects-intro">A look at some of the developments, fabrication shops, and infrastructure projects we have supplied with steel across the Philippines.</p>
             </div>
 
             <div class="projects-carousel reveal">
                 <div class="projects-track">
+                    @foreach ($projects as $project)
                     <div class="project-card">
                         <div class="project-img-container">
-                            <img src="/static/images/steel1.jpg" alt="Warehouse and logistics facility project" class="project-img">
-                            <span class="project-tag">RENEWABLE ENERGY INFRASTRUCTURE</span>
+                            @if ($project->image_url)
+                            <img src="{{ $project->image_url }}" alt="{{ $project->title }}{{ $project->location ? ', ' . $project->location : '' }}" class="project-img">
+                            @endif
+                            @if ($project->tag)
+                            <span class="project-tag">{{ $project->tag }}</span>
+                            @endif
                         </div>
                         <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> TIWI, ALBAY & BATANGAS–LAGUNA</span>
-                            <h3> Tiwi & Mak-ban Geothermal Powerplant</h3>
-                            <p>Supplied robust steel products that supported the construction and operational requirements of these major geothermal facilities, which harness the Earth’s natural heat to generate reliable and renewable electricity for the Luzon grid.</p>
-                            
+                            @if ($project->location)
+                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> {{ $project->location }}</span>
+                            @endif
+                            <h3>{{ $project->title }}</h3>
+                            @if ($project->info)
+                            <p>{{ $project->info }}</p>
+                            @endif
                         </div>
                     </div>
-
-                    <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel3.jpg" alt="Residential and commercial building project" class="project-img">
-                            <span class="project-tag">Commercial Building</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> Pasay City, Metro Manila</span>
-                            <h3>SM Mall of Asia</h3>
-                            <p>Supplied quality steel materials to support the structural and construction requirements of one of the Philippines’ major shopping, leisure, and entertainment destinations.</p>
-                           
-                        </div>
-                    </div>
-
-                    <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel2.jpg" alt="Steel fabrication and roofing project" class="project-img">
-                            <span class="project-tag">HOTEL & INTEGRATED RESORT</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> PARAÑAQUE CITY, METRO MANILA</span>
-                            <h3>OKADA MANILA</h3>
-                            <p>Supplied quality steel materials to support the structural and construction requirements of this 30-hectare luxury integrated resort, featuring hotels, dining, retail, entertainment, and event facilities.</p>
-                           
-                        </div>
-                    </div>
-
-                    <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel4.jpg" alt="Nationwide steel delivery project" class="project-img">
-                            <span class="project-tag">CONVENTION & EXHIBITION CENTER</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> PASAY CITY, METRO MANILA</span>
-                            <h3>SMX CONVENTION CENTER MANILA</h3>
-                            <p>Supplied quality steel materials to support the structural and construction requirements of one of the Philippines’ leading venues for conventions, exhibitions, corporate functions, and large-scale events.</p>
-                            </div>
-                    </div>
-
-                
-                    
-                    <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel6.jpg" alt="Nationwide steel delivery project" class="project-img">
-                            <span class="project-tag">TRANSPORTATION INFRASTRUCTURE</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> METRO MANILA TO BACOOR, CAVITE</span>
-                            <h3>LRT-1 CAVITE EXTENSION</h3>
-                            <p>Contributed quality steel materials to the development of this major railway expansion, designed to improve public transportation and provide faster, more convenient travel between Metro Manila and Cavite.</p>
-                            </div>
-                    </div>
-
-
-                        <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/Manila-hotel.jpg" alt="Nationwide steel delivery project" class="project-img">
-                            <span class="project-tag">HOTEL & HOSPITALITY</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> ERMITA, MANILA</span>
-                            <h3>THE MANILA HOTEL</h3>
-                            <p>Provided dependable steel materials for the construction and improvement requirements of this historic luxury hotel, helping preserve its distinguished character while supporting modern hospitality operations.</p>
-                            </div>
-                    </div>
-
-                        <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel5.jpg" alt="Nationwide steel delivery project" class="project-img">
-                            <span class="project-tag">INTEGRATED RESORT & ENTERTAINMENT COMPLEX</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> PASAY CITY, METRO MANILA</span>
-                            <h3>NEWPORT WORLD RESORTS</h3>
-                            <p>Delivered reliable steel materials that contributed to the development of this landmark destination, bringing together luxury hotels, dining establishments, retail spaces, entertainment venues, and event facilities within one integrated complex.</p>
-                            </div>
-                    </div>
-
-                        <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/SM-SAN LAZARO.jpg" alt="Nationwide steel delivery project" class="project-img">
-                            <span class="project-tag">COMMERCIAL & RETAIL DEVELOPMENT</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> SANTA CRUZ, MANILA</span>
-                            <h3>SM CITY SAN LAZARO</h3>
-                            <p>Supported the development of this major urban shopping destination through the supply of dependable steel materials for its structural and construction needs.</p>
-                            </div>
-                    </div>
-
-                        <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/GN-POWERPLANT.jpg" alt="Nationwide steel delivery project" class="project-img">
-                            <span class="project-tag">POWER & ENERGY INFRASTRUCTURE</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> MARIVELES, BATAAN</span>
-                            <h3>GN POWER MARIVELES ENERGY CENTER</h3>
-                            <p>Furnished durable steel products that supported the development of this large-scale energy facility, built to strengthen power generation capacity and help meet the growing electricity requirements of the Luzon grid.</p>
-                            </div>
-                    </div>
-
-                        <div class="project-card">
-                        <div class="project-img-container">
-                            <img src="/static/images/NLEX-.jpg" alt="Nationwide steel delivery project" class="project-img">
-                            <span class="project-tag">ROAD & TRANSPORTATION INFRASTRUCTURE</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> METRO MANILA TO CENTRAL AND NORTHERN LUZON</span>
-                            <h3>NORTH LUZON EXPRESSWAY</h3>
-                            <p>Contributed durable steel products for the construction and improvement of this major expressway, helping support safer roadways, smoother mobility, and more efficient movement of people and goods between Metro Manila and Northern Luzon.</p>
-                            </div>
-                    </div>
-
-
-<!-- ==================== SECOND SET (DUPLICATES FOR MARQUEE LOOP) ==================== -->
+                    @endforeach
+                    @foreach ($projects as $project)
                     <div class="project-card" aria-hidden="true">
                         <div class="project-img-container">
-                            <img src="/static/images/steel1.jpg" alt="" class="project-img">
-                            <span class="project-tag">RENEWABLE ENERGY INFRASTRUCTURE</span>
+                            @if ($project->image_url)
+                            <img src="{{ $project->image_url }}" alt="" class="project-img">
+                            @endif
+                            @if ($project->tag)
+                            <span class="project-tag">{{ $project->tag }}</span>
+                            @endif
                         </div>
                         <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> TIWI, ALBAY & BATANGAS–LAGUNA</span>
-                            <h3> Tiwi & Mak-ban Geothermal Powerplant</h3>
-                            <p>Supplied robust steel products that supported the construction and operational requirements of these major geothermal facilities, which harness the Earth’s natural heat to generate reliable and renewable electricity for the Luzon grid.</p>
+                            @if ($project->location)
+                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> {{ $project->location }}</span>
+                            @endif
+                            <h3>{{ $project->title }}</h3>
+                            @if ($project->info)
+                            <p>{{ $project->info }}</p>
+                            @endif
                         </div>
                     </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel3.jpg" alt="" class="project-img">
-                            <span class="project-tag">Commercial Building</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> Pasay City, Metro Manila</span>
-                            <h3>SM Mall of Asia</h3>
-                            <p>Supplied quality steel materials to support the structural and construction requirements of one of the Philippines’ major shopping, leisure, and entertainment destinations.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel2.jpg" alt="" class="project-img">
-                            <span class="project-tag">HOTEL & INTEGRATED RESORT</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> PARAÑAQUE CITY, METRO MANILA</span>
-                            <h3>OKADA MANILA</h3>
-                            <p>Supplied quality steel materials to support the structural and construction requirements of this 30-hectare luxury integrated resort, featuring hotels, dining, retail, entertainment, and event facilities.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel4.jpg" alt="" class="project-img">
-                            <span class="project-tag">CONVENTION & EXHIBITION CENTER</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> PASAY CITY, METRO MANILA</span>
-                            <h3>SMX CONVENTION CENTER MANILA</h3>
-                            <p>Supplied quality steel materials to support the structural and construction requirements of one of the Philippines’ leading venues for conventions, exhibitions, corporate functions, and large-scale events.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel6.jpg" alt="" class="project-img">
-                            <span class="project-tag">TRANSPORTATION INFRASTRUCTURE</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> METRO MANILA TO BACOOR, CAVITE</span>
-                            <h3>LRT-1 CAVITE EXTENSION</h3>
-                            <p>Contributed quality steel materials to the development of this major railway expansion, designed to improve public transportation and provide faster, more convenient travel between Metro Manila and Cavite.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/Manila-hotel.jpg" alt="" class="project-img">
-                            <span class="project-tag">HOTEL & HOSPITALITY</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> ERMITA, MANILA</span>
-                            <h3>THE MANILA HOTEL</h3>
-                            <p>Provided dependable steel materials for the construction and improvement requirements of this historic luxury hotel, helping preserve its distinguished character while supporting modern hospitality operations.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/steel5.jpg" alt="" class="project-img">
-                            <span class="project-tag">INTEGRATED RESORT & ENTERTAINMENT COMPLEX</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> PASAY CITY, METRO MANILA</span>
-                            <h3>NEWPORT WORLD RESORTS</h3>
-                            <p>Delivered reliable steel materials that contributed to the development of this landmark destination, bringing together luxury hotels, dining establishments, retail spaces, entertainment venues, and event facilities within one integrated complex.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/SM-SAN LAZARO.jpg" alt="" class="project-img">
-                            <span class="project-tag">COMMERCIAL & RETAIL DEVELOPMENT</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> SANTA CRUZ, MANILA</span>
-                            <h3>SM CITY SAN LAZARO</h3>
-                            <p>Supported the development of this major urban shopping destination through the supply of dependable steel materials for its structural and construction needs.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/GN-POWERPLANT.jpg" alt="" class="project-img">
-                            <span class="project-tag">POWER & ENERGY INFRASTRUCTURE</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> MARIVELES, BATAAN</span>
-                            <h3>GN POWER MARIVELES ENERGY CENTER</h3>
-                            <p>Furnished durable steel products that supported the development of this large-scale energy facility, built to strengthen power generation capacity and help meet the growing electricity requirements of the Luzon grid.</p>
-                        </div>
-                    </div>
-
-                    <div class="project-card" aria-hidden="true">
-                        <div class="project-img-container">
-                            <img src="/static/images/NLEX-.jpg" alt="" class="project-img">
-                            <span class="project-tag">ROAD & TRANSPORTATION INFRASTRUCTURE</span>
-                        </div>
-                        <div class="project-info">
-                            <span class="project-location"><i class="fa-solid fa-location-dot"></i> METRO MANILA TO CENTRAL AND NORTHERN LUZON</span>
-                            <h3>NORTH LUZON EXPRESSWAY</h3>
-                            <p>Contributed durable steel products for the construction and improvement of this major expressway, helping support safer roadways, smoother mobility, and more efficient movement of people and goods between Metro Manila and Northern Luzon.</p>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
     </section>
+@endif
 
     <section id="why-choose" class="why-choose-section">
         <div class="container">
