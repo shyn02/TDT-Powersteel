@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\QuoteRequests\Schemas;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
@@ -34,7 +35,7 @@ class QuoteRequestForm
                 TextInput::make('address'),
                 TextInput::make('how_heard')
                     ->label('How they heard about us'),
-                TextInput::make('estimated_qty')
+                Textarea::make('estimated_qty')
                     ->label('Estimated Quantity')
                     ->required(),
                 Select::make('status')

@@ -31,7 +31,9 @@ class QuoteRequestInfolist
                 TextEntry::make('how_heard')
                     ->placeholder('-'),
                 TextEntry::make('estimated_qty')
-                    ->label('Estimated Quantity'),
+                    ->label('Estimated Quantity')
+                    ->columnSpanFull()
+                    ->wrap(),
                 TextEntry::make('status')
                     ->badge()
                     ->formatStateUsing(fn (string $state) => ucfirst($state))

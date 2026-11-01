@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\QuoteRequests\Tables;
 
+use App\Filament\Actions\SynchronousExportAction;
+use App\Filament\Actions\SynchronousExportBulkAction;
 use App\Filament\Exports\QuoteRequestExporter;
 use App\Models\ActivityLog;
 use App\Models\QuoteRequest;
@@ -10,8 +12,6 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ExportAction;
-use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
@@ -23,9 +23,9 @@ use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
 class QuoteRequestsTable
@@ -55,7 +55,6 @@ class QuoteRequestsTable
                     ->searchable(),
                 TextColumn::make('estimated_qty')
                     ->label('Estimated Quantity')
-                    ->limit(50)
                     ->tooltip(fn ($record) => $record->estimated_qty)
                     ->searchable(),
                 TextColumn::make('category.name')
@@ -92,7 +91,7 @@ class QuoteRequestsTable
                     ->relationship('category', 'name'),
                 SelectFilter::make('how_heard')
                     ->label('How they heard about us')
-                    ->options(fn () => \App\Models\QuoteRequest::query()
+                    ->options(fn () => QuoteRequest::query()
                         ->whereNotNull('how_heard')
                         ->distinct()
                         ->pluck('how_heard', 'how_heard')),
@@ -104,7 +103,9 @@ class QuoteRequestsTable
                 ForceDeleteAction::make()->label('Delete permanently'),
             ])
             ->headerActions([
-                ExportAction::make()->exporter(QuoteRequestExporter::class),
+                SynchronousExportAction::make()
+                    ->exporter(QuoteRequestExporter::class)
+                    ->authorize('viewAny', QuoteRequest::class),
 
                 Action::make('clear_all_data')
                     ->label('Clear All Data')
@@ -119,6 +120,7 @@ class QuoteRequestsTable
                         $count = QuoteRequest::count();
                         if ($count === 0) {
                             Notification::make()->title('No quote requests to clear.')->warning()->send();
+
                             return;
                         }
                         QuoteRequest::query()->delete();
@@ -131,7 +133,9 @@ class QuoteRequestsTable
                     DeleteBulkAction::make()->label('Archive (30 days)'),
                     RestoreBulkAction::make()->label('Restore'),
                     ForceDeleteBulkAction::make()->label('Delete permanently'),
-                    ExportBulkAction::make()->exporter(QuoteRequestExporter::class),
+                    SynchronousExportBulkAction::make()
+                        ->exporter(QuoteRequestExporter::class)
+                        ->authorize('viewAny', QuoteRequest::class),
 
                     BulkAction::make('mark_as_new')
                         ->label("Mark as 'New'")

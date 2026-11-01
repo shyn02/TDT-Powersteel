@@ -32,49 +32,15 @@ class QuoteController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
 
-        // SEC-07: Layered abuse controls — relaxed for usability (was too strict, blocked legit users matching one field)
-        $clientIp = $request->ip();
-        // Minimum human interaction time: 1.2s (was 2s, too strict for fast typers / autofill)
-        if ($request->filled('form_started_at')) {
-            $started = (int) $request->input('form_started_at');
-            $nowMs = (int) round(microtime(true) * 1000);
-            if ($started > 0 && ($nowMs - $started) < 1200) {
-                try { \Illuminate\Support\Facades\Log::warning('Rapid form submission (bot) blocked', ['ip' => $clientIp, 'elapsed_ms' => $nowMs - $started]); } catch (\Throwable $e) {}
-                // Silent success to not reveal trap
-                return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
-            }
-        }
-        // Per-IP rapid-fire guard: 1.2s (was 2s) — per-form, not global, and softens to silent success after 1st
-        $lastKey = 'submit_last_' . md5($clientIp . '|' . $request->input('subProduct', $request->input('cName', $request->input('ref_fullname', $request->input('name','')))));
-        $lastTs = \Illuminate\Support\Facades\Cache::get($lastKey);
-        if ($lastTs && (microtime(true) - $lastTs) < 1.2) {
-            return response()->json(['status' => 'error', 'message' => 'Please wait a moment before submitting again.'], 429);
-        }
-        // Duplicate guard: 5 similar tries per 5 min — include message/qty so “forgot to add product” with different message isn’t considered duplicate
-        $primaryEmail = strtolower(trim($request->input('clientEmail') ?? $request->input('cEmail') ?? $request->input('ref_email') ?? $request->input('email') ?? ''));
-        $primaryPhone = preg_replace('/[\s\-\(\)]/', '', (string) ($request->input('clientContact') ?? $request->input('cPhone') ?? $request->input('ref_phone') ?? $request->input('mobile') ?? ''));
-        $primaryName = strtolower(trim($request->input('clientName') ?? $request->input('cName') ?? $request->input('ref_fullname') ?? $request->input('name') ?? ''));
-        $primaryMessage = strtolower(trim($request->input('estimatedQty') ?? $request->input('cMessage') ?? $request->input('ref_remarks') ?? $request->input('remarks') ?? $request->input('qHowHeard') ?? $request->input('cHowHeard') ?? $request->input('howHeard') ?? ''));
-        $formType = $request->hasAny(['clientName']) ? 'quote' : ($request->hasAny(['cName']) ? 'contact' : ($request->hasAny(['ref_fullname']) ? 'referral' : 'hero'));
-        $dupKey = 'submit_dup_' . md5($clientIp . '|' . $formType . '|' . $primaryEmail . '|' . $primaryPhone . '|' . $primaryName . '|' . $primaryMessage);
-        if (!empty($primaryEmail) && !empty($primaryPhone)) {
-            if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($dupKey, 5)) {
-                $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($dupKey);
-                $minutes = (int) ceil($seconds / 60);
-                return response()->json(['status' => 'error', 'message' => "You recently submitted a similar request. Please wait {$minutes} minute(s) before trying again. ({$seconds}s remaining)"], 429);
-            }
-        }
-        \Illuminate\Support\Facades\Cache::put($lastKey, microtime(true), 30);
-
         // ---- Case 1: quoteForm modal (embedded on Home, Products, and every category page) ----
         if ($request->hasAny(['clientName', 'clientContact', 'estimatedQty'])) {
             $request->validate([
                 'clientName' => ['required', 'string', 'max:150'],
                 'clientCompany' => ['nullable', 'string', 'max:150'],
                 'clientEmail' => ['nullable', 'email:rfc', 'max:255'],
-                'clientContact' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX (11 digits) or +639XXXXXXXXX.'); }],
+                'clientContact' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The client contact field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX (11 digits) or +639XXXXXXXXX.'); }],
                 'clientAddress' => ['nullable', 'string', 'max:255'],
-                'estimatedQty' => ['required', 'string', 'max:150'],
+                'estimatedQty' => ['required', 'string'],
                 'qHowHeard' => ['nullable', 'string', 'max:100'],
                 'qHowHeardOther' => ['nullable', 'string', 'max:100'],
                 'subProduct' => ['nullable', 'string', 'max:200'],
@@ -124,10 +90,6 @@ class QuoteController extends Controller
                 'source' => $sourcePage,
                 'created_at' => now(),
             ]);
-            if (!empty($primaryEmail) && !empty($primaryPhone)) {
-                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
-            }
-
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
 
@@ -137,7 +99,7 @@ class QuoteController extends Controller
                 'cName' => ['required', 'string', 'max:150'],
                 'cCompany' => ['nullable', 'string', 'max:150'],
                 'cEmail' => ['nullable', 'email:rfc', 'max:255'],
-                'cPhone' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
+                'cPhone' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The contact phone field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
                 'cLandline' => ['nullable', 'string', 'max:50'],
                 'cAddress' => ['nullable', 'string', 'max:255'],
                 'cHowHeard' => ['nullable', 'string', 'max:100'],
@@ -166,10 +128,6 @@ class QuoteController extends Controller
                 'status' => 'unread',
                 'created_at' => now(),
             ]);
-            if (!empty($primaryEmail) && !empty($primaryPhone)) {
-                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
-            }
-
             return response()->json(['status' => 'success', 'message' => 'Your message has been received!']);
         }
 
@@ -178,7 +136,7 @@ class QuoteController extends Controller
             $request->validate([
                 'ref_fullname' => ['required', 'string', 'max:200'],
                 'ref_company' => ['nullable', 'string', 'max:200'],
-                'ref_phone' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
+                'ref_phone' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The referral phone field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
                 'ref_email' => ['nullable', 'email:rfc', 'max:255'],
                 'ref_contact_person' => ['required', 'string', 'max:200'],
                 'ref_referred_company' => ['required', 'string', 'max:200'],
@@ -202,10 +160,6 @@ class QuoteController extends Controller
                 'status' => 'new',
                 'created_at' => now(),
             ]);
-            if (!empty($primaryEmail) && !empty($primaryPhone)) {
-                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
-            }
-
             return response()->json(['status' => 'success', 'message' => 'Thank you! Your referral has been received and recorded in the system.']);
         }
 
@@ -215,11 +169,11 @@ class QuoteController extends Controller
                 'name' => ['required', 'string', 'max:150'],
                 'company' => ['nullable', 'string', 'max:150'],
                 'email' => ['nullable', 'email:rfc', 'max:255'],
-                'mobile' => ['required', 'string', 'max:50', function($a,$v,$f){ $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
+                'mobile' => ['required', 'string', 'max:50', function($a,$v,$f){ if (!is_string($v)) { $f('The mobile field must be a string.'); return; } $n=preg_replace('/[\s\-\(\)]/','',$v); if(!preg_match('/^(\+63|0)9\d{9}$/',$n)) $f('Invalid mobile number. Use 09XXXXXXXXX or +639XXXXXXXXX.'); }],
                 'address' => ['nullable', 'string', 'max:255'],
                 'howHeard' => ['nullable', 'string', 'max:100'],
                 'howHeardOther' => ['nullable', 'string', 'max:100'],
-                'remarks' => ['nullable', 'string', 'max:150'],
+                'remarks' => ['nullable', 'string'],
                 'website' => ['nullable', 'string', 'max:100'],
             ]);
             $howHeard = trim((string) $request->input('howHeard', ''));
@@ -242,10 +196,6 @@ class QuoteController extends Controller
                 'source' => 'home',
                 'created_at' => now(),
             ]);
-            if (!empty($primaryEmail) && !empty($primaryPhone)) {
-                \Illuminate\Support\Facades\RateLimiter::hit($dupKey, 300);
-            }
-
             return response()->json(['status' => 'success', 'message' => 'Your request has been received and saved!']);
         }
 

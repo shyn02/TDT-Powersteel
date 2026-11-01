@@ -10,7 +10,9 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
@@ -20,27 +22,34 @@ class ProjectsTable
     {
         return $table
             ->columns([
-                TextColumn::make('date_added')
-                    ->date()
+                ImageColumn::make('image'),
+                TextColumn::make('title')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('contractor')
-                    ->searchable(),
-                TextColumn::make('value')
-                    ->numeric()
+                TextColumn::make('location')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('status')
-                    ->searchable(),
-                IconColumn::make('is_priority')
-                    ->boolean(),
-                TextColumn::make('encoded_by')
+                IconColumn::make('is_published')
+                    ->label('Published')
+                    ->boolean()
+                    ->sortable(),
+                TextColumn::make('sort_order')
+                    ->label('Order')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('sort_order')
             ->filters([
+                TernaryFilter::make('is_published')
+                    ->label('Published'),
                 TrashedFilter::make()->label('Archived (30-day)'),
             ])
             ->recordActions([

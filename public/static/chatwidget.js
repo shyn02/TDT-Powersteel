@@ -1,125 +1,259 @@
 /* =========================================
    TDT QUICK CHAT WIDGET — LOGIC
    -----------------------------------------
-   UPDATED BEHAVIOR:
-   1) STAYS OPEN & SAVED when clicking to another section (Home -> Products).
-   2) RESETS COMPLETELY when closing the tab/browser ("X").
-   3) RESETS COMPLETELY when hitting Refresh/Reload (F5).
-========================================= */
+   DURABLE BEHAVIOR (Task 4):
+   1) Token persists in localStorage across refresh / tab restart.
+   2) Server history is authoritative; the client keeps only small
+      UI hints (mode / panelOpen / unread). There is no client
+      transcript cache.
+   3) On init, restore only when a token exists; render the complete
+      server history, derive polling from the greatest rendered
+      server message ID, then poll incrementally.
+   4) Creation tokens returned by the server are stored; the client
+      never invents tokens and never auto-creates a replacement
+      session after a terminal state.
+   5) Invalid/expired resets to fresh state; terminated renders the
+      returned history read-only for the current page, stops
+      polling, then clears namespaced keys so the next init is fresh.
+   6) Message text is rendered with textContent only (no HTML).
+   ========================================= */
 
-(function () {
-    "use strict";
+export const CONTRACT_VERSION = 1;
+export const CHAT_API_ENDPOINT = "/api/chat/messages";
+export const POLL_INTERVAL_MS = 4000;
+export const CHAT_KEY_PREFIX = "tdt.quickchat.v1.";
+export const MAX_UNREAD_COUNT = 99;
 
-    // 1) DETECT RELOAD AND CLEAR STORAGE
-    // Check if the user refreshed the page (F5). If yes, wipe the session.
-    const navEntries = performance.getEntriesByType("navigation");
-    if (navEntries.length > 0 && navEntries[0].type === "reload") {
-        sessionStorage.clear(); // Wipes the chat data specifically on refresh
+export const CHAT_KEYS = {
+    session: CHAT_KEY_PREFIX + "session",
+    mode: CHAT_KEY_PREFIX + "mode",
+    panelOpen: CHAT_KEY_PREFIX + "panelOpen",
+    unread: CHAT_KEY_PREFIX + "unread",
+};
+
+// ---- Pure helpers (testable; storage/DOM injected) ------------------------
+
+export function getStoredToken(storage) {
+    try {
+        if (!storage || typeof storage.getItem !== "function") return null;
+        const raw = storage.getItem(CHAT_KEYS.session);
+        return typeof raw === "string" && raw.length > 0 ? raw : null;
+    } catch (err) {
+        return null;
     }
+}
 
-    // ---- CONFIG ----------------------------------------------------
-    const CHAT_API_ENDPOINT = "/api/chat/messages";
-    const POLL_INTERVAL_MS = 4000;
+export function setStoredToken(storage, token) {
+    try {
+        if (!storage || typeof storage.setItem !== "function") return;
+        if (typeof token === "string" && token.length > 0) {
+            storage.setItem(CHAT_KEYS.session, token);
+        } else if (typeof storage.removeItem === "function") {
+            storage.removeItem(CHAT_KEYS.session);
+        }
+    } catch (err) { /* private-mode: persistence best-effort only */ }
+}
 
-    // We now use sessionStorage instead of localStorage.
-    // sessionStorage automatically dies when the tab is closed.
-    const SS_KEYS = {
-        session: "tdt_chat_session_id",
-        transcript: "tdt_chat_transcript",
-        mode: "tdt_chat_mode",
-        panelOpen: "tdt_chat_panel_open",
-        hasGreeted: "tdt_chat_has_greeted",
-        lastAgentMsgId: "tdt_chat_last_agent_id"
+export function shouldRestore(token) {
+    return typeof token === "string" && token.length > 0;
+}
+
+export function buildRestoreRequest(token) {
+    if (!shouldRestore(token)) return null;
+    return {
+        contractVersion: CONTRACT_VERSION,
+        operation: "restore",
+        sessionId: token,
     };
+}
 
-    function getSessionId() {
-        let id = sessionStorage.getItem(SS_KEYS.session);
-        if (!id) {
-            // SEC-05: use cryptographically secure random (256-bit, 64 hex chars)
-            if (window.crypto && window.crypto.getRandomValues) {
-                const bytes = new Uint8Array(32);
-                window.crypto.getRandomValues(bytes);
-                id = Array.from(bytes, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
-            } else {
-                id = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+export function buildPollRequest(token, after) {
+    if (!shouldRestore(token)) return null;
+    let n = Number(after);
+    if (!Number.isInteger(n) || n < 0) n = 0;
+    if (n > 2147483647) n = 2147483647;
+    return {
+        contractVersion: CONTRACT_VERSION,
+        operation: "poll",
+        sessionId: token,
+        after: n,
+    };
+}
+
+export function buildMessageRequest(token, text, page) {
+    const base = {
+        contractVersion: CONTRACT_VERSION,
+        operation: "message",
+        text: String(text ?? ""),
+        page: String(page ?? "home"),
+    };
+    if (shouldRestore(token)) {
+        return { ...base, sessionId: token };
+    }
+    return base;
+}
+
+export function buildHandoffRequest(token, page) {
+    const base = {
+        contractVersion: CONTRACT_VERSION,
+        operation: "handoff_requested",
+        page: String(page ?? "home"),
+    };
+    if (shouldRestore(token)) {
+        return { ...base, sessionId: token };
+    }
+    return base;
+}
+
+export function greatestMessageId(messages) {
+    if (!Array.isArray(messages)) return 0;
+    let max = 0;
+    for (const m of messages) {
+        const id = Number(m && m.id);
+        if (Number.isInteger(id) && id > max) max = id;
+    }
+    return max;
+}
+
+/** Remove only namespaced UI-hint keys; unrelated storage must survive. */
+export function clearChatKeys(storage) {
+    if (!storage) return [];
+    const removed = [];
+    try {
+        for (const k of Object.values(CHAT_KEYS)) {
+            try {
+                if (typeof storage.getItem === "function" && storage.getItem(k) !== null) {
+                    if (typeof storage.removeItem === "function") storage.removeItem(k);
+                    removed.push(k);
+                }
+            } catch (err) { /* ignore per-key */ }
+        }
+        if (typeof storage.length === "number" && typeof storage.key === "function") {
+            const snapshot = [];
+            for (let i = 0; i < storage.length; i += 1) {
+                try {
+                    const k = storage.key(i);
+                    if (k != null) snapshot.push(k);
+                } catch (err) { /* ignore */ }
             }
-            sessionStorage.setItem(SS_KEYS.session, id);
+            for (const k of snapshot) {
+                if (typeof k === "string" && k.startsWith(CHAT_KEY_PREFIX) && !removed.includes(k)) {
+                    try {
+                        if (typeof storage.removeItem === "function") storage.removeItem(k);
+                        removed.push(k);
+                    } catch (err) { /* ignore */ }
+                }
+            }
         }
-        return id;
+    } catch (err) { /* best-effort cleanup */ }
+    return removed;
+}
+
+/**
+ * Reduce a server response to a UI decision. Pure: never touches storage,
+ * never mints tokens, never performs network I/O.
+ */
+export function reduceChatResponse(response) {
+    const status = response && typeof response.status === "string" ? response.status : "invalid";
+    const messages = response && Array.isArray(response.messages) ? response.messages : [];
+    if (status === "active") {
+        return { kind: "active", messages, clearKeys: false, stopPolling: false };
+    }
+    if (status === "terminated") {
+        return {
+            kind: "terminated",
+            messages,
+            readOnly: true,
+            disableInput: true,
+            stopPolling: true,
+            clearKeys: true,
+        };
+    }
+    return { kind: "fresh", messages: [], clearKeys: true, stopPolling: true };
+}
+
+export function toDisplayFrom(sender) {
+    if (sender === "staff") return "agent";
+    if (sender === "client") return "user";
+    return "bot";
+}
+
+/** Build one message row with textContent only. Never uses innerHTML. */
+export function createMessageRow(doc, message) {
+    const from = toDisplayFrom(message && message.sender);
+    const text = message && message.text != null ? String(message.text) : "";
+    const label = message && message.agentName != null ? String(message.agentName) : "Agent";
+
+    const row = doc.createElement("div");
+    row.className = "tdt-msg-row tdt-from-" + from;
+
+    const bubble = doc.createElement("div");
+    bubble.className = "tdt-bubble";
+
+    if (from === "agent") {
+        const labelEl = doc.createElement("span");
+        labelEl.className = "tdt-sender-label";
+        labelEl.textContent = label;
+        bubble.appendChild(labelEl);
     }
 
-    function rotateSessionId(newId) {
-        if (!newId || typeof newId !== "string") return;
-        sessionStorage.setItem(SS_KEYS.session, newId);
-    }
+    const textNode = doc.createElement("span");
+    textNode.textContent = text;
+    bubble.appendChild(textNode);
 
-    function loadTranscript() {
+    row.appendChild(bubble);
+    return row;
+}
+
+/** Append server rows to a container with textContent only. Returns max id. */
+export function renderServerMessages(doc, container, messages) {
+    const rows = Array.isArray(messages) ? messages : [];
+    for (const m of rows) {
+        container.appendChild(createMessageRow(doc, m));
+    }
+    return greatestMessageId(rows);
+}
+
+/** Disable inputs for a terminated session (current page stays read-only). */
+export function setTerminatedReadOnly({ textarea, sendButton, chipsContainer } = {}) {
+    if (textarea) {
         try {
-            const raw = sessionStorage.getItem(SS_KEYS.transcript);
-            return raw ? JSON.parse(raw) : [];
-        } catch (err) {
-            return [];
-        }
+            textarea.disabled = true;
+            if (typeof textarea.setAttribute === "function") textarea.setAttribute("aria-disabled", "true");
+        } catch (err) { /* ignore */ }
     }
-
-    function persistMessage(from, text, label) {
+    if (sendButton) {
         try {
-            const transcript = loadTranscript();
-            transcript.push({ from: from, text: text, label: label || null });
-            sessionStorage.setItem(SS_KEYS.transcript, JSON.stringify(transcript.slice(-200)));
-        } catch (err) { }
+            sendButton.disabled = true;
+            if (typeof sendButton.setAttribute === "function") sendButton.setAttribute("aria-disabled", "true");
+        } catch (err) { /* ignore */ }
     }
+    if (chipsContainer) {
+        try {
+            if (Array.isArray(chipsContainer.children)) {
+                for (const child of chipsContainer.children) {
+                    try { child.disabled = true; } catch (err) { /* ignore */ }
+                }
+            } else if (typeof chipsContainer.querySelectorAll === "function") {
+                for (const child of chipsContainer.querySelectorAll("button")) {
+                    try { child.disabled = true; } catch (err) { /* ignore */ }
+                }
+            }
+            if (typeof chipsContainer.setAttribute === "function") chipsContainer.setAttribute("data-disabled", "true");
+        } catch (err) { /* ignore */ }
+    }
+}
 
-    function persistMode(newMode) {
-        mode = newMode;
-        try { sessionStorage.setItem(SS_KEYS.mode, newMode); } catch (err) { }
-    }
+// ---- Browser widget (guarded so Node tests import helpers only) -----------
 
-    function persistPanelOpen(isOpen) {
-        try { sessionStorage.setItem(SS_KEYS.panelOpen, isOpen ? "1" : "0"); } catch (err) { }
-    }
+const isBrowser = typeof document !== "undefined" && typeof window !== "undefined";
 
-    function persistHasGreeted() {
-        try { sessionStorage.setItem(SS_KEYS.hasGreeted, "1"); } catch (err) { }
-    }
-
-    function persistLastAgentMsgId(id) {
-        try { sessionStorage.setItem(SS_KEYS.lastAgentMsgId, String(id)); } catch (err) { }
-    }
-
-    // Badge: show unread agent messages count on launcher button
-    const SS_UNREAD = "tdt_chat_unread";
-    function getUnreadCount() {
-        return parseInt(sessionStorage.getItem(SS_UNREAD) || "0", 10) || 0;
-    }
-    function updateBadge(count) {
-        const badge = document.querySelector(".tdt-chat-launcher .tdt-badge");
-        if (!badge) return;
-        if (count > 0) {
-            badge.textContent = count > 9 ? "9+" : String(count);
-            badge.style.display = "flex";
-        } else {
-            badge.textContent = "";
-            badge.style.display = "none";
-        }
-    }
-    function setUnreadCount(n) {
-        try { sessionStorage.setItem(SS_UNREAD, String(n)); } catch (e) {}
-        updateBadge(n);
-    }
-    function incUnread(delta) {
-        setUnreadCount(getUnreadCount() + delta);
-    }
-    function clearUnread() {
-        setUnreadCount(0);
-    }
-
-    // Scripted bot FAQ
+if (isBrowser) {
     const BOT_MENU = [
         {
             id: "products",
             label: "Our Steel Products",
-            reply:"We carry 1,000+ steel products — deformed bars, structural beams, plates, pipes, and more, all PNS-certified. What specific product do you need?"
+            reply: "We carry 1,000+ steel products — deformed bars, structural beams, plates, pipes, and more, all PNS-certified. What specific product do you need?"
         },
         {
             id: "quote",
@@ -140,15 +274,93 @@
 
     const GREETING = "Hi! 👋 Welcome to TDT Powersteel. I'm the quick-chat assistant — pick a topic below, or type your question.";
     const HUMAN_HANDOFF_MSG = "Okay, connecting you to a member of our team now. Please leave your message and a customer service representative will reply as soon as they're available.";
-    // Removed verbose queued msg, now shows check like Messenger/Viber (see handleUserSend)
+    const TERMINATED_MSG = "This chat has ended. Thanks for reaching out to TDT Powersteel — start a new message anytime and we'll pick it up from there.";
+    const EXPIRED_MSG = "Your previous chat session expired, so we cleared it here. Send a new message and we'll pick it up from there.";
 
     let mode = "bot";
     let panelOpen = false;
-    let hasGreeted = false;
+    let maxId = 0;
     let pollTimer = null;
-    let lastAgentMsgId = 0;
+    let pollInFlight = false;
+    let terminatedThisPage = false;
+    let hasGreetedThisPage = false;
 
-    // ---- DOM BUILD ---------------------------------------------------
+    function safeStorage() {
+        try {
+            return window.localStorage || null;
+        } catch (err) {
+            return null;
+        }
+    }
+
+    function currentPage() {
+        try {
+            return (window.location.pathname || "").replace(/^\/|\.html$/g, "") || "home";
+        } catch (err) {
+            return "home";
+        }
+    }
+
+    function getToken() {
+        return getStoredToken(safeStorage());
+    }
+
+    function persistMode(newMode) {
+        mode = newMode;
+        try {
+            const s = safeStorage();
+            if (s) s.setItem(CHAT_KEYS.mode, newMode);
+        } catch (err) { /* ignore */ }
+    }
+
+    function persistPanelOpen(isOpen) {
+        try {
+            const s = safeStorage();
+            if (s) s.setItem(CHAT_KEYS.panelOpen, isOpen ? "1" : "0");
+        } catch (err) { /* ignore */ }
+    }
+
+    function getUnreadCount() {
+        try {
+            const s = safeStorage();
+            const raw = s ? s.getItem(CHAT_KEYS.unread) : null;
+            const n = parseInt(raw || "0", 10);
+            return Number.isInteger(n) && n > 0 ? Math.min(n, MAX_UNREAD_COUNT) : 0;
+        } catch (err) {
+            return 0;
+        }
+    }
+
+    function updateBadge(count) {
+        const badge = document.querySelector(".tdt-chat-launcher .tdt-badge");
+        if (!badge) return;
+        const n = Math.max(0, Math.min(Number(count) || 0, MAX_UNREAD_COUNT));
+        if (n > 0) {
+            badge.textContent = n > 9 ? "9+" : String(n);
+            badge.style.display = "flex";
+        } else {
+            badge.textContent = "";
+            badge.style.display = "none";
+        }
+    }
+
+    function setUnreadCount(n) {
+        const capped = Math.max(0, Math.min(Number(n) || 0, MAX_UNREAD_COUNT));
+        try {
+            const s = safeStorage();
+            if (s) s.setItem(CHAT_KEYS.unread, String(capped));
+        } catch (err) { /* ignore */ }
+        updateBadge(capped);
+    }
+
+    function incUnread(delta) {
+        setUnreadCount(getUnreadCount() + (Number(delta) || 0));
+    }
+
+    function clearUnread() {
+        setUnreadCount(0);
+    }
+
     function buildWidget() {
         const launcher = document.createElement("button");
         launcher.className = "tdt-chat-launcher";
@@ -194,7 +406,8 @@
         body.scrollTop = body.scrollHeight;
     }
 
-    function addMessage(body, from, text, skipPersist, label) {
+    /** Local UI-hint row only (bot greetings/FAQ/errors). Never persisted. */
+    function addHintMessage(body, from, text, label) {
         const row = document.createElement("div");
         row.className = "tdt-msg-row tdt-from-" + from;
 
@@ -209,15 +422,23 @@
         }
 
         const textNode = document.createElement("span");
-        textNode.textContent = text;
+        textNode.textContent = String(text ?? "");
         bubble.appendChild(textNode);
 
         row.appendChild(bubble);
         body.appendChild(row);
         scrollToBottom(body);
-
-        if (!skipPersist) persistMessage(from, text, label);
         return row;
+    }
+
+    function appendNewServerRows(body, messages) {
+        const fresh = (Array.isArray(messages) ? messages : []).filter((m) => Number(m && m.id) > maxId);
+        if (fresh.length) {
+            renderServerMessages(document, body, fresh);
+            maxId = Math.max(maxId, greatestMessageId(fresh));
+            scrollToBottom(body);
+        }
+        return fresh;
     }
 
     function showTyping(body) {
@@ -231,7 +452,7 @@
 
     function renderQuickReplies(container, disabled) {
         container.innerHTML = "";
-        if (mode !== "bot") return;
+        if (mode !== "bot" || terminatedThisPage) return;
         BOT_MENU.forEach(function (item) {
             const chip = document.createElement("button");
             chip.className = "tdt-chip";
@@ -251,66 +472,126 @@
         if (statusDot) statusDot.classList.toggle("tdt-status-human", !!isHuman);
     }
 
-    // ---- BACKEND HOOK --------------------------------------------------
-    async function sendToBackend(payload) {
+    function setInputsEnabled(enabled) {
+        const input = document.getElementById("tdtChatInput");
+        const sendBtn = document.getElementById("tdtChatSend");
+        if (input) {
+            input.disabled = !enabled;
+            if (!enabled) input.setAttribute("aria-disabled", "true");
+            else input.removeAttribute("aria-disabled");
+        }
+        if (sendBtn) {
+            sendBtn.disabled = !enabled;
+            if (!enabled) sendBtn.setAttribute("aria-disabled", "true");
+            else sendBtn.removeAttribute("aria-disabled");
+        }
+    }
+
+    async function postChat(payload) {
         try {
             const res = await fetch(CHAT_API_ENDPOINT, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
-            if (res.ok) {
-                try {
-                    const data = await res.clone().json();
-                    if (data && data.newSessionId) {
-                        rotateSessionId(data.newSessionId);
-                    }
-                } catch (e) {}
+            let data = null;
+            try {
+                data = await res.json();
+            } catch (err) {
+                data = null;
             }
-            return res.ok;
+            return { httpOk: res.ok, httpStatus: res.status, data };
         } catch (err) {
-            console.error("[TDT chat] Could not reach the chat server:", err);
-            return false;
+            return { networkError: true };
         }
     }
 
-    function startPollingForAgentReplies(body) {
-        if (pollTimer) return;
+    function stopPolling() {
+        if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
+        pollInFlight = false;
+    }
+
+    function applyTerminal(body, quickReplies, kind, messages) {
+        stopPolling();
+        if (kind === "terminated") {
+            terminatedThisPage = true;
+            appendNewServerRows(body, messages);
+            const input = document.getElementById("tdtChatInput");
+            const sendBtn = document.getElementById("tdtChatSend");
+            setTerminatedReadOnly({ textarea: input, sendButton: sendBtn, chipsContainer: quickReplies });
+            setInputsEnabled(false);
+            if (quickReplies) quickReplies.innerHTML = "";
+            updateHeaderStatus("Chat ended", false);
+            addHintMessage(body, "bot", TERMINATED_MSG);
+            clearChatKeys(safeStorage());
+            return;
+        }
+        // invalid / expired: fresh state, no replacement session is created here.
+        terminatedThisPage = false;
+        clearChatKeys(safeStorage());
+        maxId = 0;
+        persistMode("bot");
+        setInputsEnabled(true);
+        updateHeaderStatus("Assistant online", false);
+        if (body) body.innerHTML = "";
+        hasGreetedThisPage = false;
+        if (quickReplies) renderQuickReplies(quickReplies, false);
+        if (kind === "expired") {
+            addHintMessage(body, "bot", EXPIRED_MSG);
+        }
+    }
+
+    function applyActive(body, quickReplies, messages) {
+        const fresh = appendNewServerRows(body, messages);
+        const hasStaff = (Array.isArray(messages) ? messages : []).some((m) => m && m.sender === "staff");
+        if (hasStaff) {
+            updateHeaderStatus("Chatting with an agent", true);
+        }
+        if (fresh.some((m) => m && m.sender === "staff") && !panelOpen) {
+            incUnread(fresh.filter((m) => m && m.sender === "staff").length);
+        }
+        return fresh;
+    }
+
+    function startPolling(body) {
+        if (pollTimer || terminatedThisPage) return;
         pollTimer = setInterval(async function () {
+            if (terminatedThisPage || pollInFlight) return;
+            const token = getToken();
+            const req = buildPollRequest(token, maxId);
+            if (!req) {
+                stopPolling();
+                return;
+            }
+            pollInFlight = true;
             try {
-                // SEC-03: Send token in POST body, not GET query string (avoids URL/logs/history leakage)
-                const res = await fetch(CHAT_API_ENDPOINT, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sessionId: getSessionId(), after: lastAgentMsgId, poll: true })
-                });
-                if (!res.ok) return;
-                const data = await res.json();
-                const msgs = data.messages || [];
-                if (msgs.length) {
-                    msgs.forEach(function (m) {
-                        addMessage(body, "agent", m.text, false, m.agentName);
-                        lastAgentMsgId = Math.max(lastAgentMsgId, m.id);
-                        persistLastAgentMsgId(lastAgentMsgId);
-                        updateHeaderStatus("Chatting with an agent", true);
-                    });
-                    // If panel is closed, show badge with unread count
-                    if (!panelOpen) {
-                        incUnread(msgs.length);
-                    }
+                // Token travels in the POST body only, never in the URL.
+                const res = await postChat(req);
+                if (res.networkError || !res.data) return;
+                const reduced = reduceChatResponse(res.data);
+                const quickReplies = document.getElementById("tdtQuickReplies");
+                if (reduced.kind === "active") {
+                    applyActive(body, quickReplies, reduced.messages);
+                } else {
+                    applyTerminal(body, quickReplies, reduced.kind, reduced.messages);
                 }
             } catch (err) {
-                console.error("[TDT chat] Polling error:", err);
+                /* polling is best-effort */
+            } finally {
+                pollInFlight = false;
             }
         }, POLL_INTERVAL_MS);
     }
 
-    // ---- CONVERSATION LOGIC --------------------------------------------
     function handleMenuPick(item) {
+        if (terminatedThisPage) return;
         const body = document.getElementById("tdtChatBody");
         const quickReplies = document.getElementById("tdtQuickReplies");
 
-        addMessage(body, "user", item.label);
+        addHintMessage(body, "user", item.label);
 
         if (item.id === "human") {
             switchToHumanMode(body, quickReplies);
@@ -320,63 +601,89 @@
         const typingRow = showTyping(body);
         setTimeout(function () {
             typingRow.remove();
-            addMessage(body, "bot", item.reply);
+            addHintMessage(body, "bot", item.reply);
         }, 500);
     }
 
-    function switchToHumanMode(body, quickReplies) {
+    async function switchToHumanMode(body, quickReplies) {
+        if (terminatedThisPage) return;
         persistMode("human");
-        quickReplies.innerHTML = "";
+        if (quickReplies) quickReplies.innerHTML = "";
         updateHeaderStatus("Waiting for an agent", true);
 
         const typingRow = showTyping(body);
-        setTimeout(function () {
-            typingRow.remove();
-            addMessage(body, "bot", HUMAN_HANDOFF_MSG);
+        const req = buildHandoffRequest(getToken(), currentPage());
+        const res = await postChat(req);
+        typingRow.remove();
 
-            sendToBackend({
-                type: "handoff_requested",
-                sessionId: getSessionId(),
-                page: location.pathname.replace(/^\/|\.html$/g, "") || "home"
-            });
-
-            startPollingForAgentReplies(body);
-        }, 500);
-    }
-
-    async function handleUserSend() {
-        const input = document.getElementById("tdtChatInput");
-        const body = document.getElementById("tdtChatBody");
-        const text = input.value.trim();
-        if (!text) return;
-
-        const userRow = addMessage(body, "user", text);
-        input.value = "";
-        autosizeInput(input);
-
-        // Always forward whatever the visitor typed to the backend — a
-        // message sitting in the input box should never silently vanish
-        // just because they haven't explicitly asked for a human agent yet.
-        sendToBackend({
-            type: "message",
-            sessionId: getSessionId(),
-            text: text,
-            page: location.pathname.replace(/^\/|\.html$/g, "") || "home"
-        });
-
-        if (mode === "human") {
+        if (res.networkError || !res.data) {
+            addHintMessage(body, "bot", HUMAN_HANDOFF_MSG);
+            startPolling(body);
             return;
         }
 
-        const typingRow = showTyping(body);
-        setTimeout(function () {
-            typingRow.remove();
-            addMessage(
-                body,
-                "bot",
-                "I'm sorry, I can't read free-form questions yet. Please choose a topic below, or tap 'Talk to a human agent' to speak with our team."
-            );
-        }, 500);
+        const reduced = reduceChatResponse(res.data);
+        if (reduced.kind === "active") {
+            if (res.data && typeof res.data.sessionId === "string" && res.data.sessionId.length > 0) {
+                setStoredToken(safeStorage(), res.data.sessionId);
+            }
+            addHintMessage(body, "bot", HUMAN_HANDOFF_MSG);
+            applyActive(body, quickReplies, reduced.messages);
+            startPolling(body);
+            return;
+        }
+
+        applyTerminal(body, quickReplies, reduced.kind, reduced.messages);
+    }
+
+    async function handleUserSend() {
+        if (terminatedThisPage) return;
+        const input = document.getElementById("tdtChatInput");
+        const body = document.getElementById("tdtChatBody");
+        const quickReplies = document.getElementById("tdtQuickReplies");
+        const text = (input.value || "").trim();
+        if (!text) return;
+
+        input.value = "";
+        autosizeInput(input);
+
+        // Server history stays authoritative: render the server echo (not an
+        // optimistic transcript) once the write is committed.
+        const req = buildMessageRequest(getToken(), text, currentPage());
+        const res = await postChat(req);
+
+        if (res.networkError || !res.data) {
+            addHintMessage(body, "bot", "Sorry — we couldn't send that just now. Please check your connection and try again.");
+            return;
+        }
+
+        const reduced = reduceChatResponse(res.data);
+        if (reduced.kind === "active") {
+            if (res.data && typeof res.data.sessionId === "string" && res.data.sessionId.length > 0) {
+                setStoredToken(safeStorage(), res.data.sessionId);
+            }
+            applyActive(body, quickReplies, reduced.messages);
+            startPolling(body);
+            if (mode === "human") {
+                return;
+            }
+            const typingRow = showTyping(body);
+            setTimeout(function () {
+                if (terminatedThisPage) {
+                    typingRow.remove();
+                    return;
+                }
+                typingRow.remove();
+                addHintMessage(
+                    body,
+                    "bot",
+                    "I'm sorry, I can't read free-form questions yet. Please choose a topic below, or tap 'Talk to a human agent' to speak with our team."
+                );
+            }, 500);
+            return;
+        }
+
+        applyTerminal(body, quickReplies, reduced.kind, reduced.messages);
     }
 
     function autosizeInput(input) {
@@ -384,8 +691,10 @@
         input.style.height = Math.min(input.scrollHeight, 70) + "px";
     }
 
-    // ---- OPEN / CLOSE ----------------------------------------------------
     function togglePanel(launcher, panel) {
+        if (terminatedThisPage && !panelOpen) {
+            // Terminated sessions stay read-only; still allow viewing history.
+        }
         panelOpen = !panelOpen;
         launcher.classList.toggle("is-open", panelOpen);
         panel.classList.toggle("is-open", panelOpen);
@@ -395,59 +704,76 @@
             clearUnread();
         }
 
-        if (panelOpen && !hasGreeted) {
-            hasGreeted = true;
-            persistHasGreeted();
+        if (panelOpen && !hasGreetedThisPage && maxId === 0 && !getToken()) {
+            hasGreetedThisPage = true;
             const body = document.getElementById("tdtChatBody");
             const quickReplies = document.getElementById("tdtQuickReplies");
             const typingRow = showTyping(body);
             setTimeout(function () {
                 typingRow.remove();
-                addMessage(body, "bot", GREETING);
+                addHintMessage(body, "bot", GREETING);
                 renderQuickReplies(quickReplies, false);
             }, 400);
         }
     }
 
-    // Restore state from sessionStorage so the chat doesn't break when navigating pages
-    function restoreState(launcher, panel) {
-        const body = document.getElementById("tdtChatBody");
-        const quickReplies = document.getElementById("tdtQuickReplies");
-
-        mode = sessionStorage.getItem(SS_KEYS.mode) || "bot";
-        hasGreeted = sessionStorage.getItem(SS_KEYS.hasGreeted) === "1";
-        lastAgentMsgId = parseInt(sessionStorage.getItem(SS_KEYS.lastAgentMsgId) || "0", 10) || 0;
-        const wasPanelOpen = sessionStorage.getItem(SS_KEYS.panelOpen) === "1";
-
-        const transcript = loadTranscript();
-        transcript.forEach(function (m) {
-            addMessage(body, m.from, m.text, true, m.label);
-        });
-
-        if (mode === "human") {
-            const hasAgentReply = transcript.some(function (m) { return m.from === "agent"; });
-            updateHeaderStatus(hasAgentReply ? "Chatting with an agent" : "Waiting for an agent", true);
-            startPollingForAgentReplies(body);
-        } else if (hasGreeted) {
-            renderQuickReplies(quickReplies, false);
+    async function restoreFromServer(body, quickReplies) {
+        const token = getToken();
+        if (!shouldRestore(token)) {
+            maxId = 0;
+            return;
         }
-
-        if (wasPanelOpen) {
-            panelOpen = true;
-            launcher.classList.add("is-open");
-            panel.classList.add("is-open");
-            launcher.setAttribute("aria-label", "Close quick chat");
-            clearUnread();
-        } else {
-            updateBadge(getUnreadCount());
+        const req = buildRestoreRequest(token);
+        const res = await postChat(req);
+        if (res.networkError || !res.data) {
+            // Keep the token; a transient failure must not wipe durable state.
+            return;
         }
+        const reduced = reduceChatResponse(res.data);
+        if (reduced.kind === "active") {
+            renderServerMessages(document, body, reduced.messages);
+            maxId = greatestMessageId(reduced.messages);
+            scrollToBottom(body);
+            const hasStaff = reduced.messages.some((m) => m && m.sender === "staff");
+            updateHeaderStatus(hasStaff ? "Chatting with an agent" : "Waiting for an agent", hasStaff || mode === "human");
+            if (mode === "bot") {
+                renderQuickReplies(quickReplies, false);
+            }
+            startPolling(body);
+            return;
+        }
+        applyTerminal(body, quickReplies, reduced.kind, reduced.messages);
     }
 
-    // ---- INIT --------------------------------------------------------
+    function restoreUiHints(launcher, panel) {
+        try {
+            const s = safeStorage();
+            const savedMode = s ? s.getItem(CHAT_KEYS.mode) : null;
+            mode = savedMode === "human" ? "human" : "bot";
+            const wasPanelOpen = s ? s.getItem(CHAT_KEYS.panelOpen) === "1" : false;
+            if (wasPanelOpen) {
+                panelOpen = true;
+                launcher.classList.add("is-open");
+                panel.classList.add("is-open");
+                launcher.setAttribute("aria-label", "Close quick chat");
+                clearUnread();
+            } else {
+                updateBadge(getUnreadCount());
+            }
+            if (mode === "human") {
+                updateHeaderStatus("Waiting for an agent", true);
+            }
+        } catch (err) { /* hints are optional */ }
+    }
+
     function init() {
         const { launcher, panel } = buildWidget();
 
-        restoreState(launcher, panel);
+        restoreUiHints(launcher, panel);
+        restoreFromServer(
+            document.getElementById("tdtChatBody"),
+            document.getElementById("tdtQuickReplies")
+        );
 
         launcher.addEventListener("click", function () {
             togglePanel(launcher, panel);
@@ -471,9 +797,17 @@
             }
         });
 
-        // Auto-open only on home page and only on first entry to website (new tab/session)
-        const isHomePage = location.pathname === "/" || location.pathname === "/index" || location.pathname === "";
-        const isFirstEntry = !sessionStorage.getItem(SS_KEYS.hasGreeted) && !sessionStorage.getItem(SS_KEYS.panelOpen);
+        // Auto-open only on the home page when there is no durable session
+        // and the panel has never been opened (bounded hint keys only).
+        const isHomePage = window.location.pathname === "/" || window.location.pathname === "/index" || window.location.pathname === "";
+        let panelHint = null;
+        try {
+            const s = safeStorage();
+            panelHint = s ? s.getItem(CHAT_KEYS.panelOpen) : null;
+        } catch (err) {
+            panelHint = null;
+        }
+        const isFirstEntry = !getToken() && panelHint === null;
         if (!panelOpen && isHomePage && isFirstEntry) {
             setTimeout(function () {
                 if (!panelOpen) togglePanel(launcher, panel);
@@ -486,4 +820,4 @@
     } else {
         init();
     }
-})();
+}

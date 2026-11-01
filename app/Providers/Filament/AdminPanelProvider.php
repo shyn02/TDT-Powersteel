@@ -38,6 +38,13 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::SCRIPTS_AFTER,
                 fn () => '<script src="' . asset('static/admin_live_badges.js') . '?v=' . filemtime(public_path('static/admin_live_badges.js')) . '"></script>',
             )
+            // Shared click-to-enlarge overlay for product photos (list, view,
+            // edit). Mounted once, outside Livewire; thumbnails opt in via
+            // ProductImageLightbox::triggerAttributes().
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.admin.product-image-lightbox')->render(),
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])

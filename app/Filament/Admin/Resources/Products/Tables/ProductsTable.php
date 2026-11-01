@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Products\Tables;
 
+use App\Support\ProductImageLightbox;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -27,7 +28,10 @@ class ProductsTable
                 ImageColumn::make('image')
                     ->disk('public')
                     ->size(40)
-                    ->square(),
+                    ->square()
+                    // Click-to-enlarge: marks the thumbnail for the shared
+                    // product-image-lightbox overlay (see ProductImageLightbox).
+                    ->extraImgAttributes(ProductImageLightbox::triggerAttributes()),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),

@@ -130,7 +130,10 @@ return [
 
     'temporary_file_upload' => [
         'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK', 'public'), // FIX: use public so preview is accessible via /storage (was private/livewire-tmp -> no preview, green/gray)
-        'rules' => null,                                      // Example: ['file', 'mimes:png,jpg'] | Default: ['required', 'file', 'max:12288'] (12MB)
+        // FIX 2026-10-11: Livewire's default ['required','file','max:12288'] (12MB) was rejecting
+        // videos >12MB at the temp-upload endpoint with a 422, even though the SocialHighlight
+        // FileUpload field advertises maxSize(51200) = 50MB. Raise this to match the form limit.
+        'rules' => ['required', 'file', 'max:51200'],  // Example: ['file', 'mimes:png,jpg'] | Default: ['required', 'file', 'max:12288'] (12MB)
         'directory' => null,                                  // Example: 'tmp'                     | Default: 'livewire-tmp'
         'middleware' => null,                                 // Example: 'throttle:5,1'            | Default: 'throttle:60,1'
         'preview_mimes' => [                                  // Supported file types for temporary pre-signed file URLs...

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\ProductCategories\Schemas;
 
+use App\Support\MediaUploadRules;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -43,23 +44,23 @@ class ProductCategoryForm
                             ->label('Tile image')
                             ->image()
                             ->panelLayout('grid')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
+                            ->acceptedFileTypes(MediaUploadRules::MIMES)
                             ->disk('public')
-                            ->directory('categories')
+                            ->directory(MediaUploadRules::DIRECTORY_CATEGORY)
                             ->visibility('public')
                             ->imageEditor()
-                            ->maxSize(5120)
+                            ->maxSize(MediaUploadRules::MAX_KILOBYTES)
                             ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.')
                             ->columnSpanFull(),
                         FileUpload::make('banner_image')
                             ->image()
                             ->panelLayout('grid')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
+                            ->acceptedFileTypes(MediaUploadRules::MIMES)
                             ->disk('public')
-                            ->directory('categories/banners')
+                            ->directory(MediaUploadRules::DIRECTORY_CATEGORY_BANNER)
                             ->visibility('public')
                             ->imageEditor()
-                            ->maxSize(5120)
+                            ->maxSize(MediaUploadRules::MAX_KILOBYTES)
                             ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.')
                             ->columnSpanFull(),
                     ]),

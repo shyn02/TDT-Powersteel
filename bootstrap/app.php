@@ -42,8 +42,24 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Layer B (upload HTML trap) fix: the callback below REPLACES
+        // Laravel's default expectsJson() check, so without the extra arms
+        // Livewire upload/update failures (419/401/422) render text/html
+        // despite Accept: application/json + XHR, and Livewire's
+        // JSON.parse('<...') throws `Unexpected token '<'`, sticking the
+        // Create button on "Uploading". The added arms only change the
+        // exception RENDER format (JSON vs HTML) — no auth/session/middleware
+        // weakening. `is('livewire*/*')` matches the versioned endpoint
+        // prefix (livewire-<hash>/upload-file, livewire-<hash>/update);
+        // routeIs covers both the `livewire.*` names and the actual update
+        // route name `default-livewire.update`; expectsJson() restores the
+        // framework default for any other XHR JSON client.
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*')
+                || $request->is('livewire*/*')
+                || $request->routeIs('livewire.*')
+                || $request->routeIs('default-livewire.*')
+                || $request->expectsJson(),
         );
     })
     ->withSchedule(function (Schedule $schedule) {

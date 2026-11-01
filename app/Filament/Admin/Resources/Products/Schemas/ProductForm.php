@@ -4,11 +4,14 @@ namespace App\Filament\Admin\Resources\Products\Schemas;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Support\MediaUploadRules;
+use App\Support\ProductImageLightbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Image as PreviewImage;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -39,6 +42,17 @@ class ProductForm
 
                 Section::make('Details shown on the site')
                     ->schema([
+                        // Saved-image preview (edit only): click-to-enlarge via
+                        // the shared product-image-lightbox overlay. Hidden on
+                        // create and when no image is stored, so an empty or
+                        // missing image never renders a popup trigger.
+                        PreviewImage::make(
+                            url: fn ($record) => ProductImageLightbox::url(ProductImageLightbox::recordImage($record)) ?? '',
+                            alt: 'Current product photo',
+                        )
+                            ->imageHeight(160)
+                            ->extraAttributes(ProductImageLightbox::triggerAttributes('Current product photo'))
+                            ->visible(fn ($record) => filled(ProductImageLightbox::url(ProductImageLightbox::recordImage($record)))),
                         Textarea::make('description')
                             ->rows(4)
                             ->columnSpanFull(),
@@ -50,12 +64,12 @@ class ProductForm
                         FileUpload::make('image')
                             ->image()
                             ->panelLayout('grid')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
+                            ->acceptedFileTypes(MediaUploadRules::MIMES)
                             ->disk('public')
-                            ->directory('products')
+                            ->directory(MediaUploadRules::DIRECTORY_PRODUCT)
                             ->visibility('public')
                             ->imageEditor()
-                            ->maxSize(5120)
+                            ->maxSize(MediaUploadRules::MAX_KILOBYTES)
                             ->helperText('Max 5MB. Only JPG, PNG, WebP allowed. SVG is blocked for security.'),
                     ]),
 

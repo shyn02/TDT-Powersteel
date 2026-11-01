@@ -9,8 +9,7 @@ use App\Models\ContactMessage;
 use App\Models\QuoteRequest;
 use App\Models\Referral;
 use App\Models\User;
-use App\Observers\UserObserver;
-use App\Policies\ChatMessagePolicy;
+use App\Observers\UserObserver;use App\Policies\ChatMessagePolicy;
 use App\Policies\ChatSessionPolicy;
 use App\Policies\ContactMessagePolicy;
 use App\Policies\QuoteRequestPolicy;
@@ -32,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         User::observe(UserObserver::class);
+
+        // Local-safe: align the public disk URL host with the incoming request
+        // so Filament ImageColumn/ImageEntry/FileUpload previews load when
+        // local APP_URL omits the serve port. No-op when hosts match.
+        \App\Support\MediaUploadRules::alignPublicDiskUrlWithRequest();
 
         // SEC-01: Register policies for function-level authorization
         Gate::policy(QuoteRequest::class, QuoteRequestPolicy::class);
