@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
+use App\Support\ProductImageLightbox;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -27,7 +28,10 @@ class ProductInfolist
                     ->columnSpanFull(),
                 ImageEntry::make('image')
                     ->disk('public')
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    // Click-to-enlarge: marks the image for the shared
+                    // product-image-lightbox overlay (see ProductImageLightbox).
+                    ->extraImgAttributes(ProductImageLightbox::triggerAttributes()),
                 IconEntry::make('is_active')
                     ->boolean(),
                 TextEntry::make('created_at')

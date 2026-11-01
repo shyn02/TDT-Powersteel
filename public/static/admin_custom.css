@@ -562,3 +562,94 @@ div[class*="lg:w-2/3"] {
     width: auto;
     display: block;
 }
+
+/* --- PRODUCT IMAGE LIGHTBOX (click-to-enlarge, /admin/products) ---
+   Trigger thumbnails are marked server-side via
+   ProductImageLightbox::triggerAttributes(); the shared overlay markup
+   lives in filament.admin.product-image-lightbox. */
+img[data-tdt-lightbox] {
+    cursor: zoom-in !important;
+}
+
+img[data-tdt-lightbox]:focus-visible {
+    outline: 2px solid var(--tdt-orange) !important;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.tdt-lightbox-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(17, 16, 16, 0.75);
+}
+
+.tdt-lightbox-image {
+    max-width: min(90vw, 1100px);
+    max-height: 85vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.tdt-lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.tdt-lightbox-close:hover {
+    background: var(--tdt-orange);
+    border-color: var(--tdt-orange);
+    transform: none;
+    box-shadow: none;
+}
+
+.tdt-lightbox-close:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+    .tdt-lightbox-backdrop {
+        padding: 0.75rem;
+    }
+
+    .tdt-lightbox-image {
+        max-width: 94vw;
+        max-height: 80vh;
+    }
+
+    .tdt-lightbox-close {
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tdt-lightbox-backdrop,
+    .tdt-lightbox-image,
+    .tdt-lightbox-close {
+        transition: none !important;
+    }
+}
