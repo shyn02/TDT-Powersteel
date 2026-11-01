@@ -39,6 +39,19 @@ class MediaUploadRules
 
     public const DIRECTORY_PRODUCT = 'products';
 
+    /** Thumbnails and Application videos for the Product Applications map. */
+    public const DIRECTORY_PRODUCT_APPLICATION = 'product-applications';
+
+    /** @var list<string> */
+    public const VIDEO_MIMES = ['video/mp4', 'video/webm'];
+
+    /** @var list<string> */
+    public const VIDEO_EXTENSIONS = ['mp4', 'webm'];
+
+    public const VIDEO_MAX_KILOBYTES = 51200;
+
+    public const VIDEO_MESSAGE = 'Video must be an MP4 or WebM file no larger than 50 MB.';
+
     /**
      * Shared validation rules for a permanent image input.
      *
@@ -93,40 +106,81 @@ class MediaUploadRules
      */
     public static function validateStoredPath(?string $path, string $directory, bool $required): ?string
     {
+        return self::validateStoredMedia(
+            $path,
+            $directory,
+            $required,
+            self::EXTENSIONS,
+            self::MIMES,
+            self::MAX_KILOBYTES,
+            self::MESSAGE
+        );
+    }
+
+    /**
+     * Validate a completed permanent Application video on the public disk.
+     * Returns null when valid, otherwise the shared video message.
+     */
+    public static function validateStoredVideoPath(?string $path, string $directory, bool $required): ?string
+    {
+        return self::validateStoredMedia(
+            $path,
+            $directory,
+            $required,
+            self::VIDEO_EXTENSIONS,
+            self::VIDEO_MIMES,
+            self::VIDEO_MAX_KILOBYTES,
+            self::VIDEO_MESSAGE
+        );
+    }
+
+    /**
+     * @param  list<string>  $extensions
+     * @param  list<string>  $mimes
+     */
+    private static function validateStoredMedia(
+        ?string $path,
+        string $directory,
+        bool $required,
+        array $extensions,
+        array $mimes,
+        int $maxKilobytes,
+        string $message
+    ): ?string {
         if ($path === null || trim($path) === '') {
-            return $required ? self::MESSAGE : null;
+            return $required ? $message : null;
         }
 
         $path = trim($path);
 
         // Reject traversal, absolute paths, and anything outside the fixed dir.
         if (str_contains($path, '..') || str_starts_with($path, '/') || str_starts_with($path, '\\')) {
-            return self::MESSAGE;
+            return $message;
         }
 
         if (! str_starts_with($path, rtrim($directory, '/').'/')) {
-            return self::MESSAGE;
+            return $message;
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        if (! in_array($extension, self::EXTENSIONS, true)) {
-            return self::MESSAGE;
+        if (! in_array($extension, $extensions, true)) {
+            return $message;
         }
 
         $disk = Storage::disk('public');
 
         if (! $disk->exists($path)) {
-            return self::MESSAGE;
+            return $message;
         }
 
         $size = $disk->size($path);
-        if ($size === false || $size === null || $size > self::MAX_KILOBYTES * 1024) {
-            return self::MESSAGE;
+        if ($size === false || $size === null || $size > $maxKilobytes * 1024) {
+            return $message;
         }
 
         $mime = strtolower((string) $disk->mimeType($path));
-        if (! in_array($mime, self::MIMES, true)) {
-            return self::MESSAGE;
+        if (! in_array($mime, $mimes, true)) {
+            return $message;
         }
 
         return null;
@@ -134,17 +188,33 @@ class MediaUploadRules
 
     /**
      * Schedule deletion of a replaced old file only after the DB commit.
-     * Never deletes when the path is unchanged or empty.
+     * Never deletes when the path is unchanged, empty, or a committed
+     * static asset (seeded thumbnails live in the repo, not on the disk).
      */
     public static function scheduleOldFileDeletion(?string $oldPath, ?string $newPath): void
     {
-        if ($oldPath === null || trim($oldPath) === '' || $oldPath === $newPath) {
+        if (! self::shouldDeleteReplacedFile($oldPath, $newPath)) {
             return;
         }
 
         DB::afterCommit(function () use ($oldPath): void {
-            Storage::disk('public')->delete($oldPath);
+            Storage::disk('public')->delete(trim((string) $oldPath));
         });
+    }
+
+    /**
+     * Whether a replaced path is ours to delete.
+     *
+     * Committed static assets (seeded thumbnails live in the repo, not on the
+     * disk) are never deleted, and neither is an unchanged or empty path.
+     */
+    public static function shouldDeleteReplacedFile(?string $oldPath, ?string $newPath): bool
+    {
+        if ($oldPath === null || trim($oldPath) === '' || $oldPath === $newPath) {
+            return false;
+        }
+
+        return ! str_starts_with(trim($oldPath), '/static/');
     }
 
     /**

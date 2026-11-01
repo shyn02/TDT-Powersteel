@@ -1,0 +1,385 @@
+/* --- Product Applications map ------------------------------------------- */
+/* The artwork is 1920x1080; every circle is anchored by percentage so the
+   composition survives any container width. */
+
+.product-applications-section {
+    padding: 56px 0 80px;
+    background: #fff;
+}
+
+/* Desktop: no scrollport at all. The map is the container's width, and a Map
+   label that reaches past the artwork spills into the container's side gutter
+   instead of creating a horizontal scrollbar. Below 768px this becomes a
+   sideways scroller for the map's floor width (see the small-screen block). */
+.product-applications-map-scroll {
+    overflow: visible;
+}
+
+/* Only shown where the map is wider than the viewport. */
+.product-applications-scroll-hint {
+    display: none;
+    margin-bottom: 10px;
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--tdt-gray, #717074);
+}
+
+.product-applications-map {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 0 auto;
+}
+
+.product-applications-art {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Leader lines: one per anchored circle, behind the circles themselves. The
+   viewBox is 0–100 so the endpoints are plain percentages, and the stroke
+   keeps its pixel width however far the map is scaled. */
+.product-applications-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.product-applications-lines line {
+    stroke: var(--tdt-orange, #E67026);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+}
+
+/* The positioned point: no size of its own beyond the circle, so the label
+   can sit outside it without being clipped. */
+.product-application {
+    position: absolute;
+    width: clamp(44px, 6.5vw, 96px);
+    height: clamp(44px, 6.5vw, 96px);
+    transform: translate(-50%, -50%);
+}
+
+/* The ring and the clipped thumbnail live here so the label, which is a
+   sibling, escapes the clip. */
+.product-application-circle {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 4px solid var(--tdt-orange, #E67026);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+}
+
+/* Slight over-scale pushes the thumbnail's inner margin under the ring. */
+.product-application-thumb {
+    width: 110%;
+    height: 110%;
+    flex: none;
+    margin: -5%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.product-application-label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    pointer-events: none;
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-weight: 800;
+    font-size: clamp(11px, 1.05vw, 20px);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--tdt-dark, #111010);
+}
+
+.product-application[data-label-side="left"] .product-application-label {
+    right: calc(100% + 14px);
+}
+
+.product-application[data-label-side="right"] .product-application-label {
+    left: calc(100% + 14px);
+}
+
+/* --- Playable circles --------------------------------------------------- */
+/* A circle with an Application video is a real button; strip the native
+   chrome and keep the ring as the visible control. */
+
+button.product-application {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+button.product-application:hover .product-application-circle,
+button.product-application:focus-visible .product-application-circle {
+    box-shadow: 0 0 0 4px rgba(230, 112, 38, .35), 0 2px 8px rgba(0, 0, 0, .18);
+}
+
+button.product-application:focus-visible {
+    outline: none;
+}
+
+/* --- List beneath the map (small screens, screen readers, no-JS) -------- */
+
+.product-applications-index {
+    margin-top: 56px;
+}
+
+.product-applications-index-title {
+    margin-bottom: 24px;
+    text-align: center;
+    font-family: var(--font-bebas, 'Bebas Neue', sans-serif);
+    font-size: 30px;
+    letter-spacing: .04em;
+    color: var(--tdt-dark, #111010);
+}
+
+.product-applications-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px 20px;
+}
+
+.product-applications-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    background: var(--tdt-bg-light, #F9FAFB);
+}
+
+.product-applications-list-open,
+.product-applications-list-static {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.product-applications-list-open {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.product-applications-list-open:hover .product-applications-list-label,
+.product-applications-list-open:focus-visible .product-applications-list-label {
+    color: var(--tdt-orange, #E67026);
+}
+
+.product-applications-list-open:focus-visible {
+    outline: 2px solid var(--tdt-orange, #E67026);
+    outline-offset: 2px;
+}
+
+.product-applications-list-thumb {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.product-applications-list-label {
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--tdt-gray-dark, #2F2D30);
+}
+
+/* --- Quote call to action ---------------------------------------------- */
+
+.product-applications-cta-section {
+    padding: 24px 0 80px;
+    background: #fff;
+}
+
+.product-applications-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.product-applications-cta-title {
+    font-family: var(--font-bebas, 'Bebas Neue', sans-serif);
+    font-size: 34px;
+    letter-spacing: .04em;
+    color: var(--tdt-dark, #111010);
+}
+
+.product-applications-cta-desc {
+    max-width: 520px;
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    color: var(--tdt-gray, #717074);
+}
+
+/* --- Video modal -------------------------------------------------------- */
+
+.video-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.video-modal[hidden] {
+    display: none;
+}
+
+.video-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .78);
+}
+
+/* The dialog is capped to the viewport so a long description can never push
+   the close control off screen. */
+.video-modal-dialog {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(960px, 100%);
+    max-height: calc(100vh - 40px);
+    padding: 18px;
+    border-radius: 12px;
+    background: var(--tdt-dark, #111010);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+}
+
+.video-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex: none;
+    margin-bottom: 12px;
+}
+
+.video-modal-title {
+    color: #fff;
+    font-family: var(--font-bebas, 'Bebas Neue', sans-serif);
+    font-size: 26px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.video-modal-video {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    max-height: 60vh;
+    flex: none;
+    border-radius: 8px;
+    background: #000;
+}
+
+.video-modal-description {
+    margin-top: 12px;
+    overflow-y: auto;
+    color: rgba(255, 255, 255, .85);
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.video-modal-description[hidden] {
+    display: none;
+}
+
+.video-modal-close {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--tdt-orange, #E67026);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.video-modal-close:hover,
+.video-modal-close:focus-visible {
+    background: var(--tdt-orange-hover, #C55618);
+}
+
+.video-modal-close:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* --- Narrow screens ----------------------------------------------------- */
+/* Labels need room on both sides of the artwork. Below this width they would
+   spill past its edge (and used to make the map scroll horizontally), so they
+   are dropped and the list below carries the same information. */
+
+@media (max-width: 899px) {
+    .product-application-label {
+        display: none;
+    }
+}
+
+/* --- Small screens ------------------------------------------------------ */
+/* The map keeps a floor width so the circles never pile up on each other or
+   shrink below a 44px tap target, and scrolls sideways instead. */
+
+@media (max-width: 767px) {
+    .product-applications-section {
+        padding: 32px 0 56px;
+    }
+
+    .product-applications-map-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .product-applications-map {
+        min-width: 620px;
+    }
+
+    .product-applications-scroll-hint {
+        display: block;
+    }
+
+    .product-applications-index {
+        margin-top: 36px;
+    }
+
+    .video-modal-dialog {
+        padding: 12px;
+    }
+}
+
+
