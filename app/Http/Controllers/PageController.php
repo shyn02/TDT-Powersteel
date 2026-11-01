@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
 use App\Models\Product;
+use App\Models\ProductApplication;
 use App\Models\ProductCategory;
 use App\Models\Project;
 use App\Models\SocialHighlight;
@@ -51,6 +52,16 @@ class PageController extends Controller
     public function about(): View
     {
         return view('about');
+    }
+
+    public function productApplications(): View
+    {
+        $applications = ProductApplication::query()
+            ->active()
+            ->inMapOrder()
+            ->get();
+
+        return view('product_applications', compact('applications'));
     }
 
     public function trackOrder(): View
@@ -116,6 +127,7 @@ class PageController extends Controller
         $staticPages = collect([
             ['loc' => '/', 'priority' => '1.0', 'changefreq' => 'weekly'],
             ['loc' => '/products/', 'priority' => '0.9', 'changefreq' => 'weekly'],
+            ['loc' => '/product-applications/', 'priority' => '0.8', 'changefreq' => 'monthly'],
             ['loc' => '/about/', 'priority' => '0.7', 'changefreq' => 'monthly'],
             ['loc' => '/blog/', 'priority' => '0.8', 'changefreq' => 'weekly'],
             ['loc' => '/contact/', 'priority' => '0.7', 'changefreq' => 'monthly'],
